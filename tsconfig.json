@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "target": "es6",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "baseUrl": "./",
+    "paths": {
+      "@app": ["./src/"],
+      "@app/*": ["./src/*"]
+    }
+  },
+  "files": ["src/@types/index.d.ts"],
+  "exclude": ["node_modules", "dist", "build"],
+  "include": ["src/**/*.ts"]
+}
