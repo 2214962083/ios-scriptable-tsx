@@ -1,4 +1,5 @@
 declare class Alert {
+  constructor()
   message: string
   title: string
   addAction(title: string): void

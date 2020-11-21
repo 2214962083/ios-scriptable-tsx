@@ -1,3 +1,4 @@
+export type Availability = 'busy' | 'free' | 'tentative' | 'unavailable'
 declare class Calendar {
   readonly allowsContentModifications: boolean
   color: Color
@@ -13,8 +14,8 @@ declare class Calendar {
   static forEventsByTitle(title: string): Promise<Calendar>
   static forReminders(): Promise<Calendar[]>
   static forRemindersByTitle(title: string): Promise<Calendar>
-  static presentPicker(allowMultiple: boolean): Promise<Calendar[]>
+  static presentPicker(allowMultiple: boolean = false): Promise<Calendar[]>
   remove(): void
   save(): void
-  supportsAvailability(availability: string): boolean
+  supportsAvailability(availability: Availability): boolean
 }
