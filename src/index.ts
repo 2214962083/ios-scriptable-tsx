@@ -8,22 +8,26 @@
 //
 
 // 添加require，是为了vscode中可以正确引入包，以获得自动补全等功能
-let Require: NodeRequire | typeof importModule = require
-if (typeof require === 'undefined') {
-  Require = importModule
-}
-const {Base} = Require('./base')
+// let Require: NodeRequire | typeof importModule = require
+// if (typeof require === 'undefined') {
+//   Require = importModule
+// }
+import {Base, Testing} from './base'
+
+// import * as BaseModule from './base'
+
+// const {Base} = BaseModule
 
 // @组件代码开始
 class Widget extends Base {
-  constructor(arg) {
+  constructor(arg: string) {
     super(arg)
     this.name = '微博热榜'
     this.desc = '实时刷新微博热搜榜事件'
 
     // 注册设置
     this.registerAction('插件设置', this.actionSetting.bind(this))
-    console.log(args.images, __dirname)
+    // console.log(args.images, __dirname)
   }
 
   async render() {
@@ -43,10 +47,11 @@ class Widget extends Base {
     const res = await this.httpGet(
       'https://m.weibo.cn/api/container/getIndex?containerid=106003%26filter_type%3Drealtimehot',
     )
-    const data = res['data']['cards'][0]['card_group']
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: Record<string, string>[] = (res as any)['data']['cards'][0]['card_group']
     // 去除第一条
     data.shift()
-    const topic = data[0]
+    const topic: Record<string, string> = data[0]
     console.log(topic)
     // 显示数据
     let w = new ListWidget()
@@ -86,7 +91,8 @@ class Widget extends Base {
     const res = await this.httpGet(
       'https://m.weibo.cn/api/container/getIndex?containerid=106003%26filter_type%3Drealtimehot',
     )
-    const data = res['data']['cards'][0]['card_group']
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: Record<string, string>[] = (res as any)['data']['cards'][0]['card_group']
     // 去除第一条
     data.shift()
     // 显示数据
@@ -139,7 +145,7 @@ class Widget extends Base {
 
   async actionSetting() {
     const settings = this.getSettings()
-    const arg = settings['type'] || '1'
+    const arg = (settings as Record<string, string>)['type'] || '1'
     const a = new Alert()
     a.title = '打开方式'
     a.message = '点击小组件浏览热点的方式'
@@ -152,7 +158,7 @@ class Widget extends Base {
     this.saveSettings()
   }
 
-  async actionOpenUrl(url) {
+  async actionOpenUrl(url: string) {
     const settings = this.getSettings()
     if (settings['type'] === '1') {
       Safari.openInApp(url, false)
@@ -164,5 +170,4 @@ class Widget extends Base {
 }
 // @组件代码结束
 
-const {Testing} = require('./「小件件」开发环境')
-await Testing(Widget)
+Testing(Widget)

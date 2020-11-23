@@ -19,7 +19,7 @@ declare class ListWidget {
 
   addImage(image: Image): WidgetImage
 
-  addSpacer(length: number): WidgetSpacer
+  addSpacer(length?: number): WidgetSpacer
 
   addStack(): WidgetStack
 

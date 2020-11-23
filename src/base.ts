@@ -11,7 +11,7 @@
 // 组件基础类
 const RUNTIME_VERSION = 20201104
 
-abstract class Base {
+class Base {
   public arg: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public _actions: Record<string, (...args: any[]) => any>
@@ -21,8 +21,9 @@ abstract class Base {
   public FILE_MGR_LOCAL!: FileManager
   public BACKGROUND_KEY!: string
   public settings!: Record<string, unknown>
-  public abstract name: string
-  public abstract desc: string
+  public name!: string
+  public desc!: string;
+  [key: string]: unknown
   constructor(arg = '') {
     this.arg = arg
     this._actions = {}
@@ -55,7 +56,9 @@ abstract class Base {
     this.settings = this.getSettings()
   }
 
-  abstract render(): ListWidget
+  render(): Promise<ListWidget> {
+    throw new Error('抽象方法，要自行实现')
+  }
 
   /**
    * 注册点击操作菜单
@@ -108,30 +111,31 @@ abstract class Base {
    * @param {string} str 要加密成md5的数据
    */
   md5(str: string): string {
-    function d(n, t) {
+    function d(n: number, t: number) {
       const r = (65535 & n) + (65535 & t)
       return (((n >> 16) + (t >> 16) + (r >> 16)) << 16) | (65535 & r)
     }
-    function f(n, t, r, e, o, u) {
+    function f(n: number, t: number, r: number, e: number, o: number, u: number) {
+      let c: number, f: number
       return d(((c = d(d(t, n), d(e, u))) << (f = o)) | (c >>> (32 - f)), r)
-      let c, f
     }
-    function l(n, t, r, e, o, u, c) {
+    function l(n: number, t: number, r: number, e: number, o: number, u: number, c: number) {
       return f((t & r) | (~t & e), n, t, o, u, c)
     }
-    function v(n, t, r, e, o, u, c) {
+    function v(n: number, t: number, r: number, e: number, o: number, u: number, c: number) {
       return f((t & e) | (r & ~e), n, t, o, u, c)
     }
-    function g(n, t, r, e, o, u, c) {
+    function g(n: number, t: number, r: number, e: number, o: number, u: number, c: number) {
       return f(t ^ r ^ e, n, t, o, u, c)
     }
-    function m(n, t, r, e, o, u, c) {
+    function m(n: number, t: number, r: number, e: number, o: number, u: number, c: number) {
       return f(r ^ (t | ~e), n, t, o, u, c)
     }
-    function i(n, t) {
+    function i(n: number[], t: number) {
       let r, e, o, u
       ;(n[t >> 5] |= 128 << t % 32), (n[14 + (((t + 64) >>> 9) << 4)] = t)
-      for (var c = 1732584193, f = -271733879, i = -1732584194, a = 271733878, h = 0; h < n.length; h += 16)
+      let c = 1732584193
+      for (let f = -271733879, i = -1732584194, a = 271733878, h = 0; h < n.length; h += 16)
         (c = l((r = c), (e = f), (o = i), (u = a), n[h], 7, -680876936)),
           (a = l(a, c, f, i, n[h + 1], 12, -389564586)),
           (i = l(i, a, c, f, n[h + 2], 17, 606105819)),
@@ -197,46 +201,49 @@ abstract class Base {
           (f = d(f, e)),
           (i = d(i, o)),
           (a = d(a, u))
-      return [c, f, i, a]
+      return [c, f, i, a] as number[]
     }
-    function a(n) {
-      for (var t = '', r = 32 * n.length, e = 0; e < r; e += 8) t += String.fromCharCode((n[e >> 5] >>> e % 32) & 255)
+    function a(n: number[]) {
+      let t = ''
+      for (let r = 32 * n.length, e = 0; e < r; e += 8) t += String.fromCharCode((n[e >> 5] >>> e % 32) & 255)
       return t
     }
-    function h(n) {
-      const t = []
+    function h(n: string) {
+      const t: (number | undefined)[] = []
+      let e
       for (t[(n.length >> 2) - 1] = void 0, e = 0; e < t.length; e += 1) t[e] = 0
-      for (var r = 8 * n.length, e = 0; e < r; e += 8) t[e >> 5] |= (255 & n.charCodeAt(e / 8)) << e % 32
-      return t
+      for (let r = 8 * n.length, e = 0; e < r; e += 8) (t[e >> 5] as number) |= (255 & n.charCodeAt(e / 8)) << e % 32
+      return t as number[]
     }
-    function e(n) {
-      for (var t, r = '0123456789abcdef', e = '', o = 0; o < n.length; o += 1)
+    function e(n: string) {
+      for (let t, r = '0123456789abcdef', e = '', o = 0; o < n.length; o += 1)
         (t = n.charCodeAt(o)), (e += r.charAt((t >>> 4) & 15) + r.charAt(15 & t))
       return e
     }
-    function r(n) {
+    function r(n: string) {
       return unescape(encodeURIComponent(n))
     }
-    function o(n) {
+    function o(n: string) {
+      let t: string
       return a(i(h((t = r(n))), 8 * t.length))
-      let t
     }
-    function u(n, t) {
+    function u(n: string, t: string) {
       return (function (n, t) {
         let r,
           e,
-          o = h(n),
-          u = [],
-          c = []
+          o = h(n)
+
+        const u: (number | undefined)[] = [],
+          c: (number | undefined)[] = []
         for (u[15] = c[15] = void 0, 16 < o.length && (o = i(o, 8 * n.length)), r = 0; r < 16; r += 1)
           (u[r] = 909522486 ^ o[r]), (c[r] = 1549556828 ^ o[r])
-        return (e = i(u.concat(h(t)), 512 + 8 * t.length)), a(i(c.concat(e), 640))
+        return (e = i((u as number[]).concat(h(t)), 512 + 8 * t.length)), a(i((c as number[]).concat(e), 640))
       })(r(n), r(t))
     }
-    function t(n, t, r) {
+    function t(n: string, t?: string, r?: number) {
       return t ? (r ? u(t, n) : e(u(t, n))) : r ? o(n) : e(o(n))
     }
-    return t(str)
+    return t(str) as string
   }
 
   /**
@@ -246,7 +253,7 @@ abstract class Base {
    * @param {bool} useCache 是否采用离线缓存（请求失败后获取上一次结果），
    * @return {string | json | null}
    */
-  async httpGet(url: string, json = true, useCache = false) {
+  async httpGet(url: string, json = true, useCache = false): Promise<unknown> {
     let data = null
     const cacheKey = this.md5(url)
     if (useCache && Keychain.contains(cacheKey)) {
@@ -275,7 +282,7 @@ abstract class Base {
    * @param {string} url 图片地址
    * @param {bool} useCache 是否使用缓存（请求失败时获取本地缓存）
    */
-  async getImageByUrl(url: string, useCache = true) {
+  async getImageByUrl(url: string, useCache = true): Promise<Image> {
     const cacheKey = this.md5(url)
     const cacheFile = FileManager.local().joinPath(FileManager.local().temporaryDirectory(), cacheKey)
     // 判断是否有缓存
@@ -305,7 +312,12 @@ abstract class Base {
    * @param {string} title 标题内容
    * @param {bool|color} color 字体的颜色（自定义背景时使用，默认系统）
    */
-  async renderHeader(widget: ListWidget, icon: string, title: string, color: boolean | Color = false) {
+  async renderHeader(
+    widget: ListWidget,
+    icon: string,
+    title: string,
+    color: boolean | Color = false,
+  ): Promise<ListWidget> {
     const header = widget.addStack()
     header.centerAlignContent()
     const _icon = header.addImage(await this.getImageByUrl(icon))
@@ -327,7 +339,7 @@ abstract class Base {
    * 代码改自：https://gist.github.com/mzeryck/3a97ccd1e059b3afa3c6666d27a496c9
    * @param {string} title 开始处理前提示用户截图的信息，可选（适合用在组件自定义透明背景时提示）
    */
-  async getWidgetScreenShot(title = null) {
+  async getWidgetScreenShot(title = null): Promise<Image | undefined> {
     // Generate an alert with the provided array of options.
     async function generateAlert(message: string, options: string[]) {
       const alert = new Alert()
@@ -551,7 +563,7 @@ abstract class Base {
    * @param {string} body 通知内容
    * @param {string} url 点击后打开的URL
    */
-  async notify(title: string, body = '', url?: string, opts = {}) {
+  async notify(title: string, body = '', url?: string, opts = {}): Promise<void> {
     let n = new Notification()
     n = Object.assign(n, opts)
     n.title = title
@@ -566,7 +578,7 @@ abstract class Base {
    * @param {string} color 遮罩背景颜色
    * @param {float} opacity 透明度
    */
-  async shadowImage(img: Image, color = '#000000', opacity = 0.7) {
+  async shadowImage(img: Image, color = '#000000', opacity = 0.7): Promise<Image> {
     const ctx = new DrawContext()
     // 获取图片的尺寸
     ctx.size = img.size
@@ -583,7 +595,7 @@ abstract class Base {
    * 获取当前插件的设置
    * @param {boolean} json 是否为json格式
    */
-  getSettings(json = true) {
+  getSettings(json = true): Record<string, unknown> {
     let res = json ? {} : ''
     let cache = ''
     // if (global && Keychain.contains(this.SETTING_KEY2)) {
@@ -611,7 +623,7 @@ abstract class Base {
    * 存储当前设置
    * @param {bool} notify 是否通知提示
    */
-  saveSettings(notify = true) {
+  saveSettings(notify = true): void {
     const res = typeof this.settings === 'object' ? JSON.stringify(this.settings) : String(this.settings)
     Keychain.set(this.SETTING_KEY, res)
     if (notify) this.notify('设置成功', '桌面组件稍后将自动刷新')
@@ -621,7 +633,7 @@ abstract class Base {
    * 获取当前插件是否有自定义背景图片
    * @reutrn img | false
    */
-  getBackgroundImage() {
+  getBackgroundImage(): Image | null {
     // 如果有KEY则优先加载，key>key1>key2
     // key2是全局
     let result = null
@@ -639,7 +651,7 @@ abstract class Base {
    * 设置当前组件的背景图片
    * @param {image} img
    */
-  setBackgroundImage(img: Image, notify = true) {
+  setBackgroundImage(img: Image, notify = true): void {
     if (!img) {
       // 移除背景
       if (this.FILE_MGR_LOCAL.fileExists(this.BACKGROUND_KEY)) {
@@ -661,7 +673,7 @@ abstract class Base {
   }
 }
 // @base.end
-const Testing = async (Widget: {new (arg: string): Base}, default_args = '') => {
+const Testing = async (Widget: {new (arg: string): Base}, default_args = ''): Promise<void> => {
   let M: Base
   // 判断hash是否和当前设备匹配
   if (config.runsInWidget) {
@@ -875,15 +887,10 @@ const Testing = async (Widget: {new (arg: string): Base}, default_args = '') => 
       .join('')
     const _act = `action${_tmp}`
     if (M[_act] && typeof M[_act] === 'function') {
-      const func = M[_act].bind(M)
+      const func = (M[_act] as (...args: unknown[]) => void).bind(M)
       await func(data)
     }
   }
-}
-
-module.exports = {
-  Base,
-  Testing,
 }
 
 // 自更新
@@ -920,3 +927,5 @@ module.exports = {
   UPDATED_AT = +new Date()
   Keychain.set(UPDATE_KEY, String(UPDATED_AT))
 })()
+
+export {Base, Testing}

@@ -1,3 +1,5 @@
+export type ImportModule = <T = unknown>(name: string) => T
+
 declare global {
-  const importModule: <T>(name: string) => T
+  const importModule: ImportModule
 }
