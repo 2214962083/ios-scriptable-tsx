@@ -12,7 +12,7 @@
 // if (typeof require === 'undefined') {
 //   Require = importModule
 // }
-import {Base, Testing} from './base'
+import {Base, Testing} from '../lib/base'
 
 // import * as BaseModule from './base'
 

@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "set NODE_ENV=development&& webpack --progress --colors --hide-modules",
-    "watch": "set NODE_ENV=development&& webpack --watch --progress --colors --hide-modules",
-    "build": "set NODE_ENV=production&& webpack --progress --colors --hide-modules",
-    "debug": "tsc --sourcemap"
+    "build": "ts-node ./src/compile.ts",
+    "dev:webpack": "set NODE_ENV=development&& webpack --progress --colors --hide-modules",
+    "watch:webpack": "set NODE_ENV=development&& webpack --watch --progress --colors --hide-modules",
+    "build:webpack": "set NODE_ENV=production&& webpack --progress --colors --hide-modules",
+    "debug:webpack": "tsc --sourcemap"
   },
   "author": "",
   "license": "ISC",
@@ -20,6 +21,7 @@
     "@typescript-eslint/eslint-plugin": "^4.1.1",
     "@typescript-eslint/parser": "^4.1.1",
     "clean-webpack-plugin": "^3.0.0",
+    "esbuild": "^0.8.12",
     "eslint": "^7.9.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",

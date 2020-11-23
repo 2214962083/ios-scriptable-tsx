@@ -1,5 +1,3 @@
-import {Module} from 'module'
-
 export interface Module {
   filename: string
   exports: Record<string, unknown>
@@ -7,4 +5,5 @@ export interface Module {
 
 declare global {
   const module: Module
+  const MODULE: Module
 }

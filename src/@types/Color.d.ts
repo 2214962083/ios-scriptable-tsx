@@ -1,5 +1,5 @@
 declare class Color {
-  constructor(hex: string, alpha: number)
+  constructor(hex: string, alpha?: number)
   readonly alpha: number
   readonly blue: number
   readonly green: number
