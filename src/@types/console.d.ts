@@ -1,7 +1,7 @@
 export interface Console {
-  static error(message: unknown)
-  static log(message: unknown)
-  static warn(message: unknown)
+  static error(message: unknown): void
+  static log(message: unknown): void
+  static warn(message: unknown): void
 }
 
 declare global {

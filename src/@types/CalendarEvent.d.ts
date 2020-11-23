@@ -1,5 +1,3 @@
-import {Availability, Calendar} from './Calendar'
-
 declare class CalendarEvent {
   constructor()
   readonly attendees: {
