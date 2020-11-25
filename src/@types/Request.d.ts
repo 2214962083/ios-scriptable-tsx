@@ -1,4 +1,4 @@
-declare class Request<RES = unknown> {
+declare class Request<RES = Record<string | number, unknown>> {
   constructor(url: string)
 
   url: string

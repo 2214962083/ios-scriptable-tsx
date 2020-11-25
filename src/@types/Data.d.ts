@@ -1,7 +1,7 @@
 declare class Data {
   static fromString(string: string): Data
 
-  static fromFile(filePath: string): Data
+  static fromFile(filePath: string): Data | null
 
   static fromBase64String(base64String: string): Data
 

@@ -373,7 +373,7 @@ class Base {
    * @param {string} url 图片地址
    * @param {bool} useCache 是否使用缓存（请求失败时获取本地缓存）
    */
-  async getImageByUrl(url: string, useCache = true): Promise<Image> {
+  async getImageByUrl(url: string, useCache = true): Promise<Image | null> {
     const cacheKey = this.md5(url)
     const cacheFile = FileManager.local().joinPath(FileManager.local().temporaryDirectory(), cacheKey)
     // 判断是否有缓存
@@ -411,7 +411,7 @@ class Base {
   ): Promise<ListWidget> {
     const header = widget.addStack()
     header.centerAlignContent()
-    const _icon = header.addImage(await this.getImageByUrl(icon))
+    const _icon = header.addImage((await this.getImageByUrl(icon)) as Image)
     _icon.imageSize = new Size(14, 14)
     _icon.cornerRadius = 4
     header.addSpacer(10)

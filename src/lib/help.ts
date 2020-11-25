@@ -23,7 +23,7 @@ export interface RequestParams {
 }
 
 /**网络响应格式*/
-export interface ResponseType<T = Record<string, unknown>> {
+export interface ResponseType<RES = unknown> {
   /**链接*/
   url: string
 
@@ -50,7 +50,7 @@ export interface ResponseType<T = Record<string, unknown>> {
   }[]
 
   /**主体响应内容*/
-  data: Image | string | Data | T
+  data: RES | null
 }
 
 /**上传文件参数*/
@@ -128,26 +128,91 @@ export interface ShowModalRes {
   cancel: boolean
 }
 
-/**
- * 保存值
- * @param key 键
- * @param value 值
- */
-export function setStorageSync(key: string, value: unknown): void {
-  Keychain.set(key, JSON.stringify(value))
+/**获取图片所需参数*/
+export interface GetImageParams {
+  /**文件路径*/
+  filepath?: string
+
+  /**网络路径*/
+  url?: string
+
+  /**当通过网络获取时，是否缓存下来*/
+  useCache?: boolean
 }
 
 /**
- * 获取值
- * @param key 键
+ * 根据文件保存路径生成储存方法、读取方法
+ * @param dirPath 文件存储文件夹
  */
-export function getStorageSync<T = unknown>(key: string): T | null {
-  if (Keychain.contains(key)) {
-    return JSON.parse(Keychain.get(key))
-  } else {
-    return null
+function setStorageDirectory(dirPath: string) {
+  return {
+    /**
+     * 保存值
+     * @param key 键
+     * @param value 值
+     */
+    setStorage(key: string, value: unknown): void {
+      // 图片文件只缓存一段时间
+      const filePath = FileManager.local().joinPath(dirPath, hash(key))
+      if (value instanceof Image) {
+        // value 是图片
+        FileManager.local().writeImage(filePath, value as Image)
+        return
+      }
+      if (value instanceof Data) {
+        // value 是文件
+        FileManager.local().write(filePath, value as Data)
+      }
+      // 存在本脚本沙箱里，与脚本共存亡
+      Keychain.set(hash(key), JSON.stringify(value))
+    },
+
+    /**
+     * 获取值
+     * @param key 键
+     */
+    getStorage<T = unknown>(key: string): T | null {
+      const hashKey = hash(key)
+      const filePath = FileManager.local().joinPath(FileManager.local().libraryDirectory(), hashKey)
+      if (FileManager.local().fileExists(filePath)) {
+        const image = Image.fromFile(filePath)
+        return image ? ((image as unknown) as T) : ((Data.fromFile(filePath) as unknown) as T)
+      }
+
+      if (Keychain.contains(hashKey)) {
+        return JSON.parse(Keychain.get(hashKey)) as T
+      } else {
+        return null
+      }
+    },
   }
 }
+
+/**
+ * 长期保存值
+ * @param key 键
+ * @param value 值
+ */
+export const setStorage = setStorageDirectory(FileManager.local().libraryDirectory()).setStorage
+
+/**
+ * 获取长期保存值
+ * @param key 键
+ */
+export const getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
+
+/**
+ * 短期保存值(缓存文件用)
+ * @param key 键
+ * @param value 值
+ */
+export const setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
+
+/**
+ * 获取短期保存值(读取缓存文件用)
+ * @param key 键
+ */
+export const getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
 
 /**
  * 发起请求
@@ -155,8 +220,7 @@ export function getStorageSync<T = unknown>(key: string): T | null {
  */
 export async function request<RES = unknown>(args: RequestParams): Promise<ResponseType<RES>> {
   const {url, data, header, dataType = 'json', method = 'GET', timeout = 60 * 1000, useCache = false} = args
-  const cacheKey = hash(url)
-  const cache = getStorageSync<ResponseType<RES>>(cacheKey)
+  const cache = getStorage(url) as ResponseType<RES>
   if (useCache && cache !== null) return cache
   const req = new Request<RES>(url)
   req.method = method
@@ -175,15 +239,18 @@ export async function request<RES = unknown>(args: RequestParams): Promise<Respo
         break
       case 'image':
         res = await req.loadImage()
+        break
       case 'data':
         res = await req.load()
+        break
       default:
         res = await req.loadJSON()
     }
-    const result = {...req.response, data: res} as ResponseType<RES>
-    setStorageSync(cacheKey, result)
+    const result = {...req.response, data: res as RES} as ResponseType<RES>
+    setStorage(url, result)
     return result
   } catch (err) {
+    if (cache !== null) return cache
     return err
   }
 }
@@ -225,13 +292,15 @@ export async function uploadFile<RES = unknown>(args: UploadFileParams): Promise
         break
       case 'image':
         res = await req.loadImage()
+        break
       case 'data':
         res = await req.load()
+        break
       default:
         res = await req.loadJSON()
     }
 
-    return {...req.response, data: res} as ResponseType<RES>
+    return {...req.response, data: res as RES} as ResponseType<RES>
   } catch (err) {
     return err
   }
@@ -277,6 +346,34 @@ export async function showModal(args: ShowModalParams): Promise<ShowModalRes> {
   showCancel && cancelText && alert.addCancelAction(cancelText)
   const tapIndex = await alert.presentSheet()
   return tapIndex === -1 ? {cancel: true, confirm: false} : {cancel: false, confirm: true}
+}
+
+export async function getImage(args: GetImageParams): Promise<Image> {
+  const {filepath, url, useCache = true} = args
+  const generateDefaultImage = async () => {
+    // 没有缓存+失败情况下，返回自定义的绘制图片（红色背景）
+    const ctx = new DrawContext()
+    ctx.size = new Size(100, 100)
+    ctx.setFillColor(Color.red())
+    ctx.fillRect(new Rect(0, 0, 100, 100))
+    return await ctx.getImage()
+  }
+  try {
+    if (filepath) {
+      return Image.fromFile(filepath) || (await generateDefaultImage())
+    }
+    if (!url) return await generateDefaultImage()
+    if (useCache) {
+      const cache = getCache<Image>(url)
+      if (cache) return cache
+    }
+    const res = await request<Image>({url, dataType: 'image'})
+    const image = res && res.data
+    image && setCache(url, image)
+    return image || (await generateDefaultImage())
+  } catch (err) {
+    return await generateDefaultImage()
+  }
 }
 
 /**
