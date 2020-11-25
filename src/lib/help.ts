@@ -140,6 +140,26 @@ export interface GetImageParams {
   useCache?: boolean
 }
 
+/**创建通知所需参数 */
+export interface ShowNotificationParams {
+  /**标题*/
+  title: string
+
+  /**副标题*/
+  subtitle?: string
+
+  /**内容*/
+  body?: string
+
+  /**通知铃声*/
+  sound?: 'default' | 'accept' | 'alert' | 'complete' | 'event' | 'failure' | 'piano_error' | 'piano_success' | 'popup'
+
+  /**点击通知后打开的url*/
+  openURL?: string
+
+  [key: string]: unknown
+}
+
 /**
  * 根据文件保存路径生成储存方法、读取方法
  * @param dirPath 文件存储文件夹
@@ -152,8 +172,9 @@ function setStorageDirectory(dirPath: string) {
      * @param value 值
      */
     setStorage(key: string, value: unknown): void {
+      const hashKey = hash(key)
       // 图片文件只缓存一段时间
-      const filePath = FileManager.local().joinPath(dirPath, hash(key))
+      const filePath = FileManager.local().joinPath(dirPath, hashKey)
       if (value instanceof Image) {
         // value 是图片
         FileManager.local().writeImage(filePath, value as Image)
@@ -164,7 +185,7 @@ function setStorageDirectory(dirPath: string) {
         FileManager.local().write(filePath, value as Data)
       }
       // 存在本脚本沙箱里，与脚本共存亡
-      Keychain.set(hash(key), JSON.stringify(value))
+      Keychain.set(hashKey, JSON.stringify(value))
     },
 
     /**
@@ -185,6 +206,20 @@ function setStorageDirectory(dirPath: string) {
         return null
       }
     },
+    /**
+     * 移除值
+     * @param key 键
+     */
+    removeStorage(key: string): void {
+      const hashKey = hash(key)
+      const filePath = FileManager.local().joinPath(FileManager.local().libraryDirectory(), hashKey)
+      if (FileManager.local().fileExists(filePath)) {
+        FileManager.local().remove(hashKey)
+      }
+      if (Keychain.contains(hashKey)) {
+        Keychain.remove(hashKey)
+      }
+    },
   }
 }
 
@@ -202,6 +237,12 @@ export const setStorage = setStorageDirectory(FileManager.local().libraryDirecto
 export const getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
 
 /**
+ * 移除长期保存值
+ * @param key 键
+ */
+export const removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
+
+/**
  * 短期保存值(缓存文件用)
  * @param key 键
  * @param value 值
@@ -213,6 +254,12 @@ export const setCache = setStorageDirectory(FileManager.local().temporaryDirecto
  * @param key 键
  */
 export const getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
+
+/**
+ * 移除短期保存值(移除缓存文件用)
+ * @param key 键
+ */
+export const removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
 
 /**
  * 发起请求
@@ -346,6 +393,22 @@ export async function showModal(args: ShowModalParams): Promise<ShowModalRes> {
   showCancel && cancelText && alert.addCancelAction(cancelText)
   const tapIndex = await alert.presentSheet()
   return tapIndex === -1 ? {cancel: true, confirm: false} : {cancel: false, confirm: true}
+}
+
+/**
+ * 创建通知
+ * @param args 通知参数
+ */
+export async function showNotification(args: ShowNotificationParams): Promise<void> {
+  const {title, subtitle = '', body = '', openURL, sound = 'default', ...others} = args
+  let notification = new Notification()
+  notification.title = title
+  notification.subtitle = subtitle
+  notification.body = body
+  openURL && (notification.openURL = openURL)
+  notification.sound = sound
+  notification = Object.assign(notification, others)
+  return await notification.schedule()
 }
 
 export async function getImage(args: GetImageParams): Promise<Image> {
