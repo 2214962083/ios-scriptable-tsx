@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
-    "typeRoots": ["./node_modules/@types", "./src/@types"],
+    "typeRoots": ["./node_modules/@types", "./src/@types/scriptable", "./src/@types/widget"],
     // "types": ["node"],
     "lib": ["ES5", "ES2015", "ES2016", "ES2017", "Es2018", "ES2019", "ES2020", "ESNext"],
+    "jsx": "react",
+    "jsxFactory": "h",
     "outDir": "./dist",
     "target": "es6",
     "allowJs": true,
-    "skipLibCheck": true,
+    // "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
@@ -23,5 +25,5 @@
   },
   // "files": ["src/@types/index.d.ts"],
   "exclude": ["node_modules", "dist", "build"],
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

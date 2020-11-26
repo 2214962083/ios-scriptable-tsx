@@ -41,5 +41,6 @@ async function getFilesFromDir(dir: string): Promise<string[]> {
     bundle: true,
     outdir: outputDir,
     banner: 'const MODULE = module;',
+    jsxFactory: 'h',
   }).catch(() => process.exit(1))
 })()

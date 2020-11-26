@@ -69,11 +69,11 @@ class Widget extends Base {
     w.addSpacer()
     const footer = w.addStack()
     footer.centerAlignContent()
-    const img = footer.addImage(await this.getImageByUrl(topic['pic']))
+    const img = footer.addImage((await this.getImageByUrl(topic['pic'])) as Image)
     img.imageSize = new Size(18, 18)
     footer.addSpacer(5)
     if (topic['icon']) {
-      const hot = footer.addImage(await this.getImageByUrl(topic['icon']))
+      const hot = footer.addImage((await this.getImageByUrl(topic['icon'])) as Image)
       hot.imageSize = new Size(18, 18)
       footer.addSpacer(5)
     }
@@ -111,7 +111,7 @@ class Widget extends Base {
       const topic = data[i]
       const dom = bodyLeft.addStack()
       dom.centerAlignContent()
-      const pic = dom.addImage(await this.getImageByUrl(topic['pic']))
+      const pic = dom.addImage((await this.getImageByUrl(topic['pic'])) as Image)
       pic.imageSize = new Size(18, 18)
       dom.addSpacer(5)
       const title = dom.addText(topic['desc'])
@@ -120,7 +120,7 @@ class Widget extends Base {
       dom.addSpacer(5)
       if (topic['icon']) {
         const iconDom = dom.addStack()
-        const icon = iconDom.addImage(await this.getImageByUrl(topic['icon']))
+        const icon = iconDom.addImage((await this.getImageByUrl(topic['icon'])) as Image)
         icon.imageSize = new Size(18, 18)
       }
       dom.addSpacer()
