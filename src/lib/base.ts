@@ -800,7 +800,7 @@ const Testing = async (Widget: {new (arg: string): Base}, default_args = ''): Pr
           Keychain.set('xjj_debug_server', ip)
           const server_api = `http://${ip}:5566`
           // 2. 发送当前文件到远程服务器
-          const SELF_FILE = module.filename.replace('「小件件」开发环境', Script.name())
+          const SELF_FILE = MODULE.filename.replace('「小件件」开发环境', Script.name())
           const req = new Request(`${server_api}/sync`)
           req.method = 'POST'
           req.addFileToMultipart(SELF_FILE, 'Widget', Script.name())
@@ -940,7 +940,7 @@ const Testing = async (Widget: {new (arg: string): Base}, default_args = ''): Pr
         },
         // 复制源码
         async () => {
-          const SELF_FILE = module.filename.replace('「小件件」开发环境', Script.name())
+          const SELF_FILE = MODULE.filename.replace('「小件件」开发环境', Script.name())
           const source = FileManager.local().readString(SELF_FILE)
           Pasteboard.copyString(source)
           await M.notify('复制成功', '当前脚本的源代码已复制到剪贴板！')
@@ -995,7 +995,7 @@ const Testing = async (Widget: {new (arg: string): Base}, default_args = ''): Pr
 //   const UPDATE_KEY = 'XJJ_UPDATE_AT'
 //   let UPDATED_AT = 0
 //   const UPDATE_FILE = '「小件件」开发环境.js'
-//   const FILE_MGR = FileManager[module.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']()
+//   const FILE_MGR = FileManager[MODULE.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']()
 //   if (Keychain.contains(UPDATE_KEY)) {
 //     UPDATED_AT = parseInt(Keychain.get(UPDATE_KEY))
 //   }

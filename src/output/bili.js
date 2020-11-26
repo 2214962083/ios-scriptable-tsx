@@ -1,3 +1,4 @@
+const MODULE = module;
 // src/input/bili.ts
 class Im3xWidget {
   constructor(arg = "") {

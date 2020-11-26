@@ -1,31 +1,45 @@
 import {build} from 'esbuild'
 import fs from 'fs'
 import path from 'path'
+import {promisify} from 'util'
 
-// 库文件夹
-// const libDir: string = path.join(__dirname, 'lib')
+const readdir = promisify(fs.readdir)
+const stat = promisify(fs.stat)
 
-// 输入文件夹
-const inputDir: string = path.join(__dirname, 'input')
+// 深度获取某个文件夹里所有文件路径（包括子文件夹）
+async function getFilesFromDir(dir: string): Promise<string[]> {
+  const subdirs = await readdir(dir)
+  const files = await Promise.all(
+    subdirs.map(async subdir => {
+      const res = path.resolve(dir, subdir)
+      return (await stat(res)).isDirectory() ? getFilesFromDir(res) : res
+    }),
+  )
+  return files.reduce((a: string[], f: string | string[]) => a.concat(f), [])
+}
 
-// 输出文件夹
-const outputDir: string = path.join(__dirname, 'output')
+;(async () => {
+  // 库文件夹
+  // const libDir: string = path.resolve(__dirname, 'lib')
 
-// 计算输入文件路径集合
-const inputPaths: string[] = fs.readdirSync(inputDir).map(fileName => path.join(inputDir, fileName))
+  // 输入文件夹
+  const inputDir: string = path.resolve(__dirname, 'input')
 
-// 计算输出文件路径集合
-// const outputPaths = fs.readdirSync(inputDir).map(inputFileName => {
-//   const outputFileName = path.basename(inputFileName, path.extname(inputFileName)) + '.js'
-//   return path.join(outputDir, outputFileName)
-// })
+  // 输出文件夹
+  const outputDir: string = path.resolve(__dirname, 'output')
 
-// console.log(inputPaths, outputPaths)
+  // 计算输入文件路径集合
+  // const inputPaths: string[] = fs.readdirSync(inputDir).map(fileName => path.resolve(inputDir, fileName))
+  const inputPaths: string[] = await getFilesFromDir(inputDir)
 
-build({
-  entryPoints: [...inputPaths],
-  platform: 'node',
-  charset: 'utf8',
-  bundle: true,
-  outdir: outputDir,
-}).catch(() => process.exit(1))
+  console.log(outputDir, inputPaths)
+
+  build({
+    entryPoints: [...inputPaths],
+    platform: 'node',
+    charset: 'utf8',
+    bundle: true,
+    outdir: outputDir,
+    banner: 'const MODULE = module;',
+  }).catch(() => process.exit(1))
+})()
