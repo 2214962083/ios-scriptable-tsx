@@ -8,7 +8,7 @@ import {getImage} from './help'
 
 type WidgetType = 'wbox' | 'wdate' | 'wimage' | 'wspacer' | 'wstack' | 'wtext'
 type WidgetProps = WboxProps | WdateProps | WspacerProps | WstackProps | WtextProps | WimageProps
-type Children<T extends Scriptable.Widget> = ((instance: T) => void)[]
+type Children<T extends Scriptable.Widget> = ((instance: T) => Promise<void>)[]
 /**属性对应关系*/
 type KeyMap<KEY extends null | undefined | string | symbol | number, VALUE_FROM> = Record<
   NonNullable<KEY>,
@@ -21,8 +21,8 @@ class GenrateView {
     this.listWidget = listWidget
   }
   // 根组件
-  static wbox(props: WboxProps, ...children: Children<ListWidget>) {
-    const {background, spacing, href, updateDate, padding, size} = props
+  static async wbox(props: WboxProps, ...children: Children<ListWidget>) {
+    const {background, spacing, href, updateDate, padding} = props
     // background
     isDefined(background) && setBackground(this.listWidget, background)
     // spacing
@@ -33,18 +33,12 @@ class GenrateView {
     isDefined(updateDate) && (this.listWidget.refreshAfterDate = updateDate)
     // padding
     isDefined(padding) && this.listWidget.setPadding(...padding)
-    // size
-    const sizeMap: KeyMap<WboxProps['size'], ListWidget> = {
-      small: 'presentSmall',
-      medium: 'presentMedium',
-      large: 'presentLarge',
-    }
-    runWidgetFunc(this.listWidget, sizeMap[size])
-    addChildren(this.listWidget, children)
+    await addChildren(this.listWidget, children)
+    return this.listWidget
   }
   // 容器组件
   static wstack(props: WstackProps, ...children: Children<WidgetStack>) {
-    return (
+    return async (
       parentInstance: Scriptable.Widget & {
         addStack(): WidgetStack
       },
@@ -92,17 +86,16 @@ class GenrateView {
         column: 'layoutVertically',
       }
       isDefined(flexDirection) && runWidgetFunc(widgetStack, flexDirectionMap[flexDirection])
-      addChildren(widgetStack, children)
+      await addChildren(widgetStack, children)
     }
   }
   // 图片组件
   static wimage(props: WimageProps) {
     return async (
       parentInstance: Scriptable.Widget & {
-        addImage(): WidgetImage
+        addImage(image: Image): WidgetImage
       },
     ) => {
-      const widgetImage = parentInstance.addImage()
       const {
         src,
         href,
@@ -118,8 +111,9 @@ class GenrateView {
         imageAlign,
         mode,
       } = props
-      // src
-      isDefined(src) && (widgetImage.image = typeof src === 'string' ? await getImage({url: src}) : src)
+      const _image = typeof src === 'string' ? await getImage({url: src}) : src
+      const widgetImage = parentInstance.addImage(_image)
+      widgetImage.image = _image
       // href
       isDefined(href) && (widgetImage.url = href)
       // resizable
@@ -155,12 +149,12 @@ class GenrateView {
   }
   // 占位空格组件
   static wspacer(props: WspacerProps) {
-    return (
+    return async (
       parentInstance: Scriptable.Widget & {
-        addSpacer(): WidgetSpacer
+        addSpacer(length?: number): WidgetSpacer
       },
     ) => {
-      const widgetSpacer = parentInstance.addSpacer()
+      const widgetSpacer = parentInstance.addSpacer(0)
       const {length} = props
       // length
       isDefined(length) && (widgetSpacer.length = length)
@@ -168,12 +162,12 @@ class GenrateView {
   }
   // 文字组件
   static wtext(props: WtextProps, ...children: string[]) {
-    return (
+    return async (
       parentInstance: Scriptable.Widget & {
-        addText(): WidgetText
+        addText(text?: string): WidgetText
       },
     ) => {
-      const widgetText = parentInstance.addText()
+      const widgetText = parentInstance.addText('')
       const {textColor, font, opacity, maxLine, scale, shadowColor, shadowRadius, shadowOffset, href, textAlign} = props
       // textColor
       isDefined(textColor) && (widgetText.textColor = getColor(textColor))
@@ -207,12 +201,12 @@ class GenrateView {
   }
   // 日期组件
   static wdate(props: WdateProps) {
-    return (
+    return async (
       parentInstance: Scriptable.Widget & {
-        addDate(): WidgetDate
+        addDate(date: Date): WidgetDate
       },
     ) => {
-      const widgetDate = parentInstance.addDate()
+      const widgetDate = parentInstance.addDate(new Date())
       const {
         date,
         mode,
@@ -273,28 +267,34 @@ export async function h(
   type: WidgetType,
   props?: WidgetProps,
   ...children: Children<Scriptable.Widget> | string[]
-): Promise<Scriptable.Widget> {
+): Promise<Scriptable.Widget | ((instance: Scriptable.Widget) => Promise<void>) | null> {
+  props = props || {}
   switch (type) {
     case 'wbox':
-      await GenrateView.wbox(props as WboxProps, ...(children as Children<ListWidget>))
+      return await GenrateView.wbox(props as WboxProps, ...(children as Children<ListWidget>))
       break
     case 'wdate':
-      await GenrateView.wdate(props as WdateProps)
+      return await GenrateView.wdate(props as WdateProps)
       break
     case 'wimage':
-      await GenrateView.wimage(props as WimageProps)
+      return await GenrateView.wimage(props as WimageProps)
       break
     case 'wspacer':
-      await GenrateView.wspacer(props as WspacerProps)
+      return await GenrateView.wspacer(props as WspacerProps)
       break
     case 'wstack':
-      await GenrateView.wstack(props as WstackProps, ...(children as Children<WidgetStack>))
+      return await GenrateView.wstack(props as WstackProps, ...(children as Children<WidgetStack>))
       break
     case 'wtext':
-      await GenrateView.wtext(props as WtextProps, ...(children as string[]))
+      return await GenrateView.wtext(props as WtextProps, ...(children as string[]))
+      break
+    default:
+      // custom component
+      return typeof type === 'function'
+        ? await ((type as unknown) as (props: WidgetProps) => Promise<Scriptable.Widget>)({children, ...props})
+        : null
       break
   }
-  return listWidget
 }
 
 /**
@@ -343,11 +343,11 @@ function setBackground(
  * @param instance 当前实例
  * @param children 子组件列表
  */
-function addChildren<T extends Scriptable.Widget>(instance: T, children: Children<T>): void {
+async function addChildren<T extends Scriptable.Widget>(instance: T, children: Children<T>): Promise<void> {
   if (children && Array.isArray(children)) {
-    children.map(child => {
-      typeof child === 'function' ? child(instance) : ''
-    })
+    for (const child of children) {
+      typeof child === 'function' ? await child(instance) : ''
+    }
   }
 }
 

@@ -16,9 +16,6 @@ export interface WboxProps extends HTMLAttributes<Element> {
 
   /**内边距*/
   padding?: [number, number, number, number]
-
-  /**组件尺寸*/
-  size: 'small' | 'medium' | 'large'
 }
 
 declare global {

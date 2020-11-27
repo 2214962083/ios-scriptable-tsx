@@ -50,7 +50,7 @@ class MyWidget {
 
     // 渲染
     return (
-      <wbox href="bilibili://" size="medium">
+      <wbox href="bilibili://">
         <wstack>
           <wimage src="https://www.bilibili.com/favicon.ico" width={15} height={15}></wimage>
           <wtext opacity={0.9} font={14}>
@@ -61,7 +61,7 @@ class MyWidget {
         <FollowerText></FollowerText>
         <wspacer length={20}></wspacer>
         <wtext font={12} textAlign="center" opacity={0.5}>
-          更新于:{this.nowTime}
+          更新于:{this.nowTime()}
         </wtext>
       </wbox>
     )

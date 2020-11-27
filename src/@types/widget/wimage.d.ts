@@ -3,7 +3,7 @@ import {DetailedHTMLProps, HTMLAttributes} from 'react'
 /**图片组件属性*/
 export interface WimageProps extends HTMLAttributes<Element> {
   /**图片网络链接*/
-  src?: string | Image
+  src: string | Image
 
   /**点击打开链接*/
   href?: string
