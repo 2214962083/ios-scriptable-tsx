@@ -1,4 +1,4 @@
-declare class WidgetText {
+declare class WidgetText extends Scriptable.Widget {
   text: string
 
   textColor: Color

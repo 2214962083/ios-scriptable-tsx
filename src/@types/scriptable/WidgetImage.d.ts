@@ -1,4 +1,4 @@
-declare class WidgetImage {
+declare class WidgetImage extends Scriptable.Widget {
   image: Image
 
   resizable: boolean

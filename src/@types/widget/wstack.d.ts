@@ -3,16 +3,19 @@ import {DetailedHTMLProps, HTMLAttributes} from 'react'
 /**容器组件属性*/
 export interface WstackProps extends HTMLAttributes<Element> {
   /**背景*/
-  background?: Color | Image | LinearGradient
+  background?: Color | Image | LinearGradient | string
 
   /**与同级上一个元素的间隔*/
   spacing?: number
 
   /**内边距*/
-  padding?: [number | null, number | null, number | null, number | null]
+  padding?: [number, number, number, number]
 
-  /**组件尺寸*/
-  size?: 'small' | 'medium' | 'large'
+  /**组件宽*/
+  width?: number
+
+  /**组件高*/
+  height?: number
 
   /**圆角*/
   borderRadius?: number
@@ -21,7 +24,7 @@ export interface WstackProps extends HTMLAttributes<Element> {
   borderWidth?: number
 
   /**边框颜色*/
-  borderColor?: Color
+  borderColor?: Color | string
 
   /**点击跳转的链接*/
   href?: string

@@ -1,4 +1,4 @@
-declare class ListWidget {
+declare class ListWidget extends Scriptable.Widget {
   constructor()
 
   backgroundColor: Color
@@ -13,11 +13,11 @@ declare class ListWidget {
 
   refreshAfterDate: Date
 
-  addText(text: string): WidgetText
+  addText(text?: string): WidgetText
 
-  addDate(date: Date): WidgetDate
+  addDate(date?: Date): WidgetDate
 
-  addImage(image: Image): WidgetImage
+  addImage(image?: Image): WidgetImage
 
   addSpacer(length?: number): WidgetSpacer
 

@@ -2,11 +2,8 @@ import {DetailedHTMLProps, HTMLAttributes} from 'react'
 
 /**图片组件属性*/
 export interface WimageProps extends HTMLAttributes<Element> {
-  /**图片*/
-  image?: Image
-
   /**图片网络链接*/
-  src?: string
+  src?: string | Image
 
   /**点击打开链接*/
   href?: string
@@ -30,7 +27,7 @@ export interface WimageProps extends HTMLAttributes<Element> {
   borderWidth?: number
 
   /**边框颜色*/
-  borderColor?: Color
+  borderColor?: Color | string
 
   /**
    * 默认为false
@@ -40,10 +37,10 @@ export interface WimageProps extends HTMLAttributes<Element> {
   containerRelativeShape?: boolean
 
   /**加滤镜(tintColor)*/
-  filter?: Color
+  filter?: Color | string
 
   /**横向对齐*/
-  horizontalAlign?: 'left' | 'center' | 'right'
+  imageAlign?: 'left' | 'center' | 'right'
 
   /**
    * fill 图像自适应,保持原有尺寸比,内容被缩放，默认。

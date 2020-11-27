@@ -35,17 +35,13 @@ class MyWidget {
     const FollowerText = () => {
       if (getUpDataRes?.code != 0) {
         return (
-          <wtext textAlign="center" textColor={new Color('#fb7299')} font={Font.systemFont(14)}>
+          <wtext textAlign="center" textColor="#fb7299" font={14}>
             请填写B站MID
           </wtext>
         )
       } else {
         return (
-          <wtext
-            textAlign="center"
-            textColor={new Color('#fb7299')}
-            font={Font.boldRoundedSystemFont(this.getFontsize(followers))}
-          >
+          <wtext textAlign="center" textColor="#fb7299" font={Font.boldRoundedSystemFont(this.getFontsize(followers))}>
             {this.toThousands(followers)}
           </wtext>
         )
@@ -54,17 +50,17 @@ class MyWidget {
 
     // 渲染
     return (
-      <wbox href="bilibili://">
+      <wbox href="bilibili://" size="medium">
         <wstack>
           <wimage src="https://www.bilibili.com/favicon.ico" width={15} height={15}></wimage>
-          <wtext opacity={0.9} font={Font.systemFont(14)}>
+          <wtext opacity={0.9} font={14}>
             哔哩哔哩粉丝
           </wtext>
         </wstack>
         <wspacer length={20}></wspacer>
         <FollowerText></FollowerText>
         <wspacer length={20}></wspacer>
-        <wtext font={Font.systemFont(12)} textAlign="center" opacity={0.5}>
+        <wtext font={12} textAlign="center" opacity={0.5}>
           更新于:{this.nowTime}
         </wtext>
       </wbox>

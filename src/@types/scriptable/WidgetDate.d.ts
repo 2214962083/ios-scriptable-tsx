@@ -1,4 +1,4 @@
-declare class WidgetDate {
+declare class WidgetDate extends Scriptable.Widget {
   date: Date
 
   textColor: Color

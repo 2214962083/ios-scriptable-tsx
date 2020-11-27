@@ -16,10 +16,10 @@ export interface WdateProps extends HTMLAttributes<Element> {
   mode?: 'time' | 'date' | 'relative' | 'offset' | 'timer'
 
   /**文字颜色*/
-  textColor?: Color
+  textColor?: Color | string
 
   /**字体和字体大小*/
-  font?: Font
+  font?: Font | number
 
   /**透明度0到1，0为完全透明*/
   opacity?: number
@@ -31,7 +31,7 @@ export interface WdateProps extends HTMLAttributes<Element> {
   scale?: number
 
   /**阴影颜色*/
-  shadowColor?: Color
+  shadowColor?: Color | string
 
   /**阴影虚化程度*/
   shadowRadius?: number

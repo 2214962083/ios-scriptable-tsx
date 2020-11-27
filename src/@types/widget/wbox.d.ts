@@ -3,7 +3,7 @@ import {DetailedHTMLProps, HTMLAttributes} from 'react'
 /**组件盒子属性*/
 export interface WboxProps extends HTMLAttributes<Element> {
   /**背景*/
-  background?: Color | Image | LinearGradient
+  background?: Color | Image | LinearGradient | string
 
   /**间隔距离*/
   spacing?: number
@@ -15,10 +15,10 @@ export interface WboxProps extends HTMLAttributes<Element> {
   updateDate?: Date
 
   /**内边距*/
-  padding?: [number | null, number | null, number | null, number | null]
+  padding?: [number, number, number, number]
 
   /**组件尺寸*/
-  size?: 'small' | 'medium' | 'large'
+  size: 'small' | 'medium' | 'large'
 }
 
 declare global {
