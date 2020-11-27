@@ -1,4 +1,4 @@
-import {request, ResponseType} from '@app/lib/help'
+import {getImage, request, ResponseType} from '@app/lib/help'
 import {h} from '../lib/jsx-runtime'
 
 export interface BiliUpData {
@@ -31,6 +31,9 @@ class MyWidget {
     // 粉丝数
     const followers = getUpDataRes?.data.following as number
 
+    // icon
+    const icon = await getImage({url: 'https://www.bilibili.com/favicon.ico'})
+
     // 粉丝数文字
     const FollowerText = () => {
       if (getUpDataRes?.code != 0) {
@@ -52,7 +55,8 @@ class MyWidget {
     return (
       <wbox href="bilibili://">
         <wstack>
-          <wimage src="https://www.bilibili.com/favicon.ico" width={15} height={15}></wimage>
+          <wimage src={icon} width={15} height={15}></wimage>
+          <wspacer length={10}></wspacer>
           <wtext opacity={0.9} font={14}>
             哔哩哔哩粉丝
           </wtext>
