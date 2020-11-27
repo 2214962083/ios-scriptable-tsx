@@ -1,34 +1,143 @@
-import {WboxProps} from '@app/@types/widget/wbox'
-import {WimageProps} from '@app/@types/widget/wimage'
-import {WdateProps} from './../@types/widget/wdate.d'
-import {WspacerProps} from './../@types/widget/wspacer.d'
-import {WstackProps} from './../@types/widget/wstack.d'
-import {WtextProps} from './../@types/widget/wtext.d'
-
-type WidgetType = 'wbox' | 'wdate' | 'wimage' | 'wspacer' | 'wstack' | 'wtext'
-type WidgetProps = WboxProps | WdateProps | WspacerProps | WstackProps | WtextProps | WimageProps
-type Children<T extends Scriptable.Widget> = ((instance: T) => Promise<void>)[]
-/**属性对应关系*/
-type KeyMap<KEY extends null | undefined | string | symbol | number> = Record<NonNullable<KEY>, () => void>
-
-class GenrateView {
-  public static listWidget: ListWidget
-  static setListWidget(listWidget: ListWidget): void {
-    this.listWidget = listWidget
+const MODULE = module
+// src/lib/help.ts
+function setStorageDirectory(dirPath) {
+  return {
+    setStorage(key, value) {
+      const hashKey = hash(key)
+      const filePath = FileManager.local().joinPath(dirPath, hashKey)
+      if (value instanceof Image) {
+        FileManager.local().writeImage(filePath, value)
+        return
+      }
+      if (value instanceof Data) {
+        FileManager.local().write(filePath, value)
+      }
+      Keychain.set(hashKey, JSON.stringify(value))
+    },
+    getStorage(key) {
+      const hashKey = hash(key)
+      const filePath = FileManager.local().joinPath(FileManager.local().libraryDirectory(), hashKey)
+      if (FileManager.local().fileExists(filePath)) {
+        const image = Image.fromFile(filePath)
+        const file = Data.fromFile(filePath)
+        return image ? image : file ? file : null
+      }
+      if (Keychain.contains(hashKey)) {
+        return JSON.parse(Keychain.get(hashKey))
+      } else {
+        return null
+      }
+    },
+    removeStorage(key) {
+      const hashKey = hash(key)
+      const filePath = FileManager.local().joinPath(FileManager.local().libraryDirectory(), hashKey)
+      if (FileManager.local().fileExists(filePath)) {
+        FileManager.local().remove(hashKey)
+      }
+      if (Keychain.contains(hashKey)) {
+        Keychain.remove(hashKey)
+      }
+    },
   }
-  // 根组件
-  static wbox(props: WboxProps, ...children: Children<ListWidget>) {
+}
+const setStorage = setStorageDirectory(FileManager.local().libraryDirectory()).setStorage
+const getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
+const removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
+const setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
+const getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
+const removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
+async function request(args) {
+  const {url, data, header, dataType = 'json', method = 'GET', timeout = 60 * 1e3, useCache = false} = args
+  const cacheKey = `url:${url}`
+  const cache = getStorage(cacheKey)
+  if (useCache && cache !== null) return cache
+  const req = new Request(url)
+  req.method = method
+  header && (req.headers = header)
+  data && (req.body = data)
+  req.timeoutInterval = timeout / 1e3
+  req.allowInsecureRequest = true
+  let res
+  try {
+    switch (dataType) {
+      case 'json':
+        res = await req.loadJSON()
+        break
+      case 'text':
+        res = await req.loadString()
+        break
+      case 'image':
+        res = await req.loadImage()
+        break
+      case 'data':
+        res = await req.load()
+        break
+      default:
+        res = await req.loadJSON()
+    }
+    const result = {...req.response, data: res}
+    setStorage(cacheKey, result)
+    return result
+  } catch (err) {
+    if (cache !== null) return cache
+    return err
+  }
+}
+async function getImage(args) {
+  const {filepath, url, useCache = true} = args
+  const generateDefaultImage = async () => {
+    const ctx = new DrawContext()
+    ctx.size = new Size(100, 100)
+    ctx.setFillColor(Color.red())
+    ctx.fillRect(new Rect(0, 0, 100, 100))
+    return await ctx.getImage()
+  }
+  try {
+    if (filepath) {
+      return Image.fromFile(filepath) || (await generateDefaultImage())
+    }
+    if (!url) return await generateDefaultImage()
+    const cacheKey = `image:${url}`
+    if (useCache) {
+      const cache = getCache(url)
+      if (cache instanceof Image) {
+        return cache
+      } else {
+        removeCache(cacheKey)
+      }
+    }
+    const res = await request({url, dataType: 'image'})
+    const image = res && res.data
+    image && setCache(cacheKey, image)
+    return image || (await generateDefaultImage())
+  } catch (err) {
+    return await generateDefaultImage()
+  }
+}
+function hash(string) {
+  let hash2 = 0,
+    i,
+    chr
+  for (i = 0; i < string.length; i++) {
+    chr = string.charCodeAt(i)
+    hash2 = (hash2 << 5) - hash2 + chr
+    hash2 |= 0
+  }
+  return `hash_${hash2}`
+}
+
+// src/lib/jsx-runtime.ts
+class GenrateView {
+  static setListWidget(listWidget2) {
+    this.listWidget = listWidget2
+  }
+  static wbox(props, ...children) {
     const {background, spacing, href, updateDate, padding} = props
     try {
-      // background
       isDefined(background) && setBackground(this.listWidget, background)
-      // spacing
       isDefined(spacing) && (this.listWidget.spacing = spacing)
-      // href
       isDefined(href) && (this.listWidget.url = href)
-      // updateDate
       isDefined(updateDate) && (this.listWidget.refreshAfterDate = updateDate)
-      // padding
       isDefined(padding) && this.listWidget.setPadding(...padding)
       addChildren(this.listWidget, children)
     } catch (err) {
@@ -36,13 +145,8 @@ class GenrateView {
     }
     return this.listWidget
   }
-  // 容器组件
-  static wstack(props: WstackProps, ...children: Children<WidgetStack>) {
-    return (
-      parentInstance: Scriptable.Widget & {
-        addStack(): WidgetStack
-      },
-    ) => {
+  static wstack(props, ...children) {
+    return parentInstance => {
       const widgetStack = parentInstance.addStack()
       const {
         background,
@@ -58,31 +162,21 @@ class GenrateView {
         flexDirection,
       } = props
       try {
-        // background
         isDefined(background) && setBackground(widgetStack, background)
-        // spacing
         isDefined(spacing) && (widgetStack.spacing = spacing)
-        // padding
         isDefined(padding) && widgetStack.setPadding(...padding)
-        // borderRadius
         isDefined(borderRadius) && (widgetStack.cornerRadius = borderRadius)
-        // borderWidth
         isDefined(borderWidth) && (widgetStack.borderWidth = borderWidth)
-        // borderColor
         isDefined(borderColor) && (widgetStack.borderColor = getColor(borderColor))
-        // href
         isDefined(href) && (widgetStack.url = href)
-        // width、height
         widgetStack.size = new Size(width, height)
-        // verticalAlign
-        const verticalAlignMap: KeyMap<WstackProps['verticalAlign']> = {
+        const verticalAlignMap = {
           bottom: () => widgetStack.bottomAlignContent(),
           center: () => widgetStack.centerAlignContent(),
           top: () => widgetStack.topAlignContent(),
         }
         isDefined(verticalAlign) && verticalAlignMap[verticalAlign]()
-        // flexDirection
-        const flexDirectionMap: KeyMap<WstackProps['flexDirection']> = {
+        const flexDirectionMap = {
           row: () => widgetStack.layoutHorizontally(),
           column: () => widgetStack.layoutVertically(),
         }
@@ -93,13 +187,8 @@ class GenrateView {
       addChildren(widgetStack, children)
     }
   }
-  // 图片组件
-  static wimage(props: WimageProps) {
-    return (
-      parentInstance: Scriptable.Widget & {
-        addImage(image: Image): WidgetImage
-      },
-    ) => {
+  static wimage(props) {
+    return parentInstance => {
       const {
         src,
         href,
@@ -115,38 +204,26 @@ class GenrateView {
         imageAlign,
         mode,
       } = props
-      const _image = src as Image // typeof src === 'string' ? getImage({url: src}) : src
+      const _image = src
       const widgetImage = parentInstance.addImage(_image)
       widgetImage.image = _image
-
       try {
-        // href
         isDefined(href) && (widgetImage.url = href)
-        // resizable
         isDefined(resizable) && (widgetImage.resizable = resizable)
-        // width、height
         widgetImage.imageSize = new Size(width, height)
-        // opacity
         isDefined(opacity) && (widgetImage.imageOpacity = opacity)
-        // borderRadius
         isDefined(borderRadius) && (widgetImage.cornerRadius = borderRadius)
-        // borderWidth
         isDefined(borderWidth) && (widgetImage.borderWidth = borderWidth)
-        // borderColor
         isDefined(borderColor) && (widgetImage.borderColor = getColor(borderColor))
-        // containerRelativeShape
         isDefined(containerRelativeShape) && (widgetImage.containerRelativeShape = containerRelativeShape)
-        // filter
         isDefined(filter) && (widgetImage.tintColor = getColor(filter))
-        // imageAlign
-        const imageAlignMap: KeyMap<WimageProps['imageAlign']> = {
+        const imageAlignMap = {
           left: () => widgetImage.leftAlignImage(),
           center: () => widgetImage.centerAlignImage(),
           right: () => widgetImage.rightAlignImage(),
         }
         isDefined(imageAlign) && imageAlignMap[imageAlign]()
-        // mode
-        const modeMap: KeyMap<WimageProps['mode']> = {
+        const modeMap = {
           contain: () => widgetImage.applyFittingContentMode(),
           fill: () => widgetImage.applyFillingContentMode(),
         }
@@ -156,57 +233,35 @@ class GenrateView {
       }
     }
   }
-  // 占位空格组件
-  static wspacer(props: WspacerProps) {
-    return (
-      parentInstance: Scriptable.Widget & {
-        addSpacer(length?: number): WidgetSpacer
-      },
-    ) => {
+  static wspacer(props) {
+    return parentInstance => {
       const widgetSpacer = parentInstance.addSpacer()
       const {length} = props
       try {
-        // length
         isDefined(length) && (widgetSpacer.length = length)
       } catch (err) {
         console.error(err)
       }
     }
   }
-  // 文字组件
-  static wtext(props: WtextProps, ...children: string[]) {
-    return (
-      parentInstance: Scriptable.Widget & {
-        addText(text?: string): WidgetText
-      },
-    ) => {
+  static wtext(props, ...children) {
+    return parentInstance => {
       const widgetText = parentInstance.addText('')
       const {textColor, font, opacity, maxLine, scale, shadowColor, shadowRadius, shadowOffset, href, textAlign} = props
-
       if (children && Array.isArray(children)) {
         widgetText.text = children.join('')
       }
       try {
-        // textColor
         isDefined(textColor) && (widgetText.textColor = getColor(textColor))
-        // font
         isDefined(font) && (widgetText.font = typeof font === 'number' ? Font.systemFont(font) : font)
-        // opacity
         isDefined(opacity) && (widgetText.textOpacity = opacity)
-        // maxLine
         isDefined(maxLine) && (widgetText.lineLimit = maxLine)
-        // scale
         isDefined(scale) && (widgetText.minimumScaleFactor = scale)
-        // shadowColor
         isDefined(shadowColor) && (widgetText.shadowColor = getColor(shadowColor))
-        // shadowRadius
         isDefined(shadowRadius) && (widgetText.shadowRadius = shadowRadius)
-        // shadowOffset
         isDefined(shadowOffset) && (widgetText.shadowOffset = shadowOffset)
-        // href
         isDefined(href) && (widgetText.url = href)
-        //textAlign
-        const textAlignMap: KeyMap<WtextProps['textAlign']> = {
+        const textAlignMap = {
           left: () => widgetText.leftAlignText(),
           center: () => widgetText.centerAlignText(),
           right: () => widgetText.rightAlignText(),
@@ -217,13 +272,8 @@ class GenrateView {
       }
     }
   }
-  // 日期组件
-  static wdate(props: WdateProps) {
-    return (
-      parentInstance: Scriptable.Widget & {
-        addDate(date: Date): WidgetDate
-      },
-    ) => {
+  static wdate(props) {
+    return parentInstance => {
       const widgetDate = parentInstance.addDate(new Date())
       const {
         date,
@@ -239,30 +289,18 @@ class GenrateView {
         href,
         textAlign,
       } = props
-
       try {
-        // date
         isDefined(date) && (widgetDate.date = date)
-        // textColor
         isDefined(textColor) && (widgetDate.textColor = getColor(textColor))
-        // font
         isDefined(font) && (widgetDate.font = typeof font === 'number' ? Font.systemFont(font) : font)
-        // opacity
         isDefined(opacity) && (widgetDate.textOpacity = opacity)
-        // maxLine
         isDefined(maxLine) && (widgetDate.lineLimit = maxLine)
-        // scale
         isDefined(scale) && (widgetDate.minimumScaleFactor = scale)
-        // shadowColor
         isDefined(shadowColor) && (widgetDate.shadowColor = getColor(shadowColor))
-        // shadowRadius
         isDefined(shadowRadius) && (widgetDate.shadowRadius = shadowRadius)
-        // shadowOffset
         isDefined(shadowOffset) && (widgetDate.shadowOffset = shadowOffset)
-        // href
         isDefined(href) && (widgetDate.url = href)
-        // mode
-        const modeMap: KeyMap<WdateProps['mode']> = {
+        const modeMap = {
           time: () => widgetDate.applyTimeStyle(),
           date: () => widgetDate.applyDateStyle(),
           relative: () => widgetDate.applyRelativeStyle(),
@@ -270,8 +308,7 @@ class GenrateView {
           timer: () => widgetDate.applyTimerStyle(),
         }
         isDefined(mode) && modeMap[mode]()
-        // textAlign
-        const textAlignMap: KeyMap<WdateProps['textAlign']> = {
+        const textAlignMap = {
           left: () => widgetDate.leftAlignText(),
           center: () => widgetDate.centerAlignText(),
           right: () => widgetDate.rightAlignText(),
@@ -283,72 +320,41 @@ class GenrateView {
     }
   }
 }
-
 const listWidget = new ListWidget()
 GenrateView.setListWidget(listWidget)
-export function h(
-  type: WidgetType | (() => () => void),
-  props?: WidgetProps,
-  ...children: Children<Scriptable.Widget> | string[]
-): Scriptable.Widget | ((instance: Scriptable.Widget) => void) | null | undefined {
+function h(type, props, ...children) {
   props = props || {}
   switch (type) {
     case 'wbox':
-      return GenrateView.wbox(props as WboxProps, ...(children as Children<ListWidget>))
+      return GenrateView.wbox(props, ...children)
       break
     case 'wdate':
-      return GenrateView.wdate(props as WdateProps)
+      return GenrateView.wdate(props)
       break
     case 'wimage':
-      return GenrateView.wimage(props as WimageProps)
+      return GenrateView.wimage(props)
       break
     case 'wspacer':
-      return GenrateView.wspacer(props as WspacerProps)
+      return GenrateView.wspacer(props)
       break
     case 'wstack':
-      return GenrateView.wstack(props as WstackProps, ...(children as Children<WidgetStack>))
+      return GenrateView.wstack(props, ...children)
       break
     case 'wtext':
-      return GenrateView.wtext(props as WtextProps, ...(children as string[]))
+      return GenrateView.wtext(props, ...children)
       break
     default:
-      // custom component
-      return type instanceof Function
-        ? ((type as unknown) as (props: WidgetProps) => Promise<Scriptable.Widget>)({children, ...props})
-        : null
+      return type instanceof Function ? type({children, ...props}) : null
       break
   }
 }
-
-/**
- * 输出真正颜色（比如string转color）
- * @param color
- */
-function getColor(color: Color | string): Color {
+function getColor(color) {
   return typeof color === 'string' ? new Color(color) : color
 }
-
-/**
- * 输出真正背景（比如string转color）
- * @param bg 输入背景参数
- */
-function getBackground(bg: Color | Image | LinearGradient | string): Color | Image | LinearGradient {
+function getBackground(bg) {
   return typeof bg === 'string' || bg instanceof Color ? getColor(bg) : bg
 }
-
-/**
- * 设置背景
- * @param widget 实例
- * @param bg 背景
- */
-function setBackground(
-  widget: Scriptable.Widget & {
-    backgroundColor: Color
-    backgroundImage: Image
-    backgroundGradient: LinearGradient
-  },
-  bg: Color | Image | LinearGradient | string,
-): void {
+function setBackground(widget, bg) {
   const _bg = getBackground(bg)
   if (_bg instanceof Color) {
     widget.backgroundColor = _bg
@@ -360,27 +366,86 @@ function setBackground(
     widget.backgroundGradient = _bg
   }
 }
-
-/**
- * 添加子组件列表（把当前实例传下去）
- * @param instance 当前实例
- * @param children 子组件列表
- */
-function addChildren<T extends Scriptable.Widget>(instance: T, children: Children<T>): void {
+function addChildren(instance, children) {
   if (children && Array.isArray(children)) {
     for (const child of children) {
       child instanceof Function ? child(instance) : ''
     }
   }
 }
-
-/**
- * 如果某值不是 undefined、null、NaN 则返回 true
- * @param value 值
- */
-function isDefined<T>(value: T | undefined | null): value is T {
+function isDefined(value) {
   if (typeof value === 'number' && !isNaN(value)) {
     return true
   }
-  return value !== undefined && value !== null
+  return value !== void 0 && value !== null
 }
+
+// src/input/tsx-yiyan.tsx
+class YiyanWidget {
+  async init() {
+    const widget = await this.render()
+    Script.setWidget(widget)
+    widget.presentMedium()
+    Script.complete()
+  }
+  async render() {
+    const icon = await getImage({
+      url: 'https://txc.gtimg.com/data/285778/2020/1012/f9cf50f08ebb8bd391a7118c8348f5d8.png',
+    })
+    const data = (await this.getRemoteData()).data || {}
+    const {hitokoto = '', from = ''} = data
+    return /* @__PURE__ */ h(
+      'wbox',
+      null,
+      /* @__PURE__ */ h(
+        'wstack',
+        {
+          verticalAlign: 'center',
+        },
+        /* @__PURE__ */ h('wimage', {
+          src: icon,
+          width: 14,
+          height: 14,
+          borderRadius: 4,
+        }),
+        /* @__PURE__ */ h('wspacer', {
+          length: 10,
+        }),
+        /* @__PURE__ */ h(
+          'wtext',
+          {
+            opacity: 0.7,
+            font: Font.boldSystemFont(12),
+          },
+          '一言',
+        ),
+      ),
+      /* @__PURE__ */ h('wspacer', null),
+      /* @__PURE__ */ h(
+        'wtext',
+        {
+          font: Font.lightSystemFont(16),
+        },
+        hitokoto,
+      ),
+      /* @__PURE__ */ h('wspacer', null),
+      /* @__PURE__ */ h(
+        'wtext',
+        {
+          font: Font.lightSystemFont(12),
+          opacity: 0.5,
+          textAlign: 'right',
+          maxLine: 1,
+        },
+        from,
+      ),
+    )
+  }
+  async getRemoteData() {
+    return await request({
+      url: 'https://v1.hitokoto.cn',
+      dataType: 'json',
+    })
+  }
+}
+new YiyanWidget().init()
