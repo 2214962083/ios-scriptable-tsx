@@ -419,7 +419,7 @@ class Base {
     if (color) _title.textColor = color as Color
     _title.textOpacity = 0.7
     _title.font = Font.boldSystemFont(12)
-    widget.addSpacer(15)
+    widget.addSpacer(35)
     return widget
   }
 

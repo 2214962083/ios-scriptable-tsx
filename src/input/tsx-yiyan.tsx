@@ -20,7 +20,7 @@ class YiyanWidget {
   async init() {
     const widget = ((await this.render()) as unknown) as ListWidget
     Script.setWidget(widget)
-    widget.presentMedium()
+    !config.runsInWidget && widget.presentMedium()
     Script.complete()
   }
   async render() {

@@ -385,7 +385,7 @@ class MyWidget {
   async init() {
     const widget = await this.render()
     Script.setWidget(widget)
-    widget.presentMedium()
+    !config.runsInWidget && widget.presentMedium()
     Script.complete()
   }
   async render() {

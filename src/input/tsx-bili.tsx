@@ -19,7 +19,7 @@ class MyWidget {
     // if (!config.runsInWidget) return
     const widget = ((await this.render()) as unknown) as ListWidget
     Script.setWidget(widget)
-    widget.presentMedium()
+    !config.runsInWidget && widget.presentMedium()
     Script.complete()
   }
 
