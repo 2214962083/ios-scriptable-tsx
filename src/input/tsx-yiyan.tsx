@@ -1,4 +1,4 @@
-import {getImage, request, ResponseType} from '@app/lib/help'
+import {getImage, request, ResponseType, showNotification} from '@app/lib/help'
 import {h} from '../lib/jsx-runtime'
 
 interface RemoteData {
@@ -19,8 +19,9 @@ interface RemoteData {
 class YiyanWidget {
   async init() {
     const widget = ((await this.render()) as unknown) as ListWidget
+    if (!config.runsInWidget) return
     Script.setWidget(widget)
-    !config.runsInWidget && (await widget.presentMedium())
+    // !config.runsInWidget && (await widget.presentMedium())
     Script.complete()
   }
   async render() {
@@ -44,7 +45,9 @@ class YiyanWidget {
           </wtext>
         </wstack>
         <wspacer></wspacer>
-        <wtext font={Font.lightSystemFont(16)}>{hitokoto}</wtext>
+        <wtext font={Font.lightSystemFont(16)} onClick={() => this.notify()}>
+          {hitokoto}
+        </wtext>
         <wspacer></wspacer>
         <wtext font={Font.lightSystemFont(12)} opacity={0.5} textAlign="right" maxLine={1}>
           {from}
@@ -56,6 +59,13 @@ class YiyanWidget {
     return await request<RemoteData>({
       url: 'https://v1.hitokoto.cn',
       dataType: 'json',
+    })
+  }
+  notify(): void {
+    showNotification({
+      title: '标题',
+      subtitle: '小标题',
+      body: '内容',
     })
   }
 }

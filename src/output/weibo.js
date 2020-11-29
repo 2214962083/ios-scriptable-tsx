@@ -7,7 +7,7 @@ class Base {
     this.init();
   }
   init(widgetFamily = config.widgetFamily) {
-    this.widgetFamily = widgetFamily;
+    this.widgetFamily = widgetFamily || "medium";
     this.SETTING_KEY = this.md5(Script.name());
     this.FILE_MGR_LOCAL = FileManager.local();
     this.BACKGROUND_KEY = this.FILE_MGR_LOCAL.joinPath(this.FILE_MGR_LOCAL.documentsDirectory(), `bg_${this.SETTING_KEY}.jpg`);

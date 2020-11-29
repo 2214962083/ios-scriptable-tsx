@@ -3,7 +3,7 @@ const MODULE = module;
 class Im3xWidget {
   constructor(arg = "") {
     this.arg = arg;
-    this.widgetSize = config.widgetFamily;
+    this.widgetSize = config.widgetFamily || "medium";
   }
   async render() {
     if (this.widgetSize === "medium") {

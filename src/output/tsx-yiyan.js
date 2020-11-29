@@ -46,8 +46,8 @@ const removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()
 const setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
 const getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
 const removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
-async function request(args) {
-  const {url, data, header, dataType = 'json', method = 'GET', timeout = 60 * 1e3, useCache = false} = args
+async function request(args2) {
+  const {url, data, header, dataType = 'json', method = 'GET', timeout = 60 * 1e3, useCache = false} = args2
   const cacheKey = `url:${url}`
   const cache = getStorage(cacheKey)
   if (useCache && cache !== null) return cache
@@ -83,8 +83,19 @@ async function request(args) {
     return err
   }
 }
-async function getImage(args) {
-  const {filepath, url, useCache = true} = args
+async function showNotification(args2) {
+  const {title, subtitle = '', body = '', openURL, sound = 'default', ...others} = args2
+  let notification = new Notification()
+  notification.title = title
+  notification.subtitle = subtitle
+  notification.body = body
+  openURL && (notification.openURL = openURL)
+  notification.sound = sound
+  notification = Object.assign(notification, others)
+  return await notification.schedule()
+}
+async function getImage(args2) {
+  const {filepath, url, useCache = true} = args2
   const generateDefaultImage = async () => {
     const ctx = new DrawContext()
     ctx.size = new Size(100, 100)
@@ -132,13 +143,14 @@ class GenrateView {
     this.listWidget = listWidget2
   }
   static async wbox(props, ...children) {
-    const {background, spacing, href, updateDate, padding} = props
+    const {background, spacing, href, updateDate, padding, onClick} = props
     try {
       isDefined(background) && setBackground(this.listWidget, background)
       isDefined(spacing) && (this.listWidget.spacing = spacing)
       isDefined(href) && (this.listWidget.url = href)
       isDefined(updateDate) && (this.listWidget.refreshAfterDate = updateDate)
       isDefined(padding) && this.listWidget.setPadding(...padding)
+      isDefined(onClick) && runOnClick(this.listWidget, onClick)
       await addChildren(this.listWidget, children)
     } catch (err) {
       console.error(err)
@@ -160,6 +172,7 @@ class GenrateView {
         href,
         verticalAlign,
         flexDirection,
+        onClick,
       } = props
       try {
         isDefined(background) && setBackground(widgetStack, background)
@@ -181,6 +194,7 @@ class GenrateView {
           column: () => widgetStack.layoutVertically(),
         }
         isDefined(flexDirection) && flexDirectionMap[flexDirection]()
+        isDefined(onClick) && runOnClick(widgetStack, onClick)
       } catch (err) {
         console.error(err)
       }
@@ -203,6 +217,7 @@ class GenrateView {
         filter,
         imageAlign,
         mode,
+        onClick,
       } = props
       let _image = src
       const isUrl = value => {
@@ -234,6 +249,7 @@ class GenrateView {
           fill: () => widgetImage.applyFillingContentMode(),
         }
         isDefined(mode) && modeMap[mode]()
+        isDefined(onClick) && runOnClick(widgetImage, onClick)
       } catch (err) {
         console.error(err)
       }
@@ -253,7 +269,19 @@ class GenrateView {
   static wtext(props, ...children) {
     return async parentInstance => {
       const widgetText = parentInstance.addText('')
-      const {textColor, font, opacity, maxLine, scale, shadowColor, shadowRadius, shadowOffset, href, textAlign} = props
+      const {
+        textColor,
+        font,
+        opacity,
+        maxLine,
+        scale,
+        shadowColor,
+        shadowRadius,
+        shadowOffset,
+        href,
+        textAlign,
+        onClick,
+      } = props
       if (children && Array.isArray(children)) {
         widgetText.text = children.join('')
       }
@@ -273,6 +301,7 @@ class GenrateView {
           right: () => widgetText.rightAlignText(),
         }
         isDefined(textAlign) && textAlignMap[textAlign]()
+        isDefined(onClick) && runOnClick(widgetText, onClick)
       } catch (err) {
         console.error(err)
       }
@@ -294,6 +323,7 @@ class GenrateView {
         shadowOffset,
         href,
         textAlign,
+        onClick,
       } = props
       try {
         isDefined(date) && (widgetDate.date = date)
@@ -320,6 +350,7 @@ class GenrateView {
           right: () => widgetDate.rightAlignText(),
         }
         isDefined(textAlign) && textAlignMap[textAlign]()
+        isDefined(onClick) && runOnClick(widgetDate, onClick)
       } catch (err) {
         console.error(err)
       }
@@ -385,19 +416,24 @@ function isDefined(value) {
   }
   return value !== void 0 && value !== null
 }
+function runOnClick(instance, onClick) {
+  const _eventId = hash(onClick.toString())
+  instance.url = `${URLScheme.forRunningScript()}?eventId=${encodeURIComponent(_eventId)}`
+  const {eventId} = args.queryParameters
+  if (eventId && eventId === _eventId) {
+    onClick()
+  }
+}
 
 // src/input/tsx-yiyan.tsx
 class YiyanWidget {
   async init() {
     const widget = await this.render()
+    if (!config.runsInWidget) return
     Script.setWidget(widget)
-    !config.runsInWidget && (await widget.presentMedium())
     Script.complete()
   }
   async render() {
-    const icon = await getImage({
-      url: 'https://txc.gtimg.com/data/285778/2020/1012/f9cf50f08ebb8bd391a7118c8348f5d8.png',
-    })
     const data = (await this.getRemoteData()).data || {}
     const {hitokoto = '', from = ''} = data
     return /* @__PURE__ */ h(
@@ -431,6 +467,7 @@ class YiyanWidget {
         'wtext',
         {
           font: Font.lightSystemFont(16),
+          onClick: () => this.notify(),
         },
         hitokoto,
       ),
@@ -451,6 +488,13 @@ class YiyanWidget {
     return await request({
       url: 'https://v1.hitokoto.cn',
       dataType: 'json',
+    })
+  }
+  notify() {
+    showNotification({
+      title: '标题',
+      subtitle: '小标题',
+      body: '内容',
     })
   }
 }

@@ -2,10 +2,13 @@ import {DetailedHTMLProps, HTMLAttributes} from 'react'
 
 /**图片组件属性*/
 export interface WimageProps extends HTMLAttributes<Element> {
-  /**图片网络链接*/
+  /**图片网络链接、
+   * 图片对象
+   * SF Symbol 的 name  (ios 的 内置 icon 库的某个 icon name)，详见 https://apps.apple.com/us/app/sf-symbols-browser/id1491161336
+   */
   src: string | Image
 
-  /**点击打开链接*/
+  /**点击打开哪个 url, 不与 onClick 共存，当 onClick 存在时，只执行 onClick*/
   href?: string
 
   /**图片是否可以调整大小，默认是*/
@@ -47,6 +50,9 @@ export interface WimageProps extends HTMLAttributes<Element> {
    * contain 图像拉伸填充,不保证保持原有的比例，内容拉伸填充整个内容容器
    */
   mode?: 'contain' | 'fill'
+
+  /**点击事件，不与 href 共存，当 href 存在时，只执行 onClick */
+  onClick?: () => unknown
 }
 
 declare global {

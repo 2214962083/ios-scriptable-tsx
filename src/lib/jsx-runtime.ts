@@ -4,7 +4,7 @@ import {WdateProps} from './../@types/widget/wdate.d'
 import {WspacerProps} from './../@types/widget/wspacer.d'
 import {WstackProps} from './../@types/widget/wstack.d'
 import {WtextProps} from './../@types/widget/wtext.d'
-import {getImage} from '@app/lib/help'
+import {getImage, hash} from '@app/lib/help'
 
 type WidgetType = 'wbox' | 'wdate' | 'wimage' | 'wspacer' | 'wstack' | 'wtext'
 type WidgetProps = WboxProps | WdateProps | WspacerProps | WstackProps | WtextProps | WimageProps
@@ -19,7 +19,7 @@ class GenrateView {
   }
   // 根组件
   static async wbox(props: WboxProps, ...children: Children<ListWidget>) {
-    const {background, spacing, href, updateDate, padding} = props
+    const {background, spacing, href, updateDate, padding, onClick} = props
     try {
       // background
       isDefined(background) && setBackground(this.listWidget, background)
@@ -31,6 +31,8 @@ class GenrateView {
       isDefined(updateDate) && (this.listWidget.refreshAfterDate = updateDate)
       // padding
       isDefined(padding) && this.listWidget.setPadding(...padding)
+      // onClick
+      isDefined(onClick) && runOnClick(this.listWidget, onClick)
       await addChildren(this.listWidget, children)
     } catch (err) {
       console.error(err)
@@ -57,6 +59,7 @@ class GenrateView {
         href,
         verticalAlign,
         flexDirection,
+        onClick,
       } = props
       try {
         // background
@@ -88,6 +91,8 @@ class GenrateView {
           column: () => widgetStack.layoutVertically(),
         }
         isDefined(flexDirection) && flexDirectionMap[flexDirection]()
+        // onClick
+        isDefined(onClick) && runOnClick(widgetStack, onClick)
       } catch (err) {
         console.error(err)
       }
@@ -115,6 +120,7 @@ class GenrateView {
         filter,
         imageAlign,
         mode,
+        onClick,
       } = props
 
       let _image: Image = src as Image
@@ -168,6 +174,8 @@ class GenrateView {
           fill: () => widgetImage.applyFillingContentMode(),
         }
         isDefined(mode) && modeMap[mode]()
+        // onClick
+        isDefined(onClick) && runOnClick(widgetImage, onClick)
       } catch (err) {
         console.error(err)
       }
@@ -198,7 +206,19 @@ class GenrateView {
       },
     ) => {
       const widgetText = parentInstance.addText('')
-      const {textColor, font, opacity, maxLine, scale, shadowColor, shadowRadius, shadowOffset, href, textAlign} = props
+      const {
+        textColor,
+        font,
+        opacity,
+        maxLine,
+        scale,
+        shadowColor,
+        shadowRadius,
+        shadowOffset,
+        href,
+        textAlign,
+        onClick,
+      } = props
 
       if (children && Array.isArray(children)) {
         widgetText.text = children.join('')
@@ -229,6 +249,8 @@ class GenrateView {
           right: () => widgetText.rightAlignText(),
         }
         isDefined(textAlign) && textAlignMap[textAlign]()
+        // onClick
+        isDefined(onClick) && runOnClick(widgetText, onClick)
       } catch (err) {
         console.error(err)
       }
@@ -255,6 +277,7 @@ class GenrateView {
         shadowOffset,
         href,
         textAlign,
+        onClick,
       } = props
 
       try {
@@ -294,6 +317,8 @@ class GenrateView {
           right: () => widgetDate.rightAlignText(),
         }
         isDefined(textAlign) && textAlignMap[textAlign]()
+        // onClick
+        isDefined(onClick) && runOnClick(widgetDate, onClick)
       } catch (err) {
         console.error(err)
       }
@@ -400,4 +425,18 @@ function isDefined<T>(value: T | undefined | null): value is T {
     return true
   }
   return value !== undefined && value !== null
+}
+
+/**
+ * 执行点击事件
+ * @param instance 当前实例
+ * @param onClick 点击事件
+ */
+function runOnClick<T extends Scriptable.Widget & {url: string}>(instance: T, onClick: () => unknown) {
+  const _eventId = hash(onClick.toString())
+  instance.url = `${URLScheme.forRunningScript()}?eventId=${encodeURIComponent(_eventId)}`
+  const {eventId} = args.queryParameters
+  if (eventId && eventId === _eventId) {
+    onClick()
+  }
 }

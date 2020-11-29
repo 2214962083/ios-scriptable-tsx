@@ -5,7 +5,7 @@ export interface Config {
   readonly runsInNotification: boolean
   readonly runsInWidget: boolean
   readonly runsWithSiri: boolean
-  readonly widgetFamily: string
+  readonly widgetFamily: 'small' | 'medium' | 'large' | null
 }
 
 declare global {
