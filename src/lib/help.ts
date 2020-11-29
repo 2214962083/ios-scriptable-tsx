@@ -413,6 +413,10 @@ export async function showNotification(args: ShowNotificationParams): Promise<vo
   return await notification.schedule()
 }
 
+/**
+ * 多方式获取图片
+ * @param args 获取图片所需参数
+ */
 export async function getImage(args: GetImageParams): Promise<Image> {
   const {filepath, url, useCache = true} = args
   const generateDefaultImage = async () => {
