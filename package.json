@@ -1,17 +1,13 @@
 {
   "name": "scriptable-types",
   "version": "1.0.0",
+  "author": "xiaomingyang",
   "description": "",
   "main": "index.js",
   "scripts": {
     "dev": "set NODE_ENV=development&& ts-node ./src/compile.ts",
-    "build": "set NODE_ENV=production&& ts-node ./src/compile.ts production",
-    "dev:webpack": "set NODE_ENV=development&& webpack --progress --colors --hide-modules",
-    "watch:webpack": "set NODE_ENV=development&& webpack --watch --progress --colors --hide-modules",
-    "build:webpack": "set NODE_ENV=production&& webpack --progress --colors --hide-modules",
-    "debug:webpack": "tsc --sourcemap"
+    "build": "set NODE_ENV=production&& ts-node ./src/compile.ts production"
   },
-  "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/eslint": "^7.2.2",
@@ -19,22 +15,15 @@
     "@types/prettier": "^2.1.1",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
-    "@types/webpack": "^4.41.21",
-    "@types/webpack-env": "^1.15.2",
     "@typescript-eslint/eslint-plugin": "^4.1.1",
     "@typescript-eslint/parser": "^4.1.1",
-    "clean-webpack-plugin": "^3.0.0",
     "esbuild": "^0.8.12",
     "eslint": "^7.9.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
-    "html-webpack-plugin": "^4.3.0",
     "prettier": "^2.1.1",
     "ts-loader": "^8.0.2",
     "ts-node": "^8.10.2",
-    "typescript": "^4.0.2",
-    "webpack": "^4.44.1",
-    "webpack-cli": "^3.3.12",
-    "webpack-node-externals": "^2.5.2"
+    "typescript": "^4.0.2"
   }
 }
