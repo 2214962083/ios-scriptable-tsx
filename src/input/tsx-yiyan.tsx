@@ -19,6 +19,9 @@ interface RemoteData {
 class YiyanWidget {
   private widget!: ListWidget
   async init() {
+    // 打印打包环境
+    console.log(process.env.NODE_ENV === 'production' ? 'production' : 'development')
+
     this.widget = ((await this.render()) as unknown) as ListWidget
     if (!config.runsInWidget) return
     Script.setWidget(this.widget)

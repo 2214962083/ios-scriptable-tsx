@@ -6,6 +6,13 @@ import {promisify} from 'util'
 const readdir = promisify(fs.readdir)
 const stat = promisify(fs.stat)
 
+const define: Record<string, string> = {}
+for (const key in process.env) {
+  //  不能含有括号
+  if (/[\(\)]/.test(key)) continue
+  define[`process.env.${key}`] = JSON.stringify(process.env[key])
+}
+
 // 深度获取某个文件夹里所有文件路径（包括子文件夹）
 async function getFilesFromDir(dir: string): Promise<string[]> {
   const subdirs = await readdir(dir)
@@ -42,5 +49,6 @@ async function getFilesFromDir(dir: string): Promise<string[]> {
     outdir: outputDir,
     banner: 'const MODULE = module;',
     jsxFactory: 'h',
+    define,
   }).catch(() => process.exit(1))
 })()

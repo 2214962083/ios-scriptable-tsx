@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "ts-node ./src/compile.ts",
+    "dev": "set NODE_ENV=development&& ts-node ./src/compile.ts",
+    "build": "set NODE_ENV=production&& ts-node ./src/compile.ts production",
     "dev:webpack": "set NODE_ENV=development&& webpack --progress --colors --hide-modules",
     "watch:webpack": "set NODE_ENV=development&& webpack --watch --progress --colors --hide-modules",
     "build:webpack": "set NODE_ENV=production&& webpack --progress --colors --hide-modules",
