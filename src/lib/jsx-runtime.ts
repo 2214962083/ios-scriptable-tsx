@@ -4,6 +4,7 @@ import {WdateProps} from './../@types/widget/wdate.d'
 import {WspacerProps} from './../@types/widget/wspacer.d'
 import {WstackProps} from './../@types/widget/wstack.d'
 import {WtextProps} from './../@types/widget/wtext.d'
+import {getImage} from '@app/lib/help'
 
 type WidgetType = 'wbox' | 'wdate' | 'wimage' | 'wspacer' | 'wstack' | 'wtext'
 type WidgetProps = WboxProps | WdateProps | WspacerProps | WstackProps | WtextProps | WimageProps
@@ -17,7 +18,7 @@ class GenrateView {
     this.listWidget = listWidget
   }
   // 根组件
-  static wbox(props: WboxProps, ...children: Children<ListWidget>) {
+  static async wbox(props: WboxProps, ...children: Children<ListWidget>) {
     const {background, spacing, href, updateDate, padding} = props
     try {
       // background
@@ -30,7 +31,7 @@ class GenrateView {
       isDefined(updateDate) && (this.listWidget.refreshAfterDate = updateDate)
       // padding
       isDefined(padding) && this.listWidget.setPadding(...padding)
-      addChildren(this.listWidget, children)
+      await addChildren(this.listWidget, children)
     } catch (err) {
       console.error(err)
     }
@@ -38,7 +39,7 @@ class GenrateView {
   }
   // 容器组件
   static wstack(props: WstackProps, ...children: Children<WidgetStack>) {
-    return (
+    return async (
       parentInstance: Scriptable.Widget & {
         addStack(): WidgetStack
       },
@@ -90,12 +91,12 @@ class GenrateView {
       } catch (err) {
         console.error(err)
       }
-      addChildren(widgetStack, children)
+      await addChildren(widgetStack, children)
     }
   }
   // 图片组件
   static wimage(props: WimageProps) {
-    return (
+    return async (
       parentInstance: Scriptable.Widget & {
         addImage(image: Image): WidgetImage
       },
@@ -115,7 +116,23 @@ class GenrateView {
         imageAlign,
         mode,
       } = props
-      const _image = src as Image // typeof src === 'string' ? getImage({url: src}) : src
+
+      let _image: Image = src as Image
+
+      /**
+       * 判断一个值是否为网络连接
+       * @param value 值
+       */
+      const isUrl = (value: string): boolean => {
+        const reg = /^(http|https)\:\/\/[\w\W]+/
+        return reg.test(value)
+      }
+
+      // src 为网络连接时
+      typeof src === 'string' && isUrl(src) && (_image = await getImage({url: src}))
+
+      // src 为 icon name 时
+      typeof src === 'string' && !isUrl(src) && (_image = SFSymbol.named(src).image)
       const widgetImage = parentInstance.addImage(_image)
       widgetImage.image = _image
 
@@ -158,7 +175,7 @@ class GenrateView {
   }
   // 占位空格组件
   static wspacer(props: WspacerProps) {
-    return (
+    return async (
       parentInstance: Scriptable.Widget & {
         addSpacer(length?: number): WidgetSpacer
       },
@@ -175,7 +192,7 @@ class GenrateView {
   }
   // 文字组件
   static wtext(props: WtextProps, ...children: string[]) {
-    return (
+    return async (
       parentInstance: Scriptable.Widget & {
         addText(text?: string): WidgetText
       },
@@ -219,7 +236,7 @@ class GenrateView {
   }
   // 日期组件
   static wdate(props: WdateProps) {
-    return (
+    return async (
       parentInstance: Scriptable.Widget & {
         addDate(date: Date): WidgetDate
       },
@@ -290,7 +307,7 @@ export function h(
   type: WidgetType | (() => () => void),
   props?: WidgetProps,
   ...children: Children<Scriptable.Widget> | string[]
-): Scriptable.Widget | ((instance: Scriptable.Widget) => void) | null | undefined {
+): Promise<unknown> | unknown {
   props = props || {}
   switch (type) {
     case 'wbox':
@@ -366,10 +383,10 @@ function setBackground(
  * @param instance 当前实例
  * @param children 子组件列表
  */
-function addChildren<T extends Scriptable.Widget>(instance: T, children: Children<T>): void {
+async function addChildren<T extends Scriptable.Widget>(instance: T, children: Children<T>): Promise<void> {
   if (children && Array.isArray(children)) {
     for (const child of children) {
-      child instanceof Function ? child(instance) : ''
+      child instanceof Function ? await child(instance) : ''
     }
   }
 }

@@ -20,19 +20,24 @@ class YiyanWidget {
   async init() {
     const widget = ((await this.render()) as unknown) as ListWidget
     Script.setWidget(widget)
-    !config.runsInWidget && widget.presentMedium()
+    !config.runsInWidget && (await widget.presentMedium())
     Script.complete()
   }
   async render() {
-    const icon = await getImage({
-      url: 'https://txc.gtimg.com/data/285778/2020/1012/f9cf50f08ebb8bd391a7118c8348f5d8.png',
-    })
+    // const icon = await getImage({
+    //   url: 'https://txc.gtimg.com/data/285778/2020/1012/f9cf50f08ebb8bd391a7118c8348f5d8.png',
+    // })
     const data = (await this.getRemoteData()).data || ({} as RemoteData)
     const {hitokoto = '', from = ''} = data
     return (
       <wbox>
         <wstack verticalAlign="center">
-          <wimage src={icon} width={14} height={14} borderRadius={4}></wimage>
+          <wimage
+            src="https://txc.gtimg.com/data/285778/2020/1012/f9cf50f08ebb8bd391a7118c8348f5d8.png"
+            width={14}
+            height={14}
+            borderRadius={4}
+          ></wimage>
           <wspacer length={10}></wspacer>
           <wtext opacity={0.7} font={Font.boldSystemFont(12)}>
             一言

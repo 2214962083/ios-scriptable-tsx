@@ -131,7 +131,7 @@ class GenrateView {
   static setListWidget(listWidget2) {
     this.listWidget = listWidget2
   }
-  static wbox(props, ...children) {
+  static async wbox(props, ...children) {
     const {background, spacing, href, updateDate, padding} = props
     try {
       isDefined(background) && setBackground(this.listWidget, background)
@@ -139,14 +139,14 @@ class GenrateView {
       isDefined(href) && (this.listWidget.url = href)
       isDefined(updateDate) && (this.listWidget.refreshAfterDate = updateDate)
       isDefined(padding) && this.listWidget.setPadding(...padding)
-      addChildren(this.listWidget, children)
+      await addChildren(this.listWidget, children)
     } catch (err) {
       console.error(err)
     }
     return this.listWidget
   }
   static wstack(props, ...children) {
-    return parentInstance => {
+    return async parentInstance => {
       const widgetStack = parentInstance.addStack()
       const {
         background,
@@ -184,11 +184,11 @@ class GenrateView {
       } catch (err) {
         console.error(err)
       }
-      addChildren(widgetStack, children)
+      await addChildren(widgetStack, children)
     }
   }
   static wimage(props) {
-    return parentInstance => {
+    return async parentInstance => {
       const {
         src,
         href,
@@ -204,7 +204,13 @@ class GenrateView {
         imageAlign,
         mode,
       } = props
-      const _image = src
+      let _image = src
+      const isUrl = value => {
+        const reg = /^(http|https)\:\/\/[\w\W]+/
+        return reg.test(value)
+      }
+      typeof src === 'string' && isUrl(src) && (_image = await getImage({url: src}))
+      typeof src === 'string' && !isUrl(src) && (_image = SFSymbol.named(src).image)
       const widgetImage = parentInstance.addImage(_image)
       widgetImage.image = _image
       try {
@@ -234,7 +240,7 @@ class GenrateView {
     }
   }
   static wspacer(props) {
-    return parentInstance => {
+    return async parentInstance => {
       const widgetSpacer = parentInstance.addSpacer()
       const {length} = props
       try {
@@ -245,7 +251,7 @@ class GenrateView {
     }
   }
   static wtext(props, ...children) {
-    return parentInstance => {
+    return async parentInstance => {
       const widgetText = parentInstance.addText('')
       const {textColor, font, opacity, maxLine, scale, shadowColor, shadowRadius, shadowOffset, href, textAlign} = props
       if (children && Array.isArray(children)) {
@@ -273,7 +279,7 @@ class GenrateView {
     }
   }
   static wdate(props) {
-    return parentInstance => {
+    return async parentInstance => {
       const widgetDate = parentInstance.addDate(new Date())
       const {
         date,
@@ -366,10 +372,10 @@ function setBackground(widget, bg) {
     widget.backgroundGradient = _bg
   }
 }
-function addChildren(instance, children) {
+async function addChildren(instance, children) {
   if (children && Array.isArray(children)) {
     for (const child of children) {
-      child instanceof Function ? child(instance) : ''
+      child instanceof Function ? await child(instance) : ''
     }
   }
 }
@@ -385,7 +391,7 @@ class MyWidget {
   async init() {
     const widget = await this.render()
     Script.setWidget(widget)
-    !config.runsInWidget && widget.presentMedium()
+    !config.runsInWidget && (await widget.presentMedium())
     Script.complete()
   }
   async render() {
