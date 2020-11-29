@@ -97,7 +97,7 @@ export interface ShowActionSheetParams {
     text: string
 
     /** wran 的话就会标红文字 */
-    type: 'normal' | 'warn'
+    type?: 'normal' | 'warn'
   }[]
 }
 

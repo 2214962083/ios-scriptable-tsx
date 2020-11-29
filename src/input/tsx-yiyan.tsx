@@ -1,4 +1,4 @@
-import {getImage, request, ResponseType, showNotification} from '@app/lib/help'
+import {request, ResponseType, showActionSheet} from '@app/lib/help'
 import {h} from '../lib/jsx-runtime'
 
 interface RemoteData {
@@ -17,10 +17,11 @@ interface RemoteData {
 }
 
 class YiyanWidget {
+  private widget!: ListWidget
   async init() {
-    const widget = ((await this.render()) as unknown) as ListWidget
+    this.widget = ((await this.render()) as unknown) as ListWidget
     if (!config.runsInWidget) return
-    Script.setWidget(widget)
+    Script.setWidget(this.widget)
     // !config.runsInWidget && (await widget.presentMedium())
     Script.complete()
   }
@@ -45,7 +46,7 @@ class YiyanWidget {
           </wtext>
         </wstack>
         <wspacer></wspacer>
-        <wtext font={Font.lightSystemFont(16)} onClick={() => this.notify()}>
+        <wtext font={Font.lightSystemFont(16)} onClick={() => this.menu()}>
           {hitokoto}
         </wtext>
         <wspacer></wspacer>
@@ -61,12 +62,44 @@ class YiyanWidget {
       dataType: 'json',
     })
   }
-  notify(): void {
-    showNotification({
-      title: '标题',
-      subtitle: '小标题',
-      body: '内容',
+  async menu(): Promise<void> {
+    const optionFunc = [this.selectPreviewSize]
+    const selectIndex = await showActionSheet({
+      title: '菜单',
+      itemList: [
+        {
+          text: '预览组件',
+        },
+      ],
     })
+    optionFunc[selectIndex].apply(this)
+  }
+  async selectPreviewSize(): Promise<void> {
+    const selectIndex = await showActionSheet({
+      title: '选择预览尺寸',
+      itemList: [
+        {
+          text: '小组件',
+        },
+        {
+          text: '中组件',
+        },
+        {
+          text: '大组件',
+        },
+      ],
+    })
+    switch (selectIndex) {
+      case 0:
+        await this.widget.presentSmall()
+        break
+      case 1:
+        await this.widget.presentMedium()
+        break
+      case 2:
+        await this.widget.presentLarge()
+        break
+    }
   }
 }
 
