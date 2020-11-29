@@ -2,7 +2,12 @@ import {DetailedHTMLProps, HTMLAttributes} from 'react'
 
 /**容器组件属性*/
 export interface WstackProps extends HTMLAttributes<Element> {
-  /**背景*/
+  /**
+   * 背景
+   * 可以为 Color 对象、hex 字符串
+   * 可以为 Image 对象、网络图片链接
+   * 可以为渐变对象 LinearGradient
+   */
   background?: Color | Image | LinearGradient | string
 
   /**与同级上一个元素的间隔*/

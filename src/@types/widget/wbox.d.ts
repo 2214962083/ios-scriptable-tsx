@@ -2,7 +2,12 @@ import {DetailedHTMLProps, HTMLAttributes} from 'react'
 
 /**组件盒子属性*/
 export interface WboxProps extends HTMLAttributes<Element> {
-  /**背景*/
+  /**
+   * 背景
+   * 可以为 Color 对象、hex 字符串
+   * 可以为 Image 对象、网络图片链接
+   * 可以为渐变对象 LinearGradient
+   */
   background?: Color | Image | LinearGradient | string
 
   /**间隔距离*/

@@ -22,7 +22,7 @@ class GenrateView {
     const {background, spacing, href, updateDate, padding, onClick} = props
     try {
       // background
-      isDefined(background) && setBackground(this.listWidget, background)
+      isDefined(background) && (await setBackground(this.listWidget, background))
       // spacing
       isDefined(spacing) && (this.listWidget.spacing = spacing)
       // href
@@ -63,7 +63,7 @@ class GenrateView {
       } = props
       try {
         // background
-        isDefined(background) && setBackground(widgetStack, background)
+        isDefined(background) && (await setBackground(widgetStack, background))
         // spacing
         isDefined(spacing) && (widgetStack.spacing = spacing)
         // padding
@@ -124,15 +124,6 @@ class GenrateView {
       } = props
 
       let _image: Image = src as Image
-
-      /**
-       * 判断一个值是否为网络连接
-       * @param value 值
-       */
-      const isUrl = (value: string): boolean => {
-        const reg = /^(http|https)\:\/\/[\w\W]+/
-        return reg.test(value)
-      }
 
       // src 为网络连接时
       typeof src === 'string' && isUrl(src) && (_image = await getImage({url: src}))
@@ -374,8 +365,12 @@ function getColor(color: Color | string): Color {
  * 输出真正背景（比如string转color）
  * @param bg 输入背景参数
  */
-function getBackground(bg: Color | Image | LinearGradient | string): Color | Image | LinearGradient {
-  return typeof bg === 'string' || bg instanceof Color ? getColor(bg) : bg
+async function getBackground(bg: Color | Image | LinearGradient | string): Promise<Color | Image | LinearGradient> {
+  bg = (typeof bg === 'string' && !isUrl(bg)) || bg instanceof Color ? getColor(bg) : bg
+  if (typeof bg === 'string') {
+    bg = await getImage({url: bg})
+  }
+  return bg
 }
 
 /**
@@ -383,15 +378,15 @@ function getBackground(bg: Color | Image | LinearGradient | string): Color | Ima
  * @param widget 实例
  * @param bg 背景
  */
-function setBackground(
+async function setBackground(
   widget: Scriptable.Widget & {
     backgroundColor: Color
     backgroundImage: Image
     backgroundGradient: LinearGradient
   },
   bg: Color | Image | LinearGradient | string,
-): void {
-  const _bg = getBackground(bg)
+): Promise<void> {
+  const _bg = await getBackground(bg)
   if (_bg instanceof Color) {
     widget.backgroundColor = _bg
   }
@@ -425,6 +420,15 @@ function isDefined<T>(value: T | undefined | null): value is T {
     return true
   }
   return value !== undefined && value !== null
+}
+
+/**
+ * 判断一个值是否为网络连接
+ * @param value 值
+ */
+function isUrl(value: string): boolean {
+  const reg = /^(http|https)\:\/\/[\w\W]+/
+  return reg.test(value)
 }
 
 /**
