@@ -1,8 +1,9 @@
 import './lib/env'
-import {build} from 'esbuild'
+import {build, BuildOptions} from 'esbuild'
 import fs from 'fs'
 import path from 'path'
 import {promisify} from 'util'
+import ScriptableConfig from '../scriptable.config'
 
 type CompileType = 'all' | 'main'
 const compileType = (process.env.compileType as CompileType) || 'main'
@@ -11,6 +12,7 @@ const readdir = promisify(fs.readdir)
 const stat = promisify(fs.stat)
 
 const resolve = (_path: string): string => path.resolve(__dirname, _path)
+const esbuild = ((ScriptableConfig && ScriptableConfig.esbuild) as BuildOptions) || {}
 
 const define: Record<string, string> = {}
 for (const key in process.env) {
@@ -48,14 +50,19 @@ async function getFilesFromDir(dir: string): Promise<string[]> {
 
   // console.log(outputDir, inputPaths)
 
-  build({
-    entryPoints: [...inputPaths],
-    platform: 'node',
-    charset: 'utf8',
-    bundle: true,
-    outdir: compileType === 'all' ? resolve('output') : resolve('dist'),
-    banner: 'const MODULE = module;',
-    jsxFactory: 'h',
-    define,
-  }).catch(() => process.exit(1))
+  build(
+    Object.assign(
+      {
+        entryPoints: [...inputPaths],
+        platform: 'node',
+        charset: 'utf8',
+        bundle: true,
+        outdir: compileType === 'all' ? resolve('output') : resolve('dist'),
+        banner: 'const MODULE = module;',
+        jsxFactory: 'h',
+        define,
+      },
+      esbuild,
+    ),
+  ).catch(() => process.exit(1))
 })()
