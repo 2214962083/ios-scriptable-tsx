@@ -5,13 +5,13 @@ declare class XMLParser {
 
   didEndDocument(): void
 
-  didStartElement(msg: string, info: Record<string, string>)
+  didStartElement(msg: string, info: Record<string, string>): void
 
-  didEndElement(str: string)
+  didEndElement(str: string): void
 
-  foundCharacters(str: string)
+  foundCharacters(str: string): void
 
-  parseErrorOccurred(str: string)
+  parseErrorOccurred(str: string): void
 
   string: string
 

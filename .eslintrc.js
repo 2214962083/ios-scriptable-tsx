@@ -20,7 +20,7 @@ module.exports = /** @type { import('eslint').Linter.Config } */ ({
   rules: {
     'import/no-unresolved': 'off',
     'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {varsIgnorePattern: '^(h|MODULE){1}$'}],
+    '@typescript-eslint/no-unused-vars': ['warn', {varsIgnorePattern: '^(h|MODULE){1}$'}],
   },
   parserOptions: {
     parser: '@typescript-eslint/parser',

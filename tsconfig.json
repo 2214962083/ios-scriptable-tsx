@@ -5,6 +5,7 @@
     "lib": ["ES5", "ES2015", "ES2016", "ES2017", "Es2018", "ES2019", "ES2020", "ESNext"],
     "jsx": "react",
     "jsxFactory": "h",
+    "skipLibCheck": true,
     "outDir": "./dist",
     "target": "es6",
     "allowJs": true,
@@ -23,7 +24,6 @@
       "@app/*": ["./src/*"]
     }
   },
-  // "files": ["src/@types/index.d.ts"],
   "exclude": ["node_modules", "dist", "build"],
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

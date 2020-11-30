@@ -1,3 +1,5 @@
+import {Calendar} from './Calendar'
+
 declare class Reminder {
   constructor()
 

@@ -1,3 +1,5 @@
+import {Availability, Calendar} from './Calendar'
+
 declare class CalendarEvent {
   constructor()
   readonly attendees: {
@@ -24,9 +26,9 @@ declare class CalendarEvent {
   static nextWeek(calendars: Calendar[]): Promise<CalendarEvent[]>
   static presentCreate(): Promise<CalendarEvent>
   static presentEdit(): Promise<CalendarEvent>
-  remove()
-  removeAllRecurrenceRules()
-  save()
+  remove(): void
+  removeAllRecurrenceRules(): void
+  save(): void
   static thisWeek(calendars: Calendar[]): Promise<CalendarEvent[]>
   static today(calendars: Calendar[]): Promise<CalendarEvent[]>
   static tomorrow(calendars: Calendar[]): Promise<CalendarEvent[]>

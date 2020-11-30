@@ -1,4 +1,4 @@
-import {request, ResponseType} from '@app/lib/help'
+import {getImage, request, ResponseType} from '@app/lib/help'
 import {h} from '../lib/jsx-runtime'
 
 export interface BiliUpData {
@@ -19,7 +19,7 @@ class MyWidget {
     // if (!config.runsInWidget) return
     const widget = ((await this.render()) as unknown) as ListWidget
     Script.setWidget(widget)
-    widget.presentMedium()
+    !config.runsInWidget && (await widget.presentMedium())
     Script.complete()
   }
 
@@ -30,6 +30,9 @@ class MyWidget {
 
     // 粉丝数
     const followers = getUpDataRes?.data.following as number
+
+    // icon
+    const icon = await getImage({url: 'https://www.bilibili.com/favicon.ico'})
 
     // 粉丝数文字
     const FollowerText = () => {
@@ -50,9 +53,10 @@ class MyWidget {
 
     // 渲染
     return (
-      <wbox href="bilibili://" size="medium">
+      <wbox href="bilibili://">
         <wstack>
-          <wimage src="https://www.bilibili.com/favicon.ico" width={15} height={15}></wimage>
+          <wimage src={icon} width={15} height={15}></wimage>
+          <wspacer length={10}></wspacer>
           <wtext opacity={0.9} font={14}>
             哔哩哔哩粉丝
           </wtext>
@@ -61,7 +65,7 @@ class MyWidget {
         <FollowerText></FollowerText>
         <wspacer length={20}></wspacer>
         <wtext font={12} textAlign="center" opacity={0.5}>
-          更新于:{this.nowTime}
+          更新于:{this.nowTime()}
         </wtext>
       </wbox>
     )

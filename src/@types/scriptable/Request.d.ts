@@ -11,8 +11,6 @@ declare class Request<RES = Record<string | number, unknown>> {
 
   timeoutInterval: number
 
-  onRedirect: (request: Request) => Request
-
   readonly response: Record<string, unknown>
 
   allowInsecureRequest: boolean
@@ -27,11 +25,11 @@ declare class Request<RES = Record<string | number, unknown>> {
 
   loadImage(): Promise<Image>
 
-  addParameterToMultipart(name: string, value: string)
+  addParameterToMultipart(name: string, value: string): void
 
-  addFileDataToMultipart(data: Data, mimeType: string, name: string, filename: string)
+  addFileDataToMultipart(data: Data, mimeType: string, name: string, filename: string): void
 
-  addFileToMultipart(filePath: string, name: string, filename: string)
+  addFileToMultipart(filePath: string, name: string, filename: string): void
 
-  addImageToMultipart(image: Image, name: string, filename: string)
+  addImageToMultipart(image: Image, name: string, filename: string): void
 }

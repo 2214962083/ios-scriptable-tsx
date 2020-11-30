@@ -58,5 +58,5 @@ declare class Notification {
 
   static removeDelivered(identifiers: string[]): Promise<void>
 
-  static resetCurrent()
+  static resetCurrent(): void
 }

@@ -2,7 +2,12 @@ import {DetailedHTMLProps, HTMLAttributes} from 'react'
 
 /**容器组件属性*/
 export interface WstackProps extends HTMLAttributes<Element> {
-  /**背景*/
+  /**
+   * 背景
+   * 可以为 Color 对象、hex 字符串
+   * 可以为 Image 对象、网络图片链接
+   * 可以为渐变对象 LinearGradient
+   */
   background?: Color | Image | LinearGradient | string
 
   /**与同级上一个元素的间隔*/
@@ -26,7 +31,7 @@ export interface WstackProps extends HTMLAttributes<Element> {
   /**边框颜色*/
   borderColor?: Color | string
 
-  /**点击跳转的链接*/
+  /**点击打开哪个 url, 不与 onClick 共存，当 onClick 存在时，只执行 onClick*/
   href?: string
 
   /**内容垂直方向对齐方式*/
@@ -34,6 +39,9 @@ export interface WstackProps extends HTMLAttributes<Element> {
 
   /**排版方向（默认横着排）*/
   flexDirection?: 'row' | 'column'
+
+  /**点击事件，不与 href 共存，当 href 存在时，只执行 onClick */
+  onClick?: () => unknown
 }
 
 declare global {

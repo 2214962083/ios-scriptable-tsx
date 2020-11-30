@@ -32,7 +32,7 @@ class Base {
 
   init(widgetFamily = config.widgetFamily): void {
     // 组件大小：small,medium,large
-    this.widgetFamily = widgetFamily
+    this.widgetFamily = widgetFamily || 'medium'
     // 系统设置的key，这里分为三个类型：
     // 1. 全局
     // 2. 不同尺寸的小组件
@@ -419,7 +419,7 @@ class Base {
     if (color) _title.textColor = color as Color
     _title.textOpacity = 0.7
     _title.font = Font.boldSystemFont(12)
-    widget.addSpacer(15)
+    widget.addSpacer(35)
     return widget
   }
 
@@ -775,7 +775,7 @@ const Testing = async (Widget: {new (arg: string): Base}, default_args = ''): Pr
   } else {
     const {act, data, __arg, __size} = args.queryParameters
     M = new Widget(__arg || default_args || '')
-    if (__size) M.init(__size)
+    if (__size) M.init(__size as typeof config.widgetFamily)
     if (!act || !M['_actions']) {
       // 弹出选择菜单
       const actions = M['_actions']
@@ -873,7 +873,7 @@ const Testing = async (Widget: {new (arg: string): Base}, default_args = ''): Pr
               // 3. 重新执行 widget class
               // delete M
               M = new NewWidget(__arg || default_args || '')
-              if (__size) M.init(__size)
+              if (__size) M.init(__size as typeof config.widgetFamily)
               // 写入文件
               FileManager.local().writeString(SELF_FILE, _res)
               // 执行预览

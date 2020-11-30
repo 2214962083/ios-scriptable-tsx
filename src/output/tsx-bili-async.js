@@ -124,23 +124,18 @@ class GenrateView {
   static setListWidget(listWidget2) {
     this.listWidget = listWidget2
   }
-  static wbox(props, ...children) {
-    const {background, spacing, href, updateDate, padding, size} = props
+  static async wbox(props, ...children) {
+    const {background, spacing, href, updateDate, padding} = props
     isDefined(background) && setBackground(this.listWidget, background)
     isDefined(spacing) && (this.listWidget.spacing = spacing)
     isDefined(href) && (this.listWidget.url = href)
     isDefined(updateDate) && (this.listWidget.refreshAfterDate = updateDate)
     isDefined(padding) && this.listWidget.setPadding(...padding)
-    const sizeMap = {
-      small: 'presentSmall',
-      medium: 'presentMedium',
-      large: 'presentLarge',
-    }
-    runWidgetFunc(this.listWidget, sizeMap[size])
-    addChildren(this.listWidget, children)
+    await addChildren(this.listWidget, children)
+    return this.listWidget
   }
   static wstack(props, ...children) {
-    return parentInstance => {
+    return async parentInstance => {
       const widgetStack = parentInstance.addStack()
       const {
         background,
@@ -174,12 +169,11 @@ class GenrateView {
         column: 'layoutVertically',
       }
       isDefined(flexDirection) && runWidgetFunc(widgetStack, flexDirectionMap[flexDirection])
-      addChildren(widgetStack, children)
+      await addChildren(widgetStack, children)
     }
   }
   static wimage(props) {
     return async parentInstance => {
-      const widgetImage = parentInstance.addImage()
       const {
         src,
         href,
@@ -195,7 +189,9 @@ class GenrateView {
         imageAlign,
         mode,
       } = props
-      isDefined(src) && (widgetImage.image = typeof src === 'string' ? await getImage({url: src}) : src)
+      const _image = typeof src === 'string' ? await getImage({url: src}) : src
+      const widgetImage = parentInstance.addImage(_image)
+      widgetImage.image = _image
       isDefined(href) && (widgetImage.url = href)
       isDefined(resizable) && (widgetImage.resizable = resizable)
       widgetImage.imageSize = new Size(width, height)
@@ -220,14 +216,14 @@ class GenrateView {
   }
   static wspacer(props) {
     return parentInstance => {
-      const widgetSpacer = parentInstance.addSpacer()
+      const widgetSpacer = parentInstance.addSpacer(0)
       const {length} = props
       isDefined(length) && (widgetSpacer.length = length)
     }
   }
   static wtext(props, ...children) {
     return parentInstance => {
-      const widgetText = parentInstance.addText()
+      const widgetText = parentInstance.addText('')
       const {textColor, font, opacity, maxLine, scale, shadowColor, shadowRadius, shadowOffset, href, textAlign} = props
       isDefined(textColor) && (widgetText.textColor = getColor(textColor))
       isDefined(font) && (widgetText.font = typeof font === 'number' ? Font.systemFont(font) : font)
@@ -251,7 +247,7 @@ class GenrateView {
   }
   static wdate(props) {
     return parentInstance => {
-      const widgetDate = parentInstance.addDate()
+      const widgetDate = parentInstance.addDate(new Date())
       const {
         date,
         mode,
@@ -296,27 +292,30 @@ class GenrateView {
 const listWidget = new ListWidget()
 GenrateView.setListWidget(listWidget)
 async function h(type, props, ...children) {
+  props = props || {}
   switch (type) {
     case 'wbox':
-      await GenrateView.wbox(props, ...children)
+      return await GenrateView.wbox(props, ...children)
       break
     case 'wdate':
-      await GenrateView.wdate(props)
+      return await GenrateView.wdate(props)
       break
     case 'wimage':
-      await GenrateView.wimage(props)
+      return await GenrateView.wimage(props)
       break
     case 'wspacer':
-      await GenrateView.wspacer(props)
+      return await GenrateView.wspacer(props)
       break
     case 'wstack':
-      await GenrateView.wstack(props, ...children)
+      return await GenrateView.wstack(props, ...children)
       break
     case 'wtext':
-      await GenrateView.wtext(props, ...children)
+      return await GenrateView.wtext(props, ...children)
+      break
+    default:
+      return typeof type === 'function' ? await type({children, ...props}) : null
       break
   }
-  return listWidget
 }
 function getColor(color) {
   return typeof color === 'string' ? new Color(color) : color
@@ -336,11 +335,11 @@ function setBackground(widget, bg) {
     widget.backgroundGradient = _bg
   }
 }
-function addChildren(instance, children) {
+async function addChildren(instance, children) {
   if (children && Array.isArray(children)) {
-    children.map(child => {
-      typeof child === 'function' ? child(instance) : ''
-    })
+    for (const child of children) {
+      typeof child === 'function' ? await child(instance) : ''
+    }
   }
 }
 function isDefined(value) {
@@ -389,7 +388,6 @@ class MyWidget {
       'wbox',
       {
         href: 'bilibili://',
-        size: 'medium',
       },
       /* @__PURE__ */ h(
         'wstack',
@@ -423,7 +421,7 @@ class MyWidget {
           opacity: 0.5,
         },
         '更新于:',
-        this.nowTime,
+        this.nowTime(),
       ),
     )
   }

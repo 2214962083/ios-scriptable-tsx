@@ -97,7 +97,7 @@ export interface ShowActionSheetParams {
     text: string
 
     /** wran 的话就会标红文字 */
-    type: 'normal' | 'warn'
+    type?: 'normal' | 'warn'
   }[]
 }
 
@@ -197,7 +197,8 @@ function setStorageDirectory(dirPath: string) {
       const filePath = FileManager.local().joinPath(FileManager.local().libraryDirectory(), hashKey)
       if (FileManager.local().fileExists(filePath)) {
         const image = Image.fromFile(filePath)
-        return image ? ((image as unknown) as T) : ((Data.fromFile(filePath) as unknown) as T)
+        const file = Data.fromFile(filePath)
+        return image ? ((image as unknown) as T) : file ? ((file as unknown) as T) : null
       }
 
       if (Keychain.contains(hashKey)) {
@@ -267,7 +268,8 @@ export const removeCache = setStorageDirectory(FileManager.local().temporaryDire
  */
 export async function request<RES = unknown>(args: RequestParams): Promise<ResponseType<RES>> {
   const {url, data, header, dataType = 'json', method = 'GET', timeout = 60 * 1000, useCache = false} = args
-  const cache = getStorage(url) as ResponseType<RES>
+  const cacheKey = `url:${url}`
+  const cache = getStorage(cacheKey) as ResponseType<RES>
   if (useCache && cache !== null) return cache
   const req = new Request<RES>(url)
   req.method = method
@@ -294,7 +296,7 @@ export async function request<RES = unknown>(args: RequestParams): Promise<Respo
         res = await req.loadJSON()
     }
     const result = {...req.response, data: res as RES} as ResponseType<RES>
-    setStorage(url, result)
+    setStorage(cacheKey, result)
     return result
   } catch (err) {
     if (cache !== null) return cache
@@ -411,6 +413,10 @@ export async function showNotification(args: ShowNotificationParams): Promise<vo
   return await notification.schedule()
 }
 
+/**
+ * 多方式获取图片
+ * @param args 获取图片所需参数
+ */
 export async function getImage(args: GetImageParams): Promise<Image> {
   const {filepath, url, useCache = true} = args
   const generateDefaultImage = async () => {
@@ -426,13 +432,18 @@ export async function getImage(args: GetImageParams): Promise<Image> {
       return Image.fromFile(filepath) || (await generateDefaultImage())
     }
     if (!url) return await generateDefaultImage()
+    const cacheKey = `image:${url}`
     if (useCache) {
       const cache = getCache<Image>(url)
-      if (cache) return cache
+      if (cache instanceof Image) {
+        return cache
+      } else {
+        removeCache(cacheKey)
+      }
     }
     const res = await request<Image>({url, dataType: 'image'})
     const image = res && res.data
-    image && setCache(url, image)
+    image && setCache(cacheKey, image)
     return image || (await generateDefaultImage())
   } catch (err) {
     return await generateDefaultImage()

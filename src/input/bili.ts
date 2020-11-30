@@ -11,7 +11,7 @@ class Im3xWidget {
    */
   constructor(arg = '') {
     this.arg = arg
-    this.widgetSize = config.widgetFamily
+    this.widgetSize = config.widgetFamily || 'medium'
   }
 
   //渲染组件

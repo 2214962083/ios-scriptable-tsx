@@ -1,37 +1,144 @@
-import {WboxProps} from '@app/@types/widget/wbox'
-import {WimageProps} from '@app/@types/widget/wimage'
-import {WdateProps} from './../@types/widget/wdate.d'
-import {WspacerProps} from './../@types/widget/wspacer.d'
-import {WstackProps} from './../@types/widget/wstack.d'
-import {WtextProps} from './../@types/widget/wtext.d'
-import {getImage, hash} from '@app/lib/help'
-
-type WidgetType = 'wbox' | 'wdate' | 'wimage' | 'wspacer' | 'wstack' | 'wtext'
-type WidgetProps = WboxProps | WdateProps | WspacerProps | WstackProps | WtextProps | WimageProps
-type Children<T extends Scriptable.Widget> = ((instance: T) => Promise<void>)[]
-/**属性对应关系*/
-type KeyMap<KEY extends null | undefined | string | symbol | number> = Record<NonNullable<KEY>, () => void>
-
-class GenrateView {
-  public static listWidget: ListWidget
-  static setListWidget(listWidget: ListWidget): void {
-    this.listWidget = listWidget
+const MODULE = module
+// src/lib/help.ts
+function setStorageDirectory(dirPath) {
+  return {
+    setStorage(key, value) {
+      const hashKey = hash(key)
+      const filePath = FileManager.local().joinPath(dirPath, hashKey)
+      if (value instanceof Image) {
+        FileManager.local().writeImage(filePath, value)
+        return
+      }
+      if (value instanceof Data) {
+        FileManager.local().write(filePath, value)
+      }
+      Keychain.set(hashKey, JSON.stringify(value))
+    },
+    getStorage(key) {
+      const hashKey = hash(key)
+      const filePath = FileManager.local().joinPath(FileManager.local().libraryDirectory(), hashKey)
+      if (FileManager.local().fileExists(filePath)) {
+        const image = Image.fromFile(filePath)
+        const file = Data.fromFile(filePath)
+        return image ? image : file ? file : null
+      }
+      if (Keychain.contains(hashKey)) {
+        return JSON.parse(Keychain.get(hashKey))
+      } else {
+        return null
+      }
+    },
+    removeStorage(key) {
+      const hashKey = hash(key)
+      const filePath = FileManager.local().joinPath(FileManager.local().libraryDirectory(), hashKey)
+      if (FileManager.local().fileExists(filePath)) {
+        FileManager.local().remove(hashKey)
+      }
+      if (Keychain.contains(hashKey)) {
+        Keychain.remove(hashKey)
+      }
+    },
   }
-  // 根组件
-  static async wbox(props: WboxProps, ...children: Children<ListWidget>) {
+}
+const setStorage = setStorageDirectory(FileManager.local().libraryDirectory()).setStorage
+const getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
+const removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
+const setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
+const getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
+const removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
+async function request(args2) {
+  const {url, data, header, dataType = 'json', method = 'GET', timeout = 60 * 1e3, useCache = false} = args2
+  const cacheKey = `url:${url}`
+  const cache = getStorage(cacheKey)
+  if (useCache && cache !== null) return cache
+  const req = new Request(url)
+  req.method = method
+  header && (req.headers = header)
+  data && (req.body = data)
+  req.timeoutInterval = timeout / 1e3
+  req.allowInsecureRequest = true
+  let res
+  try {
+    switch (dataType) {
+      case 'json':
+        res = await req.loadJSON()
+        break
+      case 'text':
+        res = await req.loadString()
+        break
+      case 'image':
+        res = await req.loadImage()
+        break
+      case 'data':
+        res = await req.load()
+        break
+      default:
+        res = await req.loadJSON()
+    }
+    const result = {...req.response, data: res}
+    setStorage(cacheKey, result)
+    return result
+  } catch (err) {
+    if (cache !== null) return cache
+    return err
+  }
+}
+async function getImage(args2) {
+  const {filepath, url, useCache = true} = args2
+  const generateDefaultImage = async () => {
+    const ctx = new DrawContext()
+    ctx.size = new Size(100, 100)
+    ctx.setFillColor(Color.red())
+    ctx.fillRect(new Rect(0, 0, 100, 100))
+    return await ctx.getImage()
+  }
+  try {
+    if (filepath) {
+      return Image.fromFile(filepath) || (await generateDefaultImage())
+    }
+    if (!url) return await generateDefaultImage()
+    const cacheKey = `image:${url}`
+    if (useCache) {
+      const cache = getCache(url)
+      if (cache instanceof Image) {
+        return cache
+      } else {
+        removeCache(cacheKey)
+      }
+    }
+    const res = await request({url, dataType: 'image'})
+    const image = res && res.data
+    image && setCache(cacheKey, image)
+    return image || (await generateDefaultImage())
+  } catch (err) {
+    return await generateDefaultImage()
+  }
+}
+function hash(string) {
+  let hash2 = 0,
+    i,
+    chr
+  for (i = 0; i < string.length; i++) {
+    chr = string.charCodeAt(i)
+    hash2 = (hash2 << 5) - hash2 + chr
+    hash2 |= 0
+  }
+  return `hash_${hash2}`
+}
+
+// src/lib/jsx-runtime.ts
+class GenrateView {
+  static setListWidget(listWidget2) {
+    this.listWidget = listWidget2
+  }
+  static async wbox(props, ...children) {
     const {background, spacing, href, updateDate, padding, onClick} = props
     try {
-      // background
       isDefined(background) && (await setBackground(this.listWidget, background))
-      // spacing
       isDefined(spacing) && (this.listWidget.spacing = spacing)
-      // href
       isDefined(href) && (this.listWidget.url = href)
-      // updateDate
       isDefined(updateDate) && (this.listWidget.refreshAfterDate = updateDate)
-      // padding
       isDefined(padding) && this.listWidget.setPadding(...padding)
-      // onClick
       isDefined(onClick) && runOnClick(this.listWidget, onClick)
       await addChildren(this.listWidget, children)
     } catch (err) {
@@ -39,13 +146,8 @@ class GenrateView {
     }
     return this.listWidget
   }
-  // 容器组件
-  static wstack(props: WstackProps, ...children: Children<WidgetStack>) {
-    return async (
-      parentInstance: Scriptable.Widget & {
-        addStack(): WidgetStack
-      },
-    ) => {
+  static wstack(props, ...children) {
+    return async parentInstance => {
       const widgetStack = parentInstance.addStack()
       const {
         background,
@@ -62,36 +164,25 @@ class GenrateView {
         onClick,
       } = props
       try {
-        // background
         isDefined(background) && (await setBackground(widgetStack, background))
-        // spacing
         isDefined(spacing) && (widgetStack.spacing = spacing)
-        // padding
         isDefined(padding) && widgetStack.setPadding(...padding)
-        // borderRadius
         isDefined(borderRadius) && (widgetStack.cornerRadius = borderRadius)
-        // borderWidth
         isDefined(borderWidth) && (widgetStack.borderWidth = borderWidth)
-        // borderColor
         isDefined(borderColor) && (widgetStack.borderColor = getColor(borderColor))
-        // href
         isDefined(href) && (widgetStack.url = href)
-        // width、height
         widgetStack.size = new Size(width, height)
-        // verticalAlign
-        const verticalAlignMap: KeyMap<WstackProps['verticalAlign']> = {
+        const verticalAlignMap = {
           bottom: () => widgetStack.bottomAlignContent(),
           center: () => widgetStack.centerAlignContent(),
           top: () => widgetStack.topAlignContent(),
         }
         isDefined(verticalAlign) && verticalAlignMap[verticalAlign]()
-        // flexDirection
-        const flexDirectionMap: KeyMap<WstackProps['flexDirection']> = {
+        const flexDirectionMap = {
           row: () => widgetStack.layoutHorizontally(),
           column: () => widgetStack.layoutVertically(),
         }
         isDefined(flexDirection) && flexDirectionMap[flexDirection]()
-        // onClick
         isDefined(onClick) && runOnClick(widgetStack, onClick)
       } catch (err) {
         console.error(err)
@@ -99,13 +190,8 @@ class GenrateView {
       await addChildren(widgetStack, children)
     }
   }
-  // 图片组件
-  static wimage(props: WimageProps) {
-    return async (
-      parentInstance: Scriptable.Widget & {
-        addImage(image: Image): WidgetImage
-      },
-    ) => {
+  static wimage(props) {
+    return async parentInstance => {
       const {
         src,
         href,
@@ -122,80 +208,51 @@ class GenrateView {
         mode,
         onClick,
       } = props
-
-      let _image: Image = src as Image
-
-      // src 为网络连接时
+      let _image = src
       typeof src === 'string' && isUrl(src) && (_image = await getImage({url: src}))
-
-      // src 为 icon name 时
       typeof src === 'string' && !isUrl(src) && (_image = SFSymbol.named(src).image)
       const widgetImage = parentInstance.addImage(_image)
       widgetImage.image = _image
-
       try {
-        // href
         isDefined(href) && (widgetImage.url = href)
-        // resizable
         isDefined(resizable) && (widgetImage.resizable = resizable)
-        // width、height
         widgetImage.imageSize = new Size(width, height)
-        // opacity
         isDefined(opacity) && (widgetImage.imageOpacity = opacity)
-        // borderRadius
         isDefined(borderRadius) && (widgetImage.cornerRadius = borderRadius)
-        // borderWidth
         isDefined(borderWidth) && (widgetImage.borderWidth = borderWidth)
-        // borderColor
         isDefined(borderColor) && (widgetImage.borderColor = getColor(borderColor))
-        // containerRelativeShape
         isDefined(containerRelativeShape) && (widgetImage.containerRelativeShape = containerRelativeShape)
-        // filter
         isDefined(filter) && (widgetImage.tintColor = getColor(filter))
-        // imageAlign
-        const imageAlignMap: KeyMap<WimageProps['imageAlign']> = {
+        const imageAlignMap = {
           left: () => widgetImage.leftAlignImage(),
           center: () => widgetImage.centerAlignImage(),
           right: () => widgetImage.rightAlignImage(),
         }
         isDefined(imageAlign) && imageAlignMap[imageAlign]()
-        // mode
-        const modeMap: KeyMap<WimageProps['mode']> = {
+        const modeMap = {
           contain: () => widgetImage.applyFittingContentMode(),
           fill: () => widgetImage.applyFillingContentMode(),
         }
         isDefined(mode) && modeMap[mode]()
-        // onClick
         isDefined(onClick) && runOnClick(widgetImage, onClick)
       } catch (err) {
         console.error(err)
       }
     }
   }
-  // 占位空格组件
-  static wspacer(props: WspacerProps) {
-    return async (
-      parentInstance: Scriptable.Widget & {
-        addSpacer(length?: number): WidgetSpacer
-      },
-    ) => {
+  static wspacer(props) {
+    return async parentInstance => {
       const widgetSpacer = parentInstance.addSpacer()
       const {length} = props
       try {
-        // length
         isDefined(length) && (widgetSpacer.length = length)
       } catch (err) {
         console.error(err)
       }
     }
   }
-  // 文字组件
-  static wtext(props: WtextProps, ...children: string[]) {
-    return async (
-      parentInstance: Scriptable.Widget & {
-        addText(text?: string): WidgetText
-      },
-    ) => {
+  static wtext(props, ...children) {
+    return async parentInstance => {
       const widgetText = parentInstance.addText('')
       const {
         textColor,
@@ -210,50 +267,33 @@ class GenrateView {
         textAlign,
         onClick,
       } = props
-
       if (children && Array.isArray(children)) {
         widgetText.text = children.join('')
       }
       try {
-        // textColor
         isDefined(textColor) && (widgetText.textColor = getColor(textColor))
-        // font
         isDefined(font) && (widgetText.font = typeof font === 'number' ? Font.systemFont(font) : font)
-        // opacity
         isDefined(opacity) && (widgetText.textOpacity = opacity)
-        // maxLine
         isDefined(maxLine) && (widgetText.lineLimit = maxLine)
-        // scale
         isDefined(scale) && (widgetText.minimumScaleFactor = scale)
-        // shadowColor
         isDefined(shadowColor) && (widgetText.shadowColor = getColor(shadowColor))
-        // shadowRadius
         isDefined(shadowRadius) && (widgetText.shadowRadius = shadowRadius)
-        // shadowOffset
         isDefined(shadowOffset) && (widgetText.shadowOffset = shadowOffset)
-        // href
         isDefined(href) && (widgetText.url = href)
-        //textAlign
-        const textAlignMap: KeyMap<WtextProps['textAlign']> = {
+        const textAlignMap = {
           left: () => widgetText.leftAlignText(),
           center: () => widgetText.centerAlignText(),
           right: () => widgetText.rightAlignText(),
         }
         isDefined(textAlign) && textAlignMap[textAlign]()
-        // onClick
         isDefined(onClick) && runOnClick(widgetText, onClick)
       } catch (err) {
         console.error(err)
       }
     }
   }
-  // 日期组件
-  static wdate(props: WdateProps) {
-    return async (
-      parentInstance: Scriptable.Widget & {
-        addDate(date: Date): WidgetDate
-      },
-    ) => {
+  static wdate(props) {
+    return async parentInstance => {
       const widgetDate = parentInstance.addDate(new Date())
       const {
         date,
@@ -270,30 +310,18 @@ class GenrateView {
         textAlign,
         onClick,
       } = props
-
       try {
-        // date
         isDefined(date) && (widgetDate.date = date)
-        // textColor
         isDefined(textColor) && (widgetDate.textColor = getColor(textColor))
-        // font
         isDefined(font) && (widgetDate.font = typeof font === 'number' ? Font.systemFont(font) : font)
-        // opacity
         isDefined(opacity) && (widgetDate.textOpacity = opacity)
-        // maxLine
         isDefined(maxLine) && (widgetDate.lineLimit = maxLine)
-        // scale
         isDefined(scale) && (widgetDate.minimumScaleFactor = scale)
-        // shadowColor
         isDefined(shadowColor) && (widgetDate.shadowColor = getColor(shadowColor))
-        // shadowRadius
         isDefined(shadowRadius) && (widgetDate.shadowRadius = shadowRadius)
-        // shadowOffset
         isDefined(shadowOffset) && (widgetDate.shadowOffset = shadowOffset)
-        // href
         isDefined(href) && (widgetDate.url = href)
-        // mode
-        const modeMap: KeyMap<WdateProps['mode']> = {
+        const modeMap = {
           time: () => widgetDate.applyTimeStyle(),
           date: () => widgetDate.applyDateStyle(),
           relative: () => widgetDate.applyRelativeStyle(),
@@ -301,14 +329,12 @@ class GenrateView {
           timer: () => widgetDate.applyTimerStyle(),
         }
         isDefined(mode) && modeMap[mode]()
-        // textAlign
-        const textAlignMap: KeyMap<WdateProps['textAlign']> = {
+        const textAlignMap = {
           left: () => widgetDate.leftAlignText(),
           center: () => widgetDate.centerAlignText(),
           right: () => widgetDate.rightAlignText(),
         }
         isDefined(textAlign) && textAlignMap[textAlign]()
-        // onClick
         isDefined(onClick) && runOnClick(widgetDate, onClick)
       } catch (err) {
         console.error(err)
@@ -316,76 +342,45 @@ class GenrateView {
     }
   }
 }
-
 const listWidget = new ListWidget()
 GenrateView.setListWidget(listWidget)
-export function h(
-  type: WidgetType | (() => () => void),
-  props?: WidgetProps,
-  ...children: Children<Scriptable.Widget> | string[]
-): Promise<unknown> | unknown {
+function h(type, props, ...children) {
   props = props || {}
   switch (type) {
     case 'wbox':
-      return GenrateView.wbox(props as WboxProps, ...(children as Children<ListWidget>))
+      return GenrateView.wbox(props, ...children)
       break
     case 'wdate':
-      return GenrateView.wdate(props as WdateProps)
+      return GenrateView.wdate(props)
       break
     case 'wimage':
-      return GenrateView.wimage(props as WimageProps)
+      return GenrateView.wimage(props)
       break
     case 'wspacer':
-      return GenrateView.wspacer(props as WspacerProps)
+      return GenrateView.wspacer(props)
       break
     case 'wstack':
-      return GenrateView.wstack(props as WstackProps, ...(children as Children<WidgetStack>))
+      return GenrateView.wstack(props, ...children)
       break
     case 'wtext':
-      return GenrateView.wtext(props as WtextProps, ...(children as string[]))
+      return GenrateView.wtext(props, ...children)
       break
     default:
-      // custom component
-      return type instanceof Function
-        ? ((type as unknown) as (props: WidgetProps) => Promise<Scriptable.Widget>)({children, ...props})
-        : null
+      return type instanceof Function ? type({children, ...props}) : null
       break
   }
 }
-
-/**
- * 输出真正颜色（比如string转color）
- * @param color
- */
-function getColor(color: Color | string): Color {
+function getColor(color) {
   return typeof color === 'string' ? new Color(color) : color
 }
-
-/**
- * 输出真正背景（比如string转color）
- * @param bg 输入背景参数
- */
-async function getBackground(bg: Color | Image | LinearGradient | string): Promise<Color | Image | LinearGradient> {
+async function getBackground(bg) {
   bg = (typeof bg === 'string' && !isUrl(bg)) || bg instanceof Color ? getColor(bg) : bg
   if (typeof bg === 'string') {
     bg = await getImage({url: bg})
   }
   return bg
 }
-
-/**
- * 设置背景
- * @param widget 实例
- * @param bg 背景
- */
-async function setBackground(
-  widget: Scriptable.Widget & {
-    backgroundColor: Color
-    backgroundImage: Image
-    backgroundGradient: LinearGradient
-  },
-  bg: Color | Image | LinearGradient | string,
-): Promise<void> {
+async function setBackground(widget, bg) {
   const _bg = await getBackground(bg)
   if (_bg instanceof Color) {
     widget.backgroundColor = _bg
@@ -397,46 +392,24 @@ async function setBackground(
     widget.backgroundGradient = _bg
   }
 }
-
-/**
- * 添加子组件列表（把当前实例传下去）
- * @param instance 当前实例
- * @param children 子组件列表
- */
-async function addChildren<T extends Scriptable.Widget>(instance: T, children: Children<T>): Promise<void> {
+async function addChildren(instance, children) {
   if (children && Array.isArray(children)) {
     for (const child of children) {
       child instanceof Function ? await child(instance) : ''
     }
   }
 }
-
-/**
- * 如果某值不是 undefined、null、NaN 则返回 true
- * @param value 值
- */
-function isDefined<T>(value: T | undefined | null): value is T {
+function isDefined(value) {
   if (typeof value === 'number' && !isNaN(value)) {
     return true
   }
-  return value !== undefined && value !== null
+  return value !== void 0 && value !== null
 }
-
-/**
- * 判断一个值是否为网络连接
- * @param value 值
- */
-function isUrl(value: string): boolean {
+function isUrl(value) {
   const reg = /^(http|https)\:\/\/[\w\W]+/
   return reg.test(value)
 }
-
-/**
- * 执行点击事件
- * @param instance 当前实例
- * @param onClick 点击事件
- */
-function runOnClick<T extends Scriptable.Widget & {url: string}>(instance: T, onClick: () => unknown) {
+function runOnClick(instance, onClick) {
   const _eventId = hash(onClick.toString())
   instance.url = `${URLScheme.forRunningScript()}?eventId=${encodeURIComponent(_eventId)}`
   const {eventId} = args.queryParameters
@@ -444,3 +417,113 @@ function runOnClick<T extends Scriptable.Widget & {url: string}>(instance: T, on
     onClick()
   }
 }
+
+// src/input/tsx-bili.tsx
+class MyWidget {
+  async init() {
+    const widget = await this.render()
+    Script.setWidget(widget)
+    !config.runsInWidget && (await widget.presentMedium())
+    Script.complete()
+  }
+  async render() {
+    const getUpDataRes = (await this.getUpData(83540912)).data
+    const followers = getUpDataRes?.data.following
+    const icon = await getImage({url: 'https://www.bilibili.com/favicon.ico'})
+    const FollowerText = () => {
+      if (getUpDataRes?.code != 0) {
+        return /* @__PURE__ */ h(
+          'wtext',
+          {
+            textAlign: 'center',
+            textColor: '#fb7299',
+            font: 14,
+          },
+          '请填写B站MID',
+        )
+      } else {
+        return /* @__PURE__ */ h(
+          'wtext',
+          {
+            textAlign: 'center',
+            textColor: '#fb7299',
+            font: Font.boldRoundedSystemFont(this.getFontsize(followers)),
+          },
+          this.toThousands(followers),
+        )
+      }
+    }
+    return /* @__PURE__ */ h(
+      'wbox',
+      {
+        href: 'bilibili://',
+      },
+      /* @__PURE__ */ h(
+        'wstack',
+        null,
+        /* @__PURE__ */ h('wimage', {
+          src: icon,
+          width: 15,
+          height: 15,
+        }),
+        /* @__PURE__ */ h('wspacer', {
+          length: 10,
+        }),
+        /* @__PURE__ */ h(
+          'wtext',
+          {
+            opacity: 0.9,
+            font: 14,
+          },
+          '哔哩哔哩粉丝',
+        ),
+      ),
+      /* @__PURE__ */ h('wspacer', {
+        length: 20,
+      }),
+      /* @__PURE__ */ h(FollowerText, null),
+      /* @__PURE__ */ h('wspacer', {
+        length: 20,
+      }),
+      /* @__PURE__ */ h(
+        'wtext',
+        {
+          font: 12,
+          textAlign: 'center',
+          opacity: 0.5,
+        },
+        '更新于:',
+        this.nowTime(),
+      ),
+    )
+  }
+  async getUpData(id) {
+    return await request({
+      url: `http://api.bilibili.com/x/relation/stat?vmid=${id}`,
+      dataType: 'json',
+    })
+  }
+  toThousands(num) {
+    return (num || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,')
+  }
+  getFontsize(num) {
+    if (num < 99) {
+      return 38
+    } else if (num < 9999 && num > 100) {
+      return 30
+    } else if (num < 99999 && num > 1e4) {
+      return 28
+    } else if (num < 999999 && num > 1e5) {
+      return 24
+    } else if (num < 9999999 && num > 1e6) {
+      return 22
+    } else {
+      return 20
+    }
+  }
+  nowTime() {
+    const date = new Date()
+    return date.toLocaleTimeString('chinese', {hour12: false})
+  }
+}
+new MyWidget().init()

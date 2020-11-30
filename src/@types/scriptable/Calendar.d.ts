@@ -14,7 +14,7 @@ declare class Calendar {
   static forEventsByTitle(title: string): Promise<Calendar>
   static forReminders(): Promise<Calendar[]>
   static forRemindersByTitle(title: string): Promise<Calendar>
-  static presentPicker(allowMultiple: boolean = false): Promise<Calendar[]>
+  static presentPicker(allowMultiple: boolean): Promise<Calendar[]>
   remove(): void
   save(): void
   supportsAvailability(availability: Availability): boolean
