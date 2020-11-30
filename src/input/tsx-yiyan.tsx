@@ -18,17 +18,17 @@ interface RemoteData {
 
 export class YiyanWidget {
   private widget!: ListWidget
-  async init() {
+  async init(): Promise<void> {
     // 打印打包环境
-    console.log(process.env.NODE_ENV === 'production' ? 'production' : 'development')
+    console.log(process.env.HELLO + ',' + process.env.MOMENT)
 
-    this.widget = ((await this.render()) as unknown) as ListWidget
+    this.widget = (await this.render()) as ListWidget
     if (!config.runsInWidget) return
     Script.setWidget(this.widget)
     // !config.runsInWidget && (await widget.presentMedium())
     Script.complete()
   }
-  async render() {
+  async render(): Promise<unknown> {
     // const icon = await getImage({
     //   url: 'https://txc.gtimg.com/data/285778/2020/1012/f9cf50f08ebb8bd391a7118c8348f5d8.png',
     // })
