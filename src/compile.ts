@@ -3,15 +3,22 @@ import fs from 'fs'
 import path from 'path'
 import {promisify} from 'util'
 
+type CompileType = 'all' | 'main'
+const compileType = (process.env.compileType as CompileType) || 'main'
+
 const readdir = promisify(fs.readdir)
 const stat = promisify(fs.stat)
 
+const resolve = (_path: string): string => path.resolve(__dirname, _path)
+
 const define: Record<string, string> = {}
 for (const key in process.env) {
-  //  不能含有括号
-  if (/[\(\)]/.test(key)) continue
+  //  不能含有括号、-号、空格
+  if (/[\(\)\-\s]/.test(key)) continue
   define[`process.env.${key}`] = JSON.stringify(process.env[key])
 }
+
+// console.log(define)
 
 // 深度获取某个文件夹里所有文件路径（包括子文件夹）
 async function getFilesFromDir(dir: string): Promise<string[]> {
@@ -27,26 +34,25 @@ async function getFilesFromDir(dir: string): Promise<string[]> {
 
 ;(async () => {
   // 库文件夹
-  // const libDir: string = path.resolve(__dirname, 'lib')
+  // const libDir: string = resolve('lib')
 
   // 输入文件夹
-  const inputDir: string = path.resolve(__dirname, 'input')
+  const inputDir: string = resolve('input')
 
-  // 输出文件夹
-  const outputDir: string = path.resolve(__dirname, 'output')
+  // 主入口文件
+  const mainPath: string = resolve('./main.ts')
 
   // 计算输入文件路径集合
-  // const inputPaths: string[] = fs.readdirSync(inputDir).map(fileName => path.resolve(inputDir, fileName))
-  const inputPaths: string[] = await getFilesFromDir(inputDir)
+  const inputPaths: string[] = compileType === 'all' ? await getFilesFromDir(inputDir) : [mainPath]
 
-  console.log(outputDir, inputPaths)
+  // console.log(outputDir, inputPaths)
 
   build({
     entryPoints: [...inputPaths],
     platform: 'node',
     charset: 'utf8',
     bundle: true,
-    outdir: outputDir,
+    outdir: compileType === 'all' ? resolve('output') : resolve('dist'),
     banner: 'const MODULE = module;',
     jsxFactory: 'h',
     define,

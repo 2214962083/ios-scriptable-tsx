@@ -5,8 +5,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "set NODE_ENV=development&& ts-node ./src/compile.ts",
-    "build": "set NODE_ENV=production&& ts-node ./src/compile.ts production"
+    "dev": "set NODE_ENV=development&& set compileType=main&& ts-node ./src/compile.ts",
+    "build": "set NODE_ENV=production&& set compileType=main&& ts-node ./src/compile.ts",
+    "build:all": "set NODE_ENV=production&& set compileType=all&& ts-node ./src/compile.ts production"
   },
   "license": "ISC",
   "devDependencies": {
