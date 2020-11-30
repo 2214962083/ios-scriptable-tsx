@@ -469,6 +469,18 @@ class Base {
       }
     > {
       const phones = {
+        // 12 pro max
+        '2778': {
+          small: 510,
+          medium: 1092,
+          large: 1146,
+          left: 96,
+          right: 678,
+          top: 246,
+          middle: 882,
+          bottom: 1518,
+        },
+
         // 12 and 12 Pro
         '2532': {
           small: 474,

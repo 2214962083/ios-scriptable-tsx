@@ -1,3 +1,5 @@
+import {Config} from '@app/@types/scriptable/config'
+
 /**网络请求参数*/
 export interface RequestParams {
   /**链接*/
@@ -92,13 +94,15 @@ export interface ShowActionSheetParams {
   cancelText?: string
 
   /**每个选择*/
-  itemList: {
-    /**文字*/
-    text: string
+  itemList:
+    | {
+        /**文字*/
+        text: string
 
-    /** wran 的话就会标红文字 */
-    type?: 'normal' | 'warn'
-  }[]
+        /** wran 的话就会标红文字 */
+        type?: 'normal' | 'warn'
+      }[]
+    | string[]
 }
 
 /**提示、警告弹窗参数*/
@@ -263,6 +267,87 @@ export const getCache = setStorageDirectory(FileManager.local().temporaryDirecto
 export const removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
 
 /**
+ * 生成设置存储和读取方法
+ * @param settingFilename 保存的设置文件名字，取独特一点，防止和别人冲突
+ */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const useSetting = (settingFilename?: string) => {
+  /**当前脚本所处的文件夹是否在icloud里*/
+  const isUseICloud = (): boolean => {
+    return MODULE.filename.includes('Documents/iCloud~')
+  }
+
+  /**获取当前文件夹管理对象*/
+  const getCurrentFileManager = (): FileManager => {
+    return isUseICloud() ? FileManager.iCloud() : FileManager.local()
+  }
+
+  /**生成设置文件名*/
+  const generateSettingFileName = (): string => {
+    return MODULE.filename.match(/[^\/]+$/)?.[0].replace('.js', '') || hash(`settings:${MODULE.filename}`)
+  }
+
+  // 当前脚本是不是在 icloud
+  const isICloud = isUseICloud()
+
+  // 当前文件管理对象
+  const fileManager = getCurrentFileManager()
+
+  // 设置保存文件夹
+  const settingsFolderPath = fileManager.joinPath(fileManager.documentsDirectory(), '/settings-json')
+
+  // 设置保存文件名
+  const _settingFilename = `${settingFilename || generateSettingFileName()}.json`
+
+  // 文件储存路径
+  const settingsPath = fileManager.joinPath(settingsFolderPath, _settingFilename)
+
+  /**确保设置文件存在*/
+  const isFileExists = async (): Promise<boolean> => {
+    if (!fileManager.fileExists(settingsFolderPath)) {
+      fileManager.createDirectory(settingsFolderPath, true)
+    }
+    if (!fileManager.fileExists(settingsPath)) {
+      await fileManager.writeString(settingsPath, '{}')
+      return false
+    }
+    return true
+  }
+
+  /**读取设置*/
+  const getSettings = async <T>(key: string): Promise<null | T> => {
+    const fileExists = await isFileExists()
+    if (!fileExists) return null
+    if (isICloud) await fileManager.downloadFileFromiCloud(settingsPath)
+    const json = fileManager.readString(settingsPath)
+    const settings = JSON.parse(json) || {}
+    return settings[key] as T
+  }
+
+  /**保存设置*/
+  const setSettings = async (key: string, value: unknown): Promise<Record<string, unknown> | void> => {
+    const fileExists = await isFileExists()
+    if (!fileExists) {
+      await fileManager.writeString(
+        settingsPath,
+        JSON.stringify({
+          [key]: value,
+        }),
+      )
+      return
+    }
+    if (isICloud) await fileManager.downloadFileFromiCloud(settingsPath)
+    const json = fileManager.readString(settingsPath)
+    const settings = JSON.parse(json) || {}
+    settings[key] = value
+    await fileManager.writeString(settingsPath, JSON.stringify(settings))
+    return settings
+  }
+
+  return {getSettings, setSettings}
+}
+
+/**
  * 发起请求
  * @param args 请求参数
  */
@@ -365,16 +450,20 @@ export async function showActionSheet(args: ShowActionSheetParams): Promise<numb
   title && (alert.title = title)
   desc && (alert.message = desc)
   for (const item of itemList) {
-    switch (item.type) {
-      case 'normal':
-        alert.addAction(item.text)
-        break
-      case 'warn':
-        alert.addDestructiveAction(item.text)
-        break
-      default:
-        alert.addAction(item.text)
-        break
+    if (typeof item === 'string') {
+      alert.addAction(item)
+    } else {
+      switch (item.type) {
+        case 'normal':
+          alert.addAction(item.text)
+          break
+        case 'warn':
+          alert.addDestructiveAction(item.text)
+          break
+        default:
+          alert.addAction(item.text)
+          break
+      }
     }
   }
   alert.addCancelAction(cancelText)
@@ -391,8 +480,8 @@ export async function showModal(args: ShowModalParams): Promise<ShowModalRes> {
   const alert = new Alert()
   title && (alert.title = title)
   content && (alert.message = content)
-  alert.addAction(confirmText)
   showCancel && cancelText && alert.addCancelAction(cancelText)
+  alert.addAction(confirmText)
   const tapIndex = await alert.presentSheet()
   return tapIndex === -1 ? {cancel: true, confirm: false} : {cancel: false, confirm: true}
 }
@@ -480,4 +569,241 @@ export function hash(string: string): string {
     hash |= 0 // Convert to 32bit integer
   }
   return `hash_${hash}`
+}
+
+/**
+ * 获取截图中的组件剪裁图
+ * 可用作透明背景
+ * 返回图片image对象
+ *  @param tips 开始处理前提示用户截图的信息，可选（适合用在组件自定义透明背景时提示）
+ */
+export async function setTransparentBackground(tips?: string): Promise<Image | undefined> {
+  type WidgetSize = NonNullable<Config['widgetFamily']>
+
+  type PhoneSize = {
+    [key in WidgetSize]: number
+  } & {
+    left: number
+    right: number
+    top: number
+    middle: number
+    bottom: number
+  }
+
+  const phoneSizea: Record<string, PhoneSize> = {
+    // 12 pro max
+    '2778': {
+      small: 510,
+      medium: 1092,
+      large: 1146,
+      left: 96,
+      right: 678,
+      top: 246,
+      middle: 882,
+      bottom: 1518,
+    },
+
+    // 12 and 12 Pro
+    '2532': {
+      small: 474,
+      medium: 1014,
+      large: 1062,
+      left: 78,
+      right: 618,
+      top: 231,
+      middle: 819,
+      bottom: 1407,
+    },
+
+    // 11 Pro Max, XS Max
+    '2688': {
+      small: 507,
+      medium: 1080,
+      large: 1137,
+      left: 81,
+      right: 654,
+      top: 228,
+      middle: 858,
+      bottom: 1488,
+    },
+
+    // 11, XR
+    '1792': {
+      small: 338,
+      medium: 720,
+      large: 758,
+      left: 54,
+      right: 436,
+      top: 160,
+      middle: 580,
+      bottom: 1000,
+    },
+
+    // 11 Pro, XS, X
+    '2436': {
+      small: 465,
+      medium: 987,
+      large: 1035,
+      left: 69,
+      right: 591,
+      top: 213,
+      middle: 783,
+      bottom: 1353,
+    },
+
+    // Plus phones
+    '2208': {
+      small: 471,
+      medium: 1044,
+      large: 1071,
+      left: 99,
+      right: 672,
+      top: 114,
+      middle: 696,
+      bottom: 1278,
+    },
+
+    // SE2 and 6/6S/7/8
+    '1334': {
+      small: 296,
+      medium: 642,
+      large: 648,
+      left: 54,
+      right: 400,
+      top: 60,
+      middle: 412,
+      bottom: 764,
+    },
+
+    // SE1
+    '1136': {
+      small: 282,
+      medium: 584,
+      large: 622,
+      left: 30,
+      right: 332,
+      top: 59,
+      middle: 399,
+      bottom: 399,
+    },
+
+    // 11 and XR in Display Zoom mode
+    '1624': {
+      small: 310,
+      medium: 658,
+      large: 690,
+      left: 46,
+      right: 394,
+      top: 142,
+      middle: 522,
+      bottom: 902,
+    },
+
+    // Plus in Display Zoom mode
+    '2001': {
+      small: 444,
+      medium: 963,
+      large: 972,
+      left: 81,
+      right: 600,
+      top: 90,
+      middle: 618,
+      bottom: 1146,
+    },
+  }
+
+  /**
+   * 裁剪图片
+   * @param img 图片
+   * @param rect 裁剪坐标集合
+   */
+  const cropImage = (img: Image, rect: Rect): Image => {
+    const draw = new DrawContext()
+    draw.size = new Size(rect.width, rect.height)
+    draw.drawImageAtPoint(img, new Point(-rect.x, -rect.y))
+    return draw.getImage()
+  }
+
+  const shouldExit = await showModal({
+    content: tips || '开始之前，请先前往桌面,截取空白界面的截图。然后回来继续',
+    cancelText: '我已截图',
+    confirmText: '前去截图 >',
+  })
+
+  if (!shouldExit.cancel) return
+
+  const img = await Photos.fromLibrary()
+  const imgHeight = img.size.height
+  const phone = phoneSizea[imgHeight]
+  if (!phone) {
+    const help = await showModal({
+      content: '好像您选择的照片不是正确的截图，或者您的机型我们暂时不支持。点击确定前往社区讨论',
+      confirmText: '帮助',
+      cancelText: '取消',
+    })
+    if (help.confirm) Safari.openInApp('https://support.qq.com/products/287371', false)
+    return
+  }
+
+  const sizes = ['小尺寸', '中尺寸', '大尺寸']
+  const sizeIndex = await showActionSheet({
+    title: '你准备用哪个尺寸',
+    itemList: sizes,
+  })
+  const widgetSize = sizes[sizeIndex]
+
+  /**
+   * 选择组件摆放位置
+   * @param positions 位置列表
+   */
+  const selectLocation = (positions: string[]) =>
+    showActionSheet({
+      title: '你准备把组件放桌面哪里？',
+      desc:
+        imgHeight == 1136
+          ? ' （备注：当前设备只支持两行小组件，所以下边选项中的「中间」和「底部」的选项是一致的）'
+          : '',
+      itemList: positions,
+    })
+  const crop = {w: 0, h: 0, x: 0, y: 0}
+  let positions!: string[]
+  let _positions: string[]
+  let positionIndex: number
+  let keys: WidgetSize[]
+  let key: WidgetSize
+  switch (widgetSize) {
+    case '小尺寸':
+      crop.w = phone.small
+      crop.h = phone.small
+      positions = ['左上角', '右上角', '中间左', '中间右', '左下角', '右下角']
+      _positions = ['top left', 'top right', 'middle left', 'middle right', 'bottom left', 'bottom right']
+      positionIndex = await selectLocation(positions)
+      keys = _positions[positionIndex].split(' ') as WidgetSize[]
+      crop.y = phone[keys[0]]
+      crop.x = phone[keys[1]]
+      break
+    case '中尺寸':
+      crop.w = phone.medium
+      crop.h = phone.small
+      crop.x = phone.left
+      positions = ['顶部', '中间', '底部']
+      _positions = ['top', 'middle', 'bottom']
+      positionIndex = await selectLocation(positions)
+      key = _positions[positionIndex] as WidgetSize
+      crop.y = phone[key]
+      break
+    case '大尺寸':
+      crop.w = phone.medium
+      crop.h = phone.large
+      crop.x = phone.left
+      positions = ['顶部', '底部']
+      _positions = ['top', 'bottom']
+      positionIndex = await selectLocation(positions)
+      key = _positions[positionIndex] as WidgetSize
+      crop.y = phone[key]
+      break
+  }
+
+  const imgCrop = cropImage(img, new Rect(crop.x, crop.y, crop.w, crop.h))
+  return imgCrop
 }

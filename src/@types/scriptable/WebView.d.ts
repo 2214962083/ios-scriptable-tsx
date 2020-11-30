@@ -17,7 +17,7 @@ declare class WebView {
 
   loadFile(fileURL: string): Promise<void>
 
-  evaluateJavaScript<T = unknown>(javaScript: string, useCallback: boolean): Promise<T>
+  evaluateJavaScript<T = unknown>(javaScript: string, useCallback?: boolean): Promise<T>
 
   getHTML(): Promise<string>
 
