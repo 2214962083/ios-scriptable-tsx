@@ -1,4 +1,7 @@
+
+// @编译时间 1606838750490
 const MODULE = module;
+        
 // src/lib/help.ts
 function setStorageDirectory(dirPath) {
   return {

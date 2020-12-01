@@ -613,6 +613,46 @@ export function hash(string: string): string {
 }
 
 /**
+ * 延迟执行
+ * @param callback 回调函数
+ * @param ms 毫秒
+ */
+export function setTimeout(callback: () => void, ms: number): Timer {
+  const timer = Timer.schedule(ms, false, callback)
+  return timer
+}
+
+/**
+ * 清除延迟执行
+ * @param timer 延迟执行对象
+ */
+export function clearTimeout(timer: Timer): void {
+  if (!(timer instanceof Timer)) return
+  timer.invalidate()
+}
+
+/**
+ * 循环执行
+ * @param callback 回调函数
+ * @param ms 毫秒
+ */
+export function setInterval(callback: () => void, ms: number): Timer {
+  const timer = Timer.schedule(ms, true, callback)
+  return timer
+}
+
+/**
+ * 清除循环执行
+ * @param timer 循环执行对象
+ */
+export function clearInterval(timer: Timer): void {
+  console.log(timer.invalidate)
+  if (timer && typeof timer.invalidate === 'function') {
+    timer.invalidate()
+  }
+}
+
+/**
  * 获取截图中的组件剪裁图
  * 可用作透明背景
  * 返回图片image对象

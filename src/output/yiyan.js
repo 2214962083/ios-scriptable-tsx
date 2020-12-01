@@ -1,4 +1,7 @@
+
+// @编译时间 1606838750490
 const MODULE = module;
+        
 // src/lib/base.ts
 class Base {
   constructor(arg = "") {
@@ -298,6 +301,16 @@ class Base {
     }
     function phoneSizes() {
       const phones = {
+        "2778": {
+          small: 510,
+          medium: 1092,
+          large: 1146,
+          left: 96,
+          right: 678,
+          top: 246,
+          middle: 882,
+          bottom: 1518
+        },
         "2532": {
           small: 474,
           medium: 1014,

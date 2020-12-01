@@ -59,7 +59,10 @@ async function getFilesFromDir(dir: string): Promise<string[]> {
         charset: 'utf8',
         bundle: true,
         outdir: compileType === 'all' ? resolve('output') : resolve('../', 'dist'),
-        banner: 'const MODULE = module;',
+        banner: `
+// @编译时间 ${Date.now()}
+const MODULE = module;
+        `,
         jsxFactory: 'h',
         define,
       },
