@@ -1,2 +1,2 @@
-import {YiyanWidget} from './input/tsx-yiyan'
-new YiyanWidget().init()
+import Widget from './input/tsx-yiyan'
+new Widget().init()

@@ -113,6 +113,18 @@ export interface ShowModalParams {
   /**内容*/
   content?: string
 
+  /**输入框列表*/
+  inputItems?: {
+    /** password 的话就会隐藏文字 */
+    type?: 'text' | 'password'
+
+    /**默认文字*/
+    text?: string
+
+    /**提示文字*/
+    placeholder?: string
+  }[]
+
   /**是否显示取消*/
   showCancel?: boolean
 
@@ -130,6 +142,9 @@ export interface ShowModalRes {
 
   /**是否取消*/
   cancel: boolean
+
+  /**输入的文字列表*/
+  texts: string[]
 }
 
 /**获取图片所需参数*/
@@ -476,14 +491,40 @@ export async function showActionSheet(args: ShowActionSheetParams): Promise<numb
  * @param args 弹窗参数
  */
 export async function showModal(args: ShowModalParams): Promise<ShowModalRes> {
-  const {title, content, showCancel = true, cancelText = '取消', confirmText = '确定'} = args
+  /**确定与取消*/
+  const {title, content, showCancel = true, cancelText = '取消', confirmText = '确定', inputItems = []} = args
   const alert = new Alert()
   title && (alert.title = title)
   content && (alert.message = content)
   showCancel && cancelText && alert.addCancelAction(cancelText)
   alert.addAction(confirmText)
-  const tapIndex = await alert.presentSheet()
-  return tapIndex === -1 ? {cancel: true, confirm: false} : {cancel: false, confirm: true}
+
+  /**文字弹窗*/
+  for (const input of inputItems) {
+    const {type = 'text', text = '', placeholder = ''} = input
+    if (type === 'password') {
+      alert.addSecureTextField(placeholder, text)
+    } else {
+      alert.addTextField(placeholder, text)
+    }
+  }
+
+  /**点击确定和取消的 index */
+  const tapIndex = await alert.presentAlert()
+
+  /**获取输入框的值列表*/
+  const texts = inputItems.map((item, index) => alert.textFieldValue(index))
+  return tapIndex === -1
+    ? {
+        cancel: true,
+        confirm: false,
+        texts,
+      }
+    : {
+        cancel: false,
+        confirm: true,
+        texts,
+      }
 }
 
 /**

@@ -25,5 +25,5 @@
     }
   },
   "exclude": ["node_modules", "dist", "build"],
-  "include": ["src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/lib/server.js"]
 }

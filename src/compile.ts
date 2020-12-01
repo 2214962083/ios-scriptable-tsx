@@ -1,4 +1,5 @@
 import './lib/env'
+import './lib/server'
 import {build, BuildOptions} from 'esbuild'
 import fs from 'fs'
 import path from 'path'
@@ -11,7 +12,7 @@ const compileType = (process.env.compileType as CompileType) || 'main'
 const readdir = promisify(fs.readdir)
 const stat = promisify(fs.stat)
 
-const resolve = (_path: string): string => path.resolve(__dirname, _path)
+const resolve = (..._paths: string[]): string => path.resolve(__dirname, ..._paths)
 const esbuild = ((ScriptableConfig && ScriptableConfig.esbuild) as BuildOptions) || {}
 
 const define: Record<string, string> = {}
@@ -57,7 +58,7 @@ async function getFilesFromDir(dir: string): Promise<string[]> {
         platform: 'node',
         charset: 'utf8',
         bundle: true,
-        outdir: compileType === 'all' ? resolve('output') : resolve('dist'),
+        outdir: compileType === 'all' ? resolve('output') : resolve('../', 'dist'),
         banner: 'const MODULE = module;',
         jsxFactory: 'h',
         define,

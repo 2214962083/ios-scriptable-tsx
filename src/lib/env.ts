@@ -20,7 +20,7 @@ const loadEnv = (mode?: string): void => {
       dotenvExpand(env)
     } catch (err) {}
   }
-  console.log(localPath, basePath)
+  // console.log(localPath, basePath)
   load(localPath)
   load(basePath)
 }
