@@ -1,4 +1,4 @@
-import {request, ResponseType, showActionSheet} from '@app/lib/help'
+import {request, ResponseType, showActionSheet, showPreviewOptions} from '@app/lib/help'
 import {h} from '../lib/jsx-runtime'
 
 interface RemoteData {
@@ -20,18 +20,17 @@ export default class YiyanWidget {
   private widget!: ListWidget
   async init(): Promise<void> {
     // 打印打包环境
-    console.log(process.env.HELLO + ', kkjjhh' + process.env.MOMENT)
+    console.log(process.env.HELLO + ',' + process.env.MOMENT)
 
     this.widget = (await this.render()) as ListWidget
-    if (!config.runsInWidget) return
+    if (!config.runsInWidget) {
+      await showPreviewOptions(this.widget)
+      return
+    }
     Script.setWidget(this.widget)
-    // !config.runsInWidget && (await widget.presentMedium())
     Script.complete()
   }
   async render(): Promise<unknown> {
-    // const icon = await getImage({
-    //   url: 'https://txc.gtimg.com/data/285778/2020/1012/f9cf50f08ebb8bd391a7118c8348f5d8.png',
-    // })
     const data = (await this.getRemoteData()).data || ({} as RemoteData)
     const {hitokoto = '', from = ''} = data
     return (
@@ -105,5 +104,3 @@ export default class YiyanWidget {
     }
   }
 }
-
-// new YiyanWidget().init()

@@ -7,7 +7,7 @@
     "jsxFactory": "h",
     "skipLibCheck": true,
     "outDir": "./dist",
-    "target": "es6",
+    "target": "ES2015",
     "allowJs": true,
     // "skipLibCheck": true,
     "esModuleInterop": true,

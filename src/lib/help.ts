@@ -244,49 +244,89 @@ function setStorageDirectory(dirPath: string) {
 }
 
 /**
- * 长期保存值
+ * 长期保存值(所有脚本共享)
  * @param key 键
  * @param value 值
  */
 export const setStorage = setStorageDirectory(FileManager.local().libraryDirectory()).setStorage
 
 /**
- * 获取长期保存值
+ * 获取长期保存值(所有脚本共享)
  * @param key 键
  */
 export const getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
 
 /**
- * 移除长期保存值
+ * 移除长期保存值(所有脚本共享)
  * @param key 键
  */
 export const removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
 
 /**
- * 短期保存值(缓存文件用)
+ * 短期保存值(缓存文件用、所有脚本共享)
  * @param key 键
  * @param value 值
  */
 export const setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
 
 /**
- * 获取短期保存值(读取缓存文件用)
+ * 获取短期保存值(读取缓存文件用、所有脚本共享)
  * @param key 键
  */
 export const getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
 
 /**
- * 移除短期保存值(移除缓存文件用)
+ * 移除短期保存值(移除缓存文件用、所有脚本共享)
  * @param key 键
  */
 export const removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
 
 /**
- * 生成设置存储和读取方法
+ * 生成长期值存储和读取方法(单个脚本使用)
+ * @namespace 命名空间
+ */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function useStorage(nameSpace?: string) {
+  const _nameSpace = nameSpace || `${MODULE.filename}`
+  return {
+    setStorage(key: string, value: unknown): void {
+      setStorage(`${_nameSpace}${key}`, value)
+    },
+    getStorage<T = unknown>(key: string): T | null {
+      return getStorage(`${_nameSpace}${key}`)
+    },
+    removeStorage(key: string): void {
+      removeStorage(`${_nameSpace}${key}`)
+    },
+  }
+}
+
+/**
+ * 生成短期缓存值存储和读取方法(单个脚本使用)
+ * @namespace 命名空间
+ */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function useCache(nameSpace?: string) {
+  const _nameSpace = nameSpace || `${MODULE.filename}`
+  return {
+    setCache(key: string, value: unknown) {
+      setCache(`${_nameSpace}${key}`, value)
+    },
+    getCache<T = unknown>(key: string): T | null {
+      return getCache(`${_nameSpace}${key}`)
+    },
+    removeCache(key: string): void {
+      removeCache(`${_nameSpace}${key}`)
+    },
+  }
+}
+
+/**
+ * 生成设置存储和读取方法（单脚本使用）
  * @param settingFilename 保存的设置文件名字，取独特一点，防止和别人冲突
  */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const useSetting = (settingFilename?: string) => {
+export function useSetting(settingFilename?: string) {
   /**当前脚本所处的文件夹是否在icloud里*/
   const isUseICloud = (): boolean => {
     return MODULE.filename.includes('Documents/iCloud~')
@@ -330,7 +370,7 @@ export const useSetting = (settingFilename?: string) => {
   }
 
   /**读取设置*/
-  const getSettings = async <T>(key: string): Promise<null | T> => {
+  const getSetting = async <T>(key: string): Promise<null | T> => {
     const fileExists = await isFileExists()
     if (!fileExists) return null
     if (isICloud) await fileManager.downloadFileFromiCloud(settingsPath)
@@ -340,7 +380,7 @@ export const useSetting = (settingFilename?: string) => {
   }
 
   /**保存设置*/
-  const setSettings = async (key: string, value: unknown): Promise<Record<string, unknown> | void> => {
+  const setSetting = async (key: string, value: unknown): Promise<Record<string, unknown> | void> => {
     const fileExists = await isFileExists()
     if (!fileExists) {
       await fileManager.writeString(
@@ -359,7 +399,7 @@ export const useSetting = (settingFilename?: string) => {
     return settings
   }
 
-  return {getSettings, setSettings}
+  return {getSetting, setSetting}
 }
 
 /**
@@ -646,10 +686,50 @@ export function setInterval(callback: () => void, ms: number): Timer {
  * @param timer 循环执行对象
  */
 export function clearInterval(timer: Timer): void {
-  console.log(timer.invalidate)
-  if (timer && typeof timer.invalidate === 'function') {
-    timer.invalidate()
+  if (!(timer instanceof Timer)) return
+  timer.invalidate()
+}
+
+/**
+ * 睡眠函数、等待函数
+ * @param ms 毫秒
+ */
+export function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => {
+    const timer = Timer.schedule(ms, false, () => {
+      timer.invalidate()
+      resolve()
+    })
+  })
+}
+
+/**
+ * 显示预览尺寸菜单
+ * @param widget 组件实例
+ */
+export async function showPreviewOptions(widget: ListWidget): Promise<number> {
+  const selectIndex = await showActionSheet({
+    title: '预览组件',
+    desc: '测试桌面组件在各种尺寸下的显示效果',
+    itemList: ['小尺寸', '中尺寸', '大尺寸', '全部尺寸'],
+  })
+  switch (selectIndex) {
+    case 0:
+      await widget.presentSmall()
+      break
+    case 1:
+      await widget.presentMedium()
+      break
+    case 2:
+      await widget.presentLarge()
+      break
+    case 3:
+      await widget.presentSmall()
+      await widget.presentMedium()
+      await widget.presentLarge()
+      break
   }
+  return selectIndex
 }
 
 /**
