@@ -1,5 +1,3 @@
-import {Config} from '@app/@types/scriptable/config'
-
 /**网络请求参数*/
 export interface RequestParams {
   /**链接*/
@@ -411,7 +409,7 @@ export async function request<RES = unknown>(args: RequestParams): Promise<Respo
   const cacheKey = `url:${url}`
   const cache = getStorage(cacheKey) as ResponseType<RES>
   if (useCache && cache !== null) return cache
-  const req = new Request<RES>(url)
+  const req = new Request(url)
   req.method = method
   header && (req.headers = header)
   data && (req.body = data)
@@ -739,7 +737,7 @@ export async function showPreviewOptions(widget: ListWidget): Promise<number> {
  *  @param tips 开始处理前提示用户截图的信息，可选（适合用在组件自定义透明背景时提示）
  */
 export async function setTransparentBackground(tips?: string): Promise<Image | undefined> {
-  type WidgetSize = NonNullable<Config['widgetFamily']>
+  type WidgetSize = NonNullable<typeof config.widgetFamily>
 
   type PhoneSize = {
     [key in WidgetSize]: number

@@ -1,9 +1,4 @@
-import {WboxProps} from '@app/@types/widget/wbox'
-import {WimageProps} from '@app/@types/widget/wimage'
-import {WdateProps} from './../@types/widget/wdate.d'
-import {WspacerProps} from './../@types/widget/wspacer.d'
-import {WstackProps} from './../@types/widget/wstack.d'
-import {WtextProps} from './../@types/widget/wtext.d'
+import {WboxProps, WimageProps, WdateProps, WspacerProps, WstackProps, WtextProps} from '@app/types'
 import {getImage, hash} from '@app/lib/help'
 
 type WidgetType = 'wbox' | 'wdate' | 'wimage' | 'wspacer' | 'wstack' | 'wtext'
@@ -358,7 +353,7 @@ export function h(
  * @param color
  */
 function getColor(color: Color | string): Color {
-  return typeof color === 'string' ? new Color(color) : color
+  return typeof color === 'string' ? new Color(color, 1) : color
 }
 
 /**

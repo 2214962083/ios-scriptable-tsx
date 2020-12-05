@@ -43,11 +43,11 @@ class Im3xWidget {
 
     if (data.code != 0) {
       flTxt = w.addText('请填写B站MID')
-      flTxt.textColor = new Color('#fb7299')
+      flTxt.textColor = new Color('#fb7299', 1)
       flTxt.font = Font.systemFont(14)
     } else {
       flTxt = w.addText(this.toThousands(data.data['follower']))
-      flTxt.textColor = new Color('#fb7299')
+      flTxt.textColor = new Color('#fb7299', 1)
       flTxt.font = Font.boldRoundedSystemFont(this.getFontsize(data.data['follower']))
     }
     flTxt.centerAlignText()

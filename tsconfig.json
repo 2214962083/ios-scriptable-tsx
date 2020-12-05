@@ -1,15 +1,13 @@
 {
   "compilerOptions": {
-    "typeRoots": ["./node_modules/@types", "./src/@types/scriptable", "./src/@types/widget"],
+    "typeRoots": ["./node_modules/@types", "src/types"],
     // "types": ["node"],
     "lib": ["ES5", "ES2015", "ES2016", "ES2017", "Es2018", "ES2019", "ES2020", "ESNext"],
     "jsx": "react",
     "jsxFactory": "h",
-    "skipLibCheck": true,
     "outDir": "./dist",
     "target": "ES2015",
     "allowJs": true,
-    // "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
@@ -20,10 +18,9 @@
     "sourceMap": true,
     "baseUrl": "./",
     "paths": {
-      "@app": ["./src/"],
       "@app/*": ["./src/*"]
     }
   },
   "exclude": ["node_modules", "dist", "build"],
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/lib/server.js"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }
