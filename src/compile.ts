@@ -6,8 +6,12 @@ import {merge} from 'lodash'
 import {createServer} from './lib/server'
 import {loadEnvFiles} from './lib/env'
 
+/**打包模式*/
 enum CompileType {
+  /**打包一个文件夹*/
   ALL = 'all',
+
+  /**为打包入口文件*/
   ONE = 'one',
 }
 
