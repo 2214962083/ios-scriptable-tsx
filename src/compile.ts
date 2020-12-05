@@ -187,14 +187,11 @@ const MODULE = module;
 
     /**加密配置*/
     const _encryptOptions: ObfuscatorOptions = {
-      compact: false,
-      controlFlowFlattening: true,
-      controlFlowFlatteningThreshold: 1,
-      numbersToExpressions: true,
-      simplify: true,
-      shuffleStringArray: true,
-      splitStrings: true,
-      stringArrayThreshold: 1,
+      rotateStringArray: true,
+      selfDefending: true,
+      stringArray: true,
+      splitStringsChunkLength: 100,
+      stringArrayEncoding: ['rc4', 'base64'],
     }
 
     for (const outputFilePath of outputFilePaths) {
