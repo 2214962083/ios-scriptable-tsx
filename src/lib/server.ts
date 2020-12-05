@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import express from 'express'
 import ip from 'ip'
 const qrcode = require('qrcode-terminal')
