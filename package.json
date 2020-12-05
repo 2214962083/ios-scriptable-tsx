@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "watch": "set watching=true&& nodemon --watch src/ --ext ts,tsx,json,js --ignore 'src/**/*.spec.ts' --ignore 'src/output/**' --exec \"node -e console.clear()&& npm run dev\"",
+    "watch": "set watching=true&& nodemon --watch src/ --ext ts,tsx,json,js --ignore 'src/**/*.spec.ts' --exec \"node -e console.clear()&& npm run dev\"",
     "dev": "set NODE_ENV=development&& set compileType=one&& ts-node ./src/compile.ts",
     "dev:all": "set NODE_ENV=development&& set compileType=all&& ts-node ./src/compile.ts",
     "build": "set NODE_ENV=production&& set compileType=one&& ts-node ./src/compile.ts",
