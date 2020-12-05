@@ -5,21 +5,12 @@
 /// <reference path="./widget/wstack.d.ts" />
 /// <reference path="./widget/wtext.d.ts" />
 
-export * from './widget/wbox'
-export * from './widget/wdate'
-export * from './widget/wimage'
-export * from './widget/wspacer'
-export * from './widget/wstack'
-export * from './widget/wtext'
-
-export interface Module {
+interface Module {
   filename: string
   exports: unknown
 }
-declare global {
-  const MODULE: Module
+declare const MODULE: Module
 
-  namespace Scriptable {
-    class Widget extends Extract<ListWidget, WidgetDate, WidgetImage, WidgetSpacer, WidgetStack, WidgetText> {}
-  }
+declare namespace Scriptable {
+  class Widget {}
 }

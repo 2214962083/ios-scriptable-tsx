@@ -1,18 +1,26 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import express from 'express'
-import path from 'path'
 import ip from 'ip'
 const qrcode = require('qrcode-terminal')
 
-if (process.env.watching) {
+interface CreateServerParams {
+  staticDir: string
+  showQrcode?: boolean
+}
+
+/**
+ * 创建服务器
+ * @param staticDir 服务器映射静态文件夹
+ */
+export function createServer(params: CreateServerParams): void {
+  const {staticDir, showQrcode = true} = params
   const app = express()
   const port = 9090
-  const publicPath = path.resolve(__dirname, '../../dist')
-  app.use(express.static(publicPath))
+  app.use(express.static(staticDir))
 
   app.listen(port)
   // console.clear()
   const link = `http://${ip.address('public')}:${port}`
   console.log(`手机访问 ${link}`)
-  qrcode.generate(link, {small: true})
+  showQrcode && qrcode.generate(link, {small: true})
 }

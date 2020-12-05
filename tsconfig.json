@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "typeRoots": ["./node_modules/@types", "src/types"],
+    "typeRoots": ["./node_modules/@types", "src/types", "./src/types/widget"],
     // "types": ["node"],
     "lib": ["ES5", "ES2015", "ES2016", "ES2017", "Es2018", "ES2019", "ES2020", "ESNext"],
     "jsx": "react",

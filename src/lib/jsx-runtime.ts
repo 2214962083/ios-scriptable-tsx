@@ -1,4 +1,4 @@
-import {WboxProps, WimageProps, WdateProps, WspacerProps, WstackProps, WtextProps} from '@app/types'
+import {WboxProps, WimageProps, WdateProps, WspacerProps, WstackProps, WtextProps} from '@app/types/widget'
 import {getImage, hash} from '@app/lib/help'
 
 type WidgetType = 'wbox' | 'wdate' | 'wimage' | 'wspacer' | 'wstack' | 'wtext'
