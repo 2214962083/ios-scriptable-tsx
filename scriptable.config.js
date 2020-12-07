@@ -1,15 +1,15 @@
 const path = require('path')
 
-/**项目根目录*/
+/**项目根目录，不建议修改*/
 const rootPath = __dirname
 
-/**输入文件，当 compileType 为 one 时生效*/
+/**输入文件，当 compileType 为 one 时生效，不建议修改*/
 const inputFile = path.resolve(rootPath, './src/index.ts')
 
-/**输入文件夹，当 compileType 为 all 时生效*/
+/**输入文件夹，当 compileType 为 all 时生效，不建议修改*/
 const inputDir = path.resolve(rootPath, './src/scripts')
 
-/**输出文件夹*/
+/**输出文件夹，不建议修改*/
 const outputDir = path.resolve(rootPath, './dist')
 
 /**是否压缩代码*/

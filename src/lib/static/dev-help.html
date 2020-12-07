@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"
+    />
+    <title>Scriptable开发引导</title>
+    <style>
+      #page {
+        width: 100vw;
+        height: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+      }
+      .button {
+        width: 85vw;
+        box-sizing: border-box;
+        overflow: hidden;
+        padding: 15px;
+        border-radius: 8px;
+        font-size: 15px;
+        color: #777;
+        border: 1px solid #eee;
+        margin-top: 15px;
+      }
+      .button:active {
+        background-color: #333;
+      }
+      textarea {
+        border: none;
+        overflow: auto;
+        outline: none;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        box-shadow: none;
+        resize: none;
+      }
+      .code-output {
+        width: 85vw;
+        margin-top: 15px;
+        height: 50vh;
+        border: 1px solid #eee;
+        border-radius: 15px;
+        box-sizing: border-box;
+        padding: 15px;
+        color: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="page">
+      <div class="button" onclick="copyCode()">1、点击复制下方的代码</div>
+      <div class="button" onclick="openScriptable()">2、复制完点击打开 Scriptable 粘贴运行</div>
+      <textarea class="code-output" readonly>@@code@@</textarea>
+    </div>
+
+    <script>
+      // 复制代码
+      function copyCode() {
+        document.querySelector('.code-output').select()
+        document.execCommand('Copy')
+        toast('复制成功，请点击第二步')
+      }
+
+      // 打开 scriptable 并创建
+      function openScriptable() {
+        location.href = 'scriptable:///add'
+      }
+
+      // 吐司
+      function toast(msg, timeout = 2000) {
+        const toastElm = document.createElement('div')
+        Object.assign(toastElm.style, {
+          position: 'fixed',
+          bottom: '10vh',
+          zIndex: 999,
+          width: '100vw',
+          display: 'flex',
+          justifyContent: 'center',
+        })
+        toastElm.innerHTML = `
+          <div style="
+          padding: 8px 15px;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          font-size: 15px;
+          color: #777;
+          text-align: center;
+          background-color: #fff;">${msg}</div>
+        `
+        document.body.appendChild(toastElm)
+        setTimeout(() => {
+          document.body.removeChild(toastElm)
+        }, timeout)
+      }
+    </script>
+  </body>
+</html>

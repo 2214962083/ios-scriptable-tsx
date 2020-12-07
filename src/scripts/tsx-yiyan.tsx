@@ -21,6 +21,7 @@ export default class YiyanWidget {
   async init(): Promise<void> {
     // 打印打包环境
     console.log(process.env.HELLO + ',' + process.env.MOMENT)
+    console.warn('999')
 
     this.widget = (await this.render()) as ListWidget
     if (!config.runsInWidget && args.queryParameters.from !== 'widget') {

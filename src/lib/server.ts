@@ -3,10 +3,15 @@ import ip from 'ip'
 import bodyParser from 'body-parser'
 import {port} from './constants'
 import chalk from 'chalk'
+import fs from 'fs'
+import path from 'path'
 const qrcode = require('qrcode-terminal')
 
 interface CreateServerParams {
+  /**要映射的静态文件夹*/
   staticDir: string
+
+  /**是否显示二维码*/
   showQrcode?: boolean
 }
 
@@ -34,6 +39,9 @@ export function createServer(params: CreateServerParams): {serverApi: string} {
   const {staticDir, showQrcode = true} = params
   const app = express()
 
+  /** server api 地址*/
+  const serverApi = `http://${ip.address('public')}:${port}`
+
   // 解析请求参数
   app.use(
     bodyParser.urlencoded({
@@ -45,6 +53,50 @@ export function createServer(params: CreateServerParams): {serverApi: string} {
 
   // 映射静态文件夹
   app.use(express.static(staticDir))
+
+  app.get('/', (req, res) => {
+    let html = fs.readFileSync(path.resolve(__dirname, './static', './dev-help.html'), {encoding: 'utf8'}).toString()
+
+    /**自动安装基础包并命名的代码*/
+    const installBasicCode = `
+(async() => {
+
+  const notify = new Notification()
+  notify.sound = 'default'
+  try {
+    const req = new Request('${serverApi}/basic.js')
+    const code = await req.loadString()
+    const newFilename = module.filename.split('/').slice(0, -1).concat(['基础包.js']).join('/')
+    FileManager.local().writeString(
+      newFilename,
+\`// Variables used by Scriptable.
+// These must be at the very top of the file. Do not edit.
+// icon-color: deep-gray; icon-glyph: mobile-alt;
+\${code}\`)
+
+    // 通知
+    notify.title = '安装基础包成功'
+    notify.schedule()
+
+    FileManager.local().remove(module.filename)
+    Safari.open("scriptable:///open?scriptName="+encodeURIComponent('基础包'));
+  } catch(err) {
+    console.error(err)
+    notify.title = '安装基础包失败'
+    notify.body = err.message || ''
+    notify.schedule()
+  }
+})()
+`
+    html = html.replace('@@code@@', installBasicCode)
+    res.send(html)
+  })
+
+  app.get('/basic.js', (req, res) => {
+    const js = fs.readFileSync(path.resolve(__dirname, './static', './基础包.js'), {encoding: 'utf8'}).toString()
+
+    res.send(js)
+  })
 
   app.post('/console', (req, res) => {
     const {type = 'log', data = ''} = req.body as ConsoleApiBody
@@ -73,8 +125,6 @@ export function createServer(params: CreateServerParams): {serverApi: string} {
 
   app.listen(port)
 
-  /** server api 地址*/
-  const serverApi = `http://${ip.address('public')}:${port}`
   // console.clear()
   console.log(`手机访问 ${serverApi}`)
   showQrcode && qrcode.generate(serverApi, {small: true})
