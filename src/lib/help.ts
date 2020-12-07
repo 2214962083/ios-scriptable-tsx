@@ -651,6 +651,21 @@ export function hash(string: string): string {
 }
 
 /**
+ * 每个 scriptable 脚本文件头部都有隐藏注释，用来定义脚本图标和颜色，这个函数就是获取隐藏注释，没有时返回空字符串
+ * @param path 文件路径
+ */
+export function getSciptableTopComment(path: string): string {
+  const fm = FileManager.local()
+  // 路径不存在
+  if (!fm.fileExists(path)) return ''
+  const code = fm.readString(path)
+  return (
+    (code.match(/\/\/\s*Variables\s*used\s*by\s*Scriptable[\w\W]+?icon\-color\:[\w\W]+?\;\s*icon-glyph\:[\w\W]+?\;/i) ||
+      [])[0] || ''
+  )
+}
+
+/**
  * 延迟执行
  * @param callback 回调函数
  * @param ms 毫秒

@@ -1,5 +1,12 @@
-// @编译时间 1607171911338
+// @编译时间 1607322867853
 const MODULE = module
+
+// src/lib/constants.ts
+var URLSchemeFrom
+;(function (URLSchemeFrom2) {
+  URLSchemeFrom2['WIDGET'] = 'widget'
+})(URLSchemeFrom || (URLSchemeFrom = {}))
+const port = 9090
 
 // src/lib/help.ts
 function setStorageDirectory(dirPath) {
@@ -139,6 +146,15 @@ function hash(string) {
   }
   return `hash_${hash2}`
 }
+function getSciptableTopComment(path) {
+  const fm = FileManager.local()
+  if (!fm.fileExists(path)) return ''
+  const code = fm.readString(path)
+  return (
+    (code.match(/\/\/\s*Variables\s*used\s*by\s*Scriptable[\w\W]+?icon\-color\:[\w\W]+?\;\s*icon-glyph\:[\w\W]+?\;/i) ||
+      [])[0] || ''
+  )
+}
 function sleep(ms) {
   return new Promise(resolve => {
     const timer = Timer.schedule(ms, false, () => {
@@ -172,9 +188,9 @@ class Basic {
       path: FileManager.local().joinPath(dirPath, scriptName),
     }))
   }
-  async getScriptText(api) {
+  async getScriptText(url) {
     try {
-      const req = new Request(`${api}/main.js`)
+      const req = new Request(url)
       req.timeoutInterval = this.timeout / 1e3
       const res = await req.loadString()
       this.requestFailTimes = 0
@@ -189,9 +205,9 @@ class Basic {
     let itemList = ['远程开发']
     const syncScriptName = getStorage2('syncScriptName')
     const syncScriptPath = getStorage2('syncScriptPath')
-    const serverApi = getStorage2('serverApi')
+    const remoteFileAddress = getStorage2('remoteFileAddress')
     const scriptText = getStorage2('scriptText')
-    if (syncScriptName && syncScriptPath && serverApi) {
+    if (syncScriptName && syncScriptPath && remoteFileAddress) {
       itemList = ['远程开发', `同步${syncScriptName}`]
       if (scriptText) {
         itemList.push(`运行缓存里的${syncScriptName}`)
@@ -208,7 +224,7 @@ class Basic {
         await that.developRemote({
           syncScriptName,
           syncScriptPath,
-          serverApi,
+          remoteFileAddress,
         })
         break
       case 2:
@@ -220,7 +236,7 @@ class Basic {
     const that = this
     let _syncScriptPath = params.syncScriptPath
     let _syncScriptName = params.syncScriptName
-    let _serverApi = params.serverApi
+    let _remoteFileAddress = params.remoteFileAddress
     if (!_syncScriptPath || !_syncScriptName) {
       const scripts = that.getLocalScripts()
       const selectIndex = await showActionSheet({
@@ -233,26 +249,25 @@ class Basic {
       _syncScriptName = scripts[selectIndex].name
       setStorage2('syncScriptName', _syncScriptName)
     }
-    if (!_serverApi) {
-      const serverApiFromStorage = getStorage2('serverApi') || ''
+    if (!_remoteFileAddress) {
+      _remoteFileAddress = getStorage2('remoteFileAddress') || ''
       const {cancel, texts} = await showModal({
-        title: '服务器 IP',
-        content: '请输入远程开发服务器（电脑）IP地址',
+        title: '远程文件地址',
+        content: '请输入远程开发服务器（电脑）要同步的文件地址',
         confirmText: '连接',
         inputItems: [
           {
-            placeholder: '输入远程pc的ip地址',
-            text: serverApiFromStorage ? serverApiFromStorage.split(':')[1] : '192.168.1.3',
+            placeholder: '输入远程文件地址',
+            text: _remoteFileAddress || `http://192.168.1.3:${port}/index.js`,
           },
         ],
       })
       if (cancel) return
-      const ip = texts[0]
-      if (!ip) return
-      _serverApi = `http://${ip}:9090`
-      setStorage2('serverApi', _serverApi)
+      _remoteFileAddress = texts[0]
+      if (!_remoteFileAddress) return
+      setStorage2('remoteFileAddress', _remoteFileAddress)
     }
-    if (!_serverApi || !_syncScriptName || !_syncScriptPath) {
+    if (!_remoteFileAddress || !_syncScriptName || !_syncScriptPath) {
       await showNotification({
         title: '信息不完整，运行终止',
         body: '没选择脚本或远程ip没填写',
@@ -261,14 +276,22 @@ class Basic {
     }
     await showNotification({title: '开始同步代码'})
     const syncScript = async () => {
-      const scriptText = await that.getScriptText(_serverApi)
+      let scriptText = await that.getScriptText(_remoteFileAddress)
       const compileDateRegExp = /\/\/\s*?\@编译时间\s*?([\d]+)/
       const dateMatchResult = scriptText.match(compileDateRegExp)
       const thisCompileDate = Number(dateMatchResult && dateMatchResult[1]) || null
       if (!scriptText || !thisCompileDate) return
       if (thisCompileDate && thisCompileDate <= that.lastCompileDate) return
       try {
-        await FileManager.local().writeString(_syncScriptPath, scriptText)
+        const comment = getSciptableTopComment(_syncScriptPath)
+        await FileManager.local().writeString(
+          _syncScriptPath,
+          `${comment}
+${scriptText}`,
+        )
+        const serverApi = (_remoteFileAddress?.match(/http\:\/\/[\d\.]+?\:[\d]+/) || [])[0]
+        scriptText = `${that.getRewriteConsoleCode(serverApi)}
+${scriptText}`
         setStorage2('scriptText', scriptText)
         that.lastCompileDate = thisCompileDate
         await showNotification({title: '同步代码成功'})
@@ -313,6 +336,42 @@ class Basic {
         sound: 'failure',
       })
     }
+  }
+  getRewriteConsoleCode(serverApi) {
+    return `
+// 保留日志原始打印方法
+const __log__ = console.log;
+const __warn__ = console.warn;
+const __error__ = console.error;
+
+/**发到日志远程控制台*/
+const __sendLogToRemote__ = async (type = 'log', data = '') => {
+  const req = new Request('${serverApi}/console');
+  req.method = 'POST';
+  req.headers = {
+    'Content-Type': 'application/json',
+  };
+  req.body = JSON.stringify({
+    type,
+    data,
+  });
+  return await req.loadJSON()
+}
+
+/**重写生成日志函数*/
+const __generateLog__ = (type = 'log', oldFunc) => {
+  return function(...args) {
+    __sendLogToRemote__(type, args[0]).catch(err => {})
+    oldFunc.apply(this, args);
+  }
+};
+if (!console.__rewrite__) {
+  console.log = __generateLog__('log', __log__);
+  console.warn = __generateLog__('warn', __warn__);
+  console.error = __generateLog__('error', __error__);
+}
+console.__rewrite__ = true;
+    `
   }
 }
 new Basic().init()

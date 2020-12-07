@@ -1,5 +1,5 @@
 import {port} from '@app/lib/constants'
-import {useStorage, showActionSheet, showModal, showNotification, sleep} from '@app/lib/help'
+import {useStorage, showActionSheet, showModal, showNotification, sleep, getSciptableTopComment} from '@app/lib/help'
 
 interface DevelopRemoteParams {
   /**被同步的脚本的路径*/
@@ -189,7 +189,8 @@ class Basic {
 
       try {
         // 写入代码到文件
-        await FileManager.local().writeString(_syncScriptPath as string, scriptText)
+        const comment = getSciptableTopComment(_syncScriptPath as string)
+        await FileManager.local().writeString(_syncScriptPath as string, `${comment}\n${scriptText}`)
 
         // 添加 console 重写代码
         const serverApi = (_remoteFileAddress?.match(/http\:\/\/[\d\.]+?\:[\d]+/) || [])[0]
