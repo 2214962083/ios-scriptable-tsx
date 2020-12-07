@@ -1,3 +1,4 @@
+import {port} from '@app/lib/constants'
 import {useStorage, showActionSheet, showModal, showNotification, sleep} from '@app/lib/help'
 
 interface DevelopRemoteParams {
@@ -7,8 +8,8 @@ interface DevelopRemoteParams {
   /**被同步的脚本的文件名*/
   syncScriptPath?: string | null
 
-  /**远程api*/
-  serverApi?: string | null
+  /**远程文件地址*/
+  remoteFileAddress?: string | null
 }
 
 const {setStorage, getStorage} = useStorage('basic-storage')
@@ -47,11 +48,11 @@ class Basic {
   }
   /**
    * 请求获取脚本内容
-   * @param api 远程 pc ip 端口地址
+   * @param url 远程文件地址
    */
-  async getScriptText(api: string): Promise<string> {
+  async getScriptText(url: string): Promise<string> {
     try {
-      const req = new Request(`${api}/main.js`)
+      const req = new Request(url)
       req.timeoutInterval = this.timeout / 1000
       const res = await req.loadString()
       this.requestFailTimes = 0
@@ -68,10 +69,10 @@ class Basic {
     let itemList = ['远程开发']
     const syncScriptName = getStorage<string>('syncScriptName')
     const syncScriptPath = getStorage<string>('syncScriptPath')
-    const serverApi = getStorage<string>('serverApi')
+    const remoteFileAddress = getStorage<string>('remoteFileAddress')
     const scriptText = getStorage<string>('scriptText')
 
-    if (syncScriptName && syncScriptPath && serverApi) {
+    if (syncScriptName && syncScriptPath && remoteFileAddress) {
       // 如果上次有远程开发过，则加入直接同步选项
       itemList = ['远程开发', `同步${syncScriptName}`]
 
@@ -90,7 +91,7 @@ class Basic {
         await that.developRemote({
           syncScriptName,
           syncScriptPath,
-          serverApi,
+          remoteFileAddress,
         })
         break
       case 2:
@@ -110,7 +111,7 @@ class Basic {
     let _syncScriptName = params.syncScriptName
 
     /**远程api*/
-    let _serverApi = params.serverApi
+    let _remoteFileAddress = params.remoteFileAddress
 
     if (!_syncScriptPath || !_syncScriptName) {
       // 选择要开发的脚本
@@ -130,35 +131,33 @@ class Basic {
       setStorage('syncScriptName', _syncScriptName)
     }
 
-    if (!_serverApi) {
-      /**内存中的远程api*/
-      const serverApiFromStorage = getStorage<string>('serverApi') || ''
+    if (!_remoteFileAddress) {
+      /**内存中的远程文件地址*/
+      _remoteFileAddress = getStorage<string>('remoteFileAddress') || ''
 
-      // 输入远程ip
+      // 输入远程文件地址
       const {cancel, texts} = await showModal({
-        title: '服务器 IP',
-        content: '请输入远程开发服务器（电脑）IP地址',
+        title: '远程文件地址',
+        content: '请输入远程开发服务器（电脑）要同步的文件地址',
         confirmText: '连接',
         inputItems: [
           {
-            placeholder: '输入远程pc的ip地址',
-            text: serverApiFromStorage ? serverApiFromStorage.split(':')[1] : '192.168.1.3',
+            placeholder: '输入远程文件地址',
+            text: _remoteFileAddress || `http://192.168.1.3:${port}/index.js`,
           },
         ],
       })
       if (cancel) return
 
-      /**远程ip*/
-      const ip = texts[0]
+      /**远程文件地址*/
+      _remoteFileAddress = texts[0]
 
-      if (!ip) return
+      if (!_remoteFileAddress) return
 
-      /**远程api*/
-      _serverApi = `http://${ip}:9090`
-      setStorage('serverApi', _serverApi)
+      setStorage('remoteFileAddress', _remoteFileAddress)
     }
 
-    if (!_serverApi || !_syncScriptName || !_syncScriptPath) {
+    if (!_remoteFileAddress || !_syncScriptName || !_syncScriptPath) {
       await showNotification({
         title: '信息不完整，运行终止',
         body: '没选择脚本或远程ip没填写',
@@ -171,7 +170,7 @@ class Basic {
     /**同步脚本*/
     const syncScript = async () => {
       /**远程脚本字符串*/
-      const scriptText = await that.getScriptText(_serverApi as string)
+      const scriptText = await that.getScriptText(_remoteFileAddress as string)
 
       /**匹配时间戳，例子：'// @编译时间 1606834773399' */
       const compileDateRegExp = /\/\/\s*?\@编译时间\s*?([\d]+)/

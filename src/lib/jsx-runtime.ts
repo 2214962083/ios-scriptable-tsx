@@ -1,5 +1,6 @@
 import {WboxProps, WimageProps, WdateProps, WspacerProps, WstackProps, WtextProps} from '@app/types/widget'
 import {getImage, hash} from '@app/lib/help'
+import {URLSchemeFrom} from '@app/lib/constants'
 
 type WidgetType = 'wbox' | 'wdate' | 'wimage' | 'wspacer' | 'wstack' | 'wtext'
 type WidgetProps = WboxProps | WdateProps | WspacerProps | WstackProps | WtextProps | WimageProps
@@ -433,9 +434,9 @@ function isUrl(value: string): boolean {
  */
 function runOnClick<T extends Scriptable.Widget & {url: string}>(instance: T, onClick: () => unknown) {
   const _eventId = hash(onClick.toString())
-  instance.url = `${URLScheme.forRunningScript()}?eventId=${encodeURIComponent(_eventId)}`
-  const {eventId} = args.queryParameters
-  if (eventId && eventId === _eventId) {
+  instance.url = `${URLScheme.forRunningScript()}?eventId=${encodeURIComponent(_eventId)}&from=${URLSchemeFrom.WIDGET}`
+  const {eventId, from} = args.queryParameters
+  if (eventId && eventId === _eventId && from === URLSchemeFrom.WIDGET) {
     onClick()
   }
 }

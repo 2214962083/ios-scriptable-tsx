@@ -23,7 +23,7 @@ export default class YiyanWidget {
     console.log(process.env.HELLO + ',' + process.env.MOMENT)
 
     this.widget = (await this.render()) as ListWidget
-    if (!config.runsInWidget) {
+    if (!config.runsInWidget && args.queryParameters.from !== 'widget') {
       await showPreviewOptions(this.widget)
       return
     }
