@@ -114,50 +114,12 @@ async function compile(options: CompileOptions) {
   /**加载环境变量 .env 文件*/
   loadEnvFiles(rootPath)
 
-  /**重写 Console ，实现远程打印日志*/
-  let rewriteConsoleCode = ''
-
   if (watch) {
     /**创建服务器*/
-    const {serverApi} = createServer({
+    createServer({
       staticDir: outputDir,
       showQrcode,
     })
-
-    rewriteConsoleCode = `
-// 保留日志原始打印方法
-const __log__ = console.log;
-const __warn__ = console.warn;
-const __error__ = console.error;
-
-/**发到日志远程控制台*/
-const __sendLogToRemote__ = async (type = 'log', data = '') => {
-  const req = new Request('${serverApi}/console');
-  req.method = 'POST';
-  req.headers = {
-    'Content-Type': 'application/json',
-  };
-  req.body = JSON.stringify({
-    type,
-    data,
-  });
-  return await req.loadJSON()
-}
-
-/**重写生成日志函数*/
-const __generateLog__ = (type = 'log', oldFunc) => {
-  return function(...args) {
-    __sendLogToRemote__(type, args[0]).catch(err => {})
-    oldFunc.apply(this, args);
-  }
-};
-if (!console.__rewrite__) {
-  console.log = __generateLog__('log', __log__);
-  console.warn = __generateLog__('warn', __warn__);
-  console.error = __generateLog__('error', __error__);
-}
-console.__rewrite__ = true;
-    `
   }
 
   // 编译时，把 process.env 环境变量替换成 dotenv 文件参数
@@ -196,7 +158,6 @@ console.__rewrite__ = true;
       banner: `
 // @编译时间 ${Date.now()}
 const MODULE = module;
-${rewriteConsoleCode}
     `,
       jsxFactory: 'h',
       define,

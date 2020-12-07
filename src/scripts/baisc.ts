@@ -170,7 +170,7 @@ class Basic {
     /**同步脚本*/
     const syncScript = async () => {
       /**远程脚本字符串*/
-      const scriptText = await that.getScriptText(_remoteFileAddress as string)
+      let scriptText = await that.getScriptText(_remoteFileAddress as string)
 
       /**匹配时间戳，例子：'// @编译时间 1606834773399' */
       const compileDateRegExp = /\/\/\s*?\@编译时间\s*?([\d]+)/
@@ -190,6 +190,10 @@ class Basic {
       try {
         // 写入代码到文件
         await FileManager.local().writeString(_syncScriptPath as string, scriptText)
+
+        // 添加 console 重写代码
+        const serverApi = (_remoteFileAddress?.match(/http\:\/\/[\d\.]+?\:[\d]+/) || [])[0]
+        scriptText = `${that.getRewriteConsoleCode(serverApi)}\n${scriptText}`
 
         // 写入代码到缓存
         setStorage('scriptText', scriptText)
@@ -249,6 +253,46 @@ class Basic {
         sound: 'failure',
       })
     }
+  }
+  /**
+   * 获取重写 console 的方法
+   * @param serverApi 远程链接api地址，如 http://192.168.2.4:9090
+   */
+  getRewriteConsoleCode(serverApi: string) {
+    return `
+// 保留日志原始打印方法
+const __log__ = console.log;
+const __warn__ = console.warn;
+const __error__ = console.error;
+
+/**发到日志远程控制台*/
+const __sendLogToRemote__ = async (type = 'log', data = '') => {
+  const req = new Request('${serverApi}/console');
+  req.method = 'POST';
+  req.headers = {
+    'Content-Type': 'application/json',
+  };
+  req.body = JSON.stringify({
+    type,
+    data,
+  });
+  return await req.loadJSON()
+}
+
+/**重写生成日志函数*/
+const __generateLog__ = (type = 'log', oldFunc) => {
+  return function(...args) {
+    __sendLogToRemote__(type, args[0]).catch(err => {})
+    oldFunc.apply(this, args);
+  }
+};
+if (!console.__rewrite__) {
+  console.log = __generateLog__('log', __log__);
+  console.warn = __generateLog__('warn', __warn__);
+  console.error = __generateLog__('error', __error__);
+}
+console.__rewrite__ = true;
+    `
   }
 }
 
