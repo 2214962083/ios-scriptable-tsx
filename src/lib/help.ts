@@ -178,6 +178,13 @@ export interface ShowNotificationParams {
 }
 
 /**
+ * 获取当前文件管理器实例
+ */
+export function fm(): FileManager {
+  return FileManager[MODULE.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']()
+}
+
+/**
  * 根据文件保存路径生成储存方法、读取方法
  * @param dirPath 文件存储文件夹
  */
@@ -246,7 +253,7 @@ function setStorageDirectory(dirPath: string) {
  * @param key 键
  * @param value 值
  */
-export const setStorage = setStorageDirectory(FileManager.local().libraryDirectory()).setStorage
+export const setStorage = setStorageDirectory(fm().libraryDirectory()).setStorage
 
 /**
  * 获取长期保存值(所有脚本共享)
@@ -330,21 +337,13 @@ export function useSetting(settingFilename?: string) {
     return MODULE.filename.includes('Documents/iCloud~')
   }
 
-  /**获取当前文件夹管理对象*/
-  const getCurrentFileManager = (): FileManager => {
-    return isUseICloud() ? FileManager.iCloud() : FileManager.local()
-  }
-
   /**生成设置文件名*/
   const generateSettingFileName = (): string => {
     return MODULE.filename.match(/[^\/]+$/)?.[0].replace('.js', '') || hash(`settings:${MODULE.filename}`)
   }
 
-  // 当前脚本是不是在 icloud
-  const isICloud = isUseICloud()
-
   // 当前文件管理对象
-  const fileManager = getCurrentFileManager()
+  const fileManager = fm()
 
   // 设置保存文件夹
   const settingsFolderPath = fileManager.joinPath(fileManager.documentsDirectory(), '/settings-json')
@@ -371,7 +370,7 @@ export function useSetting(settingFilename?: string) {
   const getSetting = async <T>(key: string): Promise<null | T> => {
     const fileExists = await isFileExists()
     if (!fileExists) return null
-    if (isICloud) await fileManager.downloadFileFromiCloud(settingsPath)
+    if (isUseICloud()) await fileManager.downloadFileFromiCloud(settingsPath)
     const json = fileManager.readString(settingsPath)
     const settings = JSON.parse(json) || {}
     return settings[key] as T
@@ -389,7 +388,7 @@ export function useSetting(settingFilename?: string) {
       )
       return
     }
-    if (isICloud) await fileManager.downloadFileFromiCloud(settingsPath)
+    if (isUseICloud()) await fileManager.downloadFileFromiCloud(settingsPath)
     const json = fileManager.readString(settingsPath)
     const settings = JSON.parse(json) || {}
     settings[key] = value
@@ -570,13 +569,13 @@ export async function showModal(args: ShowModalParams): Promise<ShowModalRes> {
  * @param args 通知参数
  */
 export async function showNotification(args: ShowNotificationParams): Promise<void> {
-  const {title, subtitle = '', body = '', openURL, sound = 'default', ...others} = args
+  const {title, subtitle = '', body = '', openURL, sound, ...others} = args
   let notification = new Notification()
   notification.title = title
   notification.subtitle = subtitle
   notification.body = body
   openURL && (notification.openURL = openURL)
-  notification.sound = sound
+  sound && notification.sound
   notification = Object.assign(notification, others)
   return await notification.schedule()
 }
@@ -655,10 +654,9 @@ export function hash(string: string): string {
  * @param path 文件路径
  */
 export function getSciptableTopComment(path: string): string {
-  const fm = FileManager.local()
   // 路径不存在
-  if (!fm.fileExists(path)) return ''
-  const code = fm.readString(path)
+  if (!fm().fileExists(path)) return ''
+  const code = fm().readString(path)
   return (
     (code.match(/\/\/\s*Variables\s*used\s*by\s*Scriptable[\w\W]+?icon\-color\:[\w\W]+?\;\s*icon-glyph\:[\w\W]+?\;/i) ||
       [])[0] || ''
@@ -750,6 +748,7 @@ export async function showPreviewOptions(widget: ListWidget): Promise<number> {
  * 可用作透明背景
  * 返回图片image对象
  *  @param tips 开始处理前提示用户截图的信息，可选（适合用在组件自定义透明背景时提示）
+ * 代码改自：https://gist.github.com/mzeryck/3a97ccd1e059b3afa3c6666d27a496c9
  */
 export async function setTransparentBackground(tips?: string): Promise<Image | undefined> {
   type WidgetSize = NonNullable<typeof config.widgetFamily>

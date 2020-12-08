@@ -1,4 +1,11 @@
-// @编译时间 1607322867853
+/**
+ * 作者: 小明
+ * 版本: 1.0.0
+ * 更新时间：2020-12-8
+ * github: https://github.com/2214962083/scriptable.git
+ */
+
+// @编译时间 1607394812206
 const MODULE = module
 
 // src/lib/constants.ts
@@ -9,6 +16,9 @@ var URLSchemeFrom
 const port = 9090
 
 // src/lib/help.ts
+function fm() {
+  return FileManager[MODULE.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']()
+}
 function setStorageDirectory(dirPath) {
   return {
     setStorage(key, value) {
@@ -49,7 +59,7 @@ function setStorageDirectory(dirPath) {
     },
   }
 }
-const setStorage = setStorageDirectory(FileManager.local().libraryDirectory()).setStorage
+const setStorage = setStorageDirectory(fm().libraryDirectory()).setStorage
 const getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
 const removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
 const setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
@@ -125,13 +135,13 @@ async function showModal(args) {
       }
 }
 async function showNotification(args) {
-  const {title, subtitle = '', body = '', openURL, sound = 'default', ...others} = args
+  const {title, subtitle = '', body = '', openURL, sound, ...others} = args
   let notification = new Notification()
   notification.title = title
   notification.subtitle = subtitle
   notification.body = body
   openURL && (notification.openURL = openURL)
-  notification.sound = sound
+  sound && notification.sound
   notification = Object.assign(notification, others)
   return await notification.schedule()
 }
@@ -147,9 +157,8 @@ function hash(string) {
   return `hash_${hash2}`
 }
 function getSciptableTopComment(path) {
-  const fm = FileManager.local()
-  if (!fm.fileExists(path)) return ''
-  const code = fm.readString(path)
+  if (!fm().fileExists(path)) return ''
+  const code = fm().readString(path)
   return (
     (code.match(/\/\/\s*Variables\s*used\s*by\s*Scriptable[\w\W]+?icon\-color\:[\w\W]+?\;\s*icon-glyph\:[\w\W]+?\;/i) ||
       [])[0] || ''
@@ -271,6 +280,7 @@ class Basic {
       await showNotification({
         title: '信息不完整，运行终止',
         body: '没选择脚本或远程ip没填写',
+        sound: 'failure',
       })
       return
     }
@@ -358,17 +368,25 @@ const __sendLogToRemote__ = async (type = 'log', data = '') => {
   return await req.loadJSON()
 }
 
+/**存储上个console 的promise*/
+let __lastConsole__ = Promise.resolve()
+
 /**重写生成日志函数*/
 const __generateLog__ = (type = 'log', oldFunc) => {
   return function(...args) {
-    __sendLogToRemote__(type, args[0]).catch(err => {})
+    /**为了同步打印，finally 兼容性太差*/
+    __lastConsole__.then(() => {
+      __lastConsole__ = __sendLogToRemote__(type, args[0]).catch(err => {})
+    }).catch(() => {
+      __lastConsole__ = __sendLogToRemote__(type, args[0]).catch(err => {})
+    })
     oldFunc.apply(this, args);
   }
 };
 if (!console.__rewrite__) {
-  console.log = __generateLog__('log', __log__);
-  console.warn = __generateLog__('warn', __warn__);
-  console.error = __generateLog__('error', __error__);
+  console.log = __generateLog__('log', __log__).bind(console);
+  console.warn = __generateLog__('warn', __warn__).bind(console);
+  console.error = __generateLog__('error', __error__).bind(console);
 }
 console.__rewrite__ = true;
     `

@@ -1,7 +1,17 @@
-// @编译时间 1607172064758
+/**
+ * 作者: 小明
+ * 版本: 1.0.0
+ * 更新时间：2020-12-8
+ * github: https://github.com/2214962083/scriptable.git
+ */
+
+// @编译时间 1607394783301
 const MODULE = module
 
 // src/lib/help.ts
+function fm() {
+  return FileManager[MODULE.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']()
+}
 function setStorageDirectory(dirPath) {
   return {
     setStorage(key, value) {
@@ -42,7 +52,7 @@ function setStorageDirectory(dirPath) {
     },
   }
 }
-const setStorage = setStorageDirectory(FileManager.local().libraryDirectory()).setStorage
+const setStorage = setStorageDirectory(fm().libraryDirectory()).setStorage
 const getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
 const removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
 const setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
@@ -177,6 +187,12 @@ async function showPreviewOptions(widget) {
   }
   return selectIndex
 }
+
+// src/lib/constants.ts
+var URLSchemeFrom
+;(function (URLSchemeFrom2) {
+  URLSchemeFrom2['WIDGET'] = 'widget'
+})(URLSchemeFrom || (URLSchemeFrom = {}))
 
 // src/lib/jsx-runtime.ts
 class GenrateView {
@@ -463,9 +479,9 @@ function isUrl(value) {
 }
 function runOnClick(instance, onClick) {
   const _eventId = hash(onClick.toString())
-  instance.url = `${URLScheme.forRunningScript()}?eventId=${encodeURIComponent(_eventId)}`
-  const {eventId} = args.queryParameters
-  if (eventId && eventId === _eventId) {
+  instance.url = `${URLScheme.forRunningScript()}?eventId=${encodeURIComponent(_eventId)}&from=${URLSchemeFrom.WIDGET}`
+  const {eventId, from} = args.queryParameters
+  if (eventId && eventId === _eventId && from === URLSchemeFrom.WIDGET) {
     onClick()
   }
 }
@@ -474,8 +490,9 @@ function runOnClick(instance, onClick) {
 class YiyanWidget {
   async init() {
     console.log('你好 development,这是我 .env 独享的 moment')
+    console.warn('999')
     this.widget = await this.render()
-    if (!config.runsInWidget) {
+    if (!config.runsInWidget && args.queryParameters.from !== 'widget') {
       await showPreviewOptions(this.widget)
       return
     }
@@ -579,6 +596,4 @@ class YiyanWidget {
     }
   }
 }
-
-// src/index.ts
 new YiyanWidget().init()

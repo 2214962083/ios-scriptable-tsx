@@ -161,6 +161,7 @@ class Basic {
       await showNotification({
         title: '信息不完整，运行终止',
         body: '没选择脚本或远程ip没填写',
+        sound: 'failure',
       })
       return
     }
@@ -280,17 +281,25 @@ const __sendLogToRemote__ = async (type = 'log', data = '') => {
   return await req.loadJSON()
 }
 
+/**存储上个console 的promise*/
+let __lastConsole__ = Promise.resolve()
+
 /**重写生成日志函数*/
 const __generateLog__ = (type = 'log', oldFunc) => {
   return function(...args) {
-    __sendLogToRemote__(type, args[0]).catch(err => {})
+    /**为了同步打印，finally 兼容性太差*/
+    __lastConsole__.then(() => {
+      __lastConsole__ = __sendLogToRemote__(type, args[0]).catch(err => {})
+    }).catch(() => {
+      __lastConsole__ = __sendLogToRemote__(type, args[0]).catch(err => {})
+    })
     oldFunc.apply(this, args);
   }
 };
 if (!console.__rewrite__) {
-  console.log = __generateLog__('log', __log__);
-  console.warn = __generateLog__('warn', __warn__);
-  console.error = __generateLog__('error', __error__);
+  console.log = __generateLog__('log', __log__).bind(console);
+  console.warn = __generateLog__('warn', __warn__).bind(console);
+  console.error = __generateLog__('error', __error__).bind(console);
 }
 console.__rewrite__ = true;
     `

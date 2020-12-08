@@ -13,18 +13,29 @@ const inputDir = path.resolve(rootPath, './src/scripts')
 const outputDir = path.resolve(rootPath, './dist')
 
 /**是否压缩代码*/
-const minify = process.env.NODE_ENV === 'production'
+const minify = false //process.env.NODE_ENV === 'production'
 
 /**是否加密代码*/
 const encrypt = process.env.NODE_ENV === 'production'
 
-module.exports = /** @type { import ('./src/compile').CompileOptions }  */ ({
+/**往编译后的代码插入头部*/
+const header = `
+/**
+ * 作者: 小明
+ * 版本: 1.0.0
+ * 更新时间：${new Date().toLocaleDateString()}
+ * github: https://github.com/2214962083/scriptable.git
+ */
+`
+
+module.exports = /** @type { import ('./src/lib/compile').CompileOptions }  */ ({
   rootPath,
   inputFile,
   inputDir,
   outputDir,
   minify,
   encrypt,
+  header,
 
   /**
    * esbuild 自定义配置

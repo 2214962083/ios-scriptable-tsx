@@ -4,9 +4,9 @@ import path from 'path'
 import {promisify} from 'util'
 import {merge} from 'lodash'
 import {obfuscate, ObfuscatorOptions} from 'javascript-obfuscator'
-import {createServer} from './lib/server'
-import {loadEnvFiles} from './lib/env'
-import compileOptions from '../scriptable.config'
+import {createServer} from './server'
+import {loadEnvFiles} from './env'
+import compileOptions from '../../scriptable.config'
 import rimraf from 'rimraf'
 
 /**打包模式*/
@@ -48,6 +48,9 @@ export interface CompileOptions {
 
   /**是否压缩代码*/
   minify?: boolean
+
+  /**在编译中添加额外的头部，一般是作者信息*/
+  header?: string
 
   /**是否加密代码*/
   encrypt?: boolean
@@ -109,6 +112,7 @@ async function compile(options: CompileOptions) {
     minify = false,
     encrypt = false,
     encryptOptions = {},
+    header = '',
   } = options
 
   /**加载环境变量 .env 文件*/
@@ -155,7 +159,7 @@ async function compile(options: CompileOptions) {
       charset: 'utf8',
       bundle: true,
       outdir: outputDir,
-      banner: `
+      banner: `${header}
 // @编译时间 ${Date.now()}
 const MODULE = module;
     `,
@@ -207,8 +211,9 @@ const MODULE = module;
         // 加密代码
         const transformCode = obfuscate(code, merge(_encryptOptions, encryptOptions)).getObfuscatedCode()
 
-        // 写入加入代码
-        await writeFile(outputFilePath, transformCode, {encoding: 'utf8'})
+        // 写入加入代码、和头部信息
+        const outputText = `${header}\n${transformCode}`
+        await writeFile(outputFilePath, outputText, {encoding: 'utf8'})
       } catch (err) {
         console.error('加密代码失败', err)
       }

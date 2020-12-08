@@ -60,14 +60,14 @@ export function createServer(params: CreateServerParams): {serverApi: string} {
     /**自动安装基础包并命名的代码*/
     const installBasicCode = `
 (async() => {
-
+  const fm = FileManager[module.filename.includes('Documents/iCloud~') ? 'iCloud' : 'local']()
   const notify = new Notification()
   notify.sound = 'default'
   try {
     const req = new Request('${serverApi}/basic.js')
     const code = await req.loadString()
     const newFilename = module.filename.split('/').slice(0, -1).concat(['基础包.js']).join('/')
-    FileManager.local().writeString(
+    fm.writeString(
       newFilename,
 \`// Variables used by Scriptable.
 // These must be at the very top of the file. Do not edit.
@@ -78,7 +78,7 @@ export function createServer(params: CreateServerParams): {serverApi: string} {
     notify.title = '安装基础包成功'
     notify.schedule()
 
-    FileManager.local().remove(module.filename)
+    fm.remove(module.filename)
     Safari.open("scriptable:///open?scriptName="+encodeURIComponent('基础包'));
   } catch(err) {
     console.error(err)

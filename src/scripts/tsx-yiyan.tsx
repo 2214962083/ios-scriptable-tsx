@@ -16,7 +16,7 @@ interface RemoteData {
   length: number
 }
 
-export default class YiyanWidget {
+class YiyanWidget {
   private widget!: ListWidget
   async init(): Promise<void> {
     // 打印打包环境
@@ -105,3 +105,5 @@ export default class YiyanWidget {
     }
   }
 }
+
+new YiyanWidget().init()
