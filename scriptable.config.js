@@ -1,3 +1,5 @@
+// @ts-check
+
 const path = require('path')
 
 /**项目根目录，不建议修改*/
