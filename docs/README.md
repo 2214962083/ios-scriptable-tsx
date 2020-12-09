@@ -76,13 +76,13 @@
 
    **pc端：**
 
-   <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhpv0b5gnj30i50d1q2y.jpg" alt="服务同步地址展示"  />
+   <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhpv0b5gnj30i50d1q2y.jpg" alt="服务同步地址展示" height="480px"/>
 
    <br/>
 
    **手机端：**
 
-   <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhpxwaqo6j30n01dsdpb.jpg" alt="开发者引导页" style="zoom: 33%;" />
+   <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhpxwaqo6j30n01dsdpb.jpg" alt="开发者引导页" width="320px"/>
 
 
 
