@@ -38,6 +38,7 @@
 | [flexDirection](#flexDirection) | string           | row       | 否   | 排版方向                                                     |
 | onClick                         | function         |           | 否   | 用 [URLScheme](https://docs.scriptable.app/urlscheme/) 实现的点击事件<br/>不与 `href` 共存，当`href` 存在时，只执行 `onClick` |
 <br/>
+
 ##### <span id="verticalAlign">verticalAlign 的合法值</span>
 
 | 值     | 说明                 |
@@ -46,6 +47,7 @@
 | center | 居中对齐内容         |
 | bottom | 底部对齐内容         |
 <br/>
+
 ##### <span id="flexDirection">flexDirection 的合法值</span>
 
 | 值     | 说明             |
