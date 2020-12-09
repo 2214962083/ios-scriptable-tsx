@@ -74,31 +74,31 @@
 
 6. 执行 `npm run watch`，并用手机扫描命令终端的二维码，打开引导页**（手机和 pc 必须处于同一个局域网下面）**，我的是这样的：
 
-   <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhpv0b5gnj30i50d1q2y.jpg" alt="服务同步地址展示" height="480px"/>
+  <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhpv0b5gnj30i50d1q2y.jpg" alt="服务同步地址展示" height="480px"/>
+  
+  <br/>
+   
+7. 根据引导页提示操作，**此举是用来安装基础包，若已安装基础包，无需再进引导页**：
 
-   <br/>
+  <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhpxwaqo6j30n01dsdpb.jpg" alt="开发者引导页" width="320px"/>
+  
+  <br/>
 
-   7. 根据引导页提示操作，**此举是用来安装基础包，若已安装基础包，无需再进引导页**：
+8. 在 `scriptable` 右上角 `+` 创建一个空脚本，命名为 `你好世界` ：
 
-   <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhpxwaqo6j30n01dsdpb.jpg" alt="开发者引导页" width="320px"/>
+  <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhq89z0fjj30n01ds7kp.jpg" alt="创建你好世界脚本" width="320px"/>
+  
+  <br/>
+  
+9. 点击基础包，选择远程开发：
 
-   <br/>
+  <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhqb6fhe0j30n01dsdxz.jpg" alt="选择远程开发" width="320px"/>
+  
+  <br/>
 
-   8. 在 `scriptable` 右上角 `+` 创建一个空脚本，命名为 `你好世界` ：
+10. 选择 `你好世界.js` ：
 
-      <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhq89z0fjj30n01ds7kp.jpg" alt="创建你好世界脚本" width="320px"/>
-
-      <br/>
-
-      9. 点击基础包，选择远程开发：
-
-         <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhqb6fhe0j30n01dsdxz.jpg" alt="选择远程开发" width="320px"/>
-
-         <br/>
-
-         10. 选择 `你好世界.js` ：
-
-             <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhqcjbqukj30n01ds4qp.jpg" alt="选择脚本" width="320px"/>
+   <img src="http://ww1.sinaimg.cn/large/006Pg1gLgy1glhqcjbqukj30n01ds4qp.jpg" alt="选择脚本" width="320px"/>
 
 <br/>
 
