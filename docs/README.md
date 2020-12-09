@@ -20,9 +20,7 @@
 </p>
 <h2 align="center">ios-scriptable-tsx</h2>
 
-
-
-
+<br/><br/>
 
 ## 快速开始
 
@@ -38,7 +36,7 @@ git clone https://github.com/2214962083/ios-scriptable-tsx.git
 cd ios-scriptable-tsx && npm install
 ```
 
-
+<br/>
 
 ## 项目目录说明
 
@@ -73,7 +71,7 @@ ios-scriptable-tsx
 └── tsconfig.json           // TypeScript 编译选项
 ```
 
-
+<br/>
 
 ## scriptable.config.js 打包配置
 
@@ -89,7 +87,7 @@ ios-scriptable-tsx
 | [esbuild](https://esbuild.github.io/api/#simple-options)        | object  | 否  |                      | esbuild 自定义配置                |
 | [encryptOptions](https://github.com/javascript-obfuscator/javascript-obfuscator) | object  | 否  |                      | javascript\-obfuscator 自定义配置（加密代码配置） |
 
-
+<br/>
 
 ## 环境变量配置
 
@@ -103,7 +101,7 @@ npm run build		#production开发环境
 npm run build:all	#production开发环境
 ```
 
-
+<br/>
 
 **本项目集成了[dotenv](https://github.com/motdotla/dotenv)，你可以替换你的项目根目录中的下列文件来指定环境变量（如果你用过 [vue-cli](https://cli.vuejs.org/zh/guide/mode-and-env.html#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E5%92%8C%E6%A8%A1%E5%BC%8F) 你会很熟悉它）：**
 
@@ -114,7 +112,7 @@ npm run build:all	#production开发环境
 .env.[mode].local   # 只在指定的模式中被载入，但会被 git 忽略
 ```
 
-
+<br/>
 
 一个环境文件只包含环境变量的“键=值”对：
 
@@ -123,10 +121,10 @@ FOO=bar
 HELLO=你好
 ```
 
-
 **环境变量将会载入挂载到 `process.env `上。例如在打包时，`process.env.FOO`将会被替换成字符串 `bar` ，`process.env.HELLO`将会被替换成字符串`你好`。被载入的变量将会对./src 目录下的所有代码可用。**
 
-当为`development`开发环境打包时，下面的文件会被依次载入:
+<br/>当为`development`开发环境打包时，下面的文件会被依次载入:
+
 ```
 .env 
 .env.local
@@ -134,7 +132,7 @@ HELLO=你好
 .env.development.local
 ```
 
-
+<br/>
 
 当为`production`生产环境打包时，下面的文件会被依次载入:
 
@@ -145,7 +143,7 @@ HELLO=你好
 .env.production.local
 ```
 
-
+<br/>
 
 ## 其他配置
 

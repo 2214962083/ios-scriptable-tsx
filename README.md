@@ -20,7 +20,7 @@
 </p>
 <h2 align="center">ios-scriptable-tsx</h2>
 
-
+<br/><br/>
 
 ## 介绍
 
@@ -32,9 +32,7 @@
 2. 支持使用 typescript 和 tsx 开发小组件，有 api 类型提示
 3. 对于官方常用 api 也有二次封装，使用更顺手。
 4. 支持 console 输出到 pc 的命令窗口
-5. 支持环境变量定义、打包时自动替换环境变量为预设值（dotenv）
-
-
+5. 支持环境变量定义、打包时自动替换环境变量为预设值（dotenv）<br/><br/>
 
 ## 使用
 
@@ -49,30 +47,22 @@ git clone https://github.com/2214962083/ios-scriptable-tsx.git
 2. 进入到 `ios-scriptable-tsx` 目录里，执行 `npm install` 安装依赖
 3. 打开 vscode 愉快开发，打包入口文件默认是 `.src/index.ts`
 4. 执行 `npm run build` 打包到 `dist`文件夹
-5. 更多功能[请看详细文档](./docs/README.md) 
-
-
+5. 更多功能[请看详细文档](./docs/README.md) <br/><br/>
 
 ## 文档
 
 - [本项目详细文档](./docs/README.md)
-- [Scriptable 官方 api 文档](https://docs.scriptable.app/)
-
-
+- [Scriptable 官方 api 文档](https://docs.scriptable.app/)<br/><br/>
 
 ## 讨论
 
-- [Scriptable 官方论坛](https://talk.automators.fm/c/scriptable/13)
-
-
+- [Scriptable 官方论坛](https://talk.automators.fm/c/scriptable/13)<br/><br/>
 
 ## 项目参考
 
 - [「小件件」开发框架](https://github.com/im3x/Scriptables)
 - [Scriptable](https://github.com/dompling/Scriptable)
-- [Transparent-Scriptable-Widget)](https://github.com/mzeryck/Transparent-Scriptable-Widget)
-
-
+- [Transparent-Scriptable-Widget)](https://github.com/mzeryck/Transparent-Scriptable-Widget)<br/><br/>
 
 ## 许可证
 
