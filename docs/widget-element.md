@@ -139,9 +139,9 @@
 
 | 值                                                           | 说明                                                         |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [left](https://docs.scriptable.app/widgettext/#-leftaligntext) | 文字左对齐**（在`wstack`里左对齐文本，应该在文本组件右边放一个 `wspacer` ）** |
-| [center](https://docs.scriptable.app/widgettext/#-centeraligntext) | 文字居中对齐**（在`wstack`里居中对齐文本，应该在文本组件两边放一个 `wspacer` ）** |
-| [right](https://docs.scriptable.app/widgettext/#-rightaligntext) | 文字右对齐**（在`wstack`里右对齐文本，应该在文本组件左边放一个 `wspacer` ）** |
+| [left](https://docs.scriptable.app/widgettext/#-leftaligntext) | 文字左对齐（在`wstack`里左对齐文本，应该在文本组件右边放一个 `wspacer` ） |
+| [center](https://docs.scriptable.app/widgettext/#-centeraligntext) | 文字居中对齐（在`wstack`里居中对齐文本，应该在文本组件两边放一个 `wspacer` ） |
+| [right](https://docs.scriptable.app/widgettext/#-rightaligntext) | 文字右对齐（在`wstack`里右对齐文本，应该在文本组件左边放一个 `wspacer` ） |
 
 <br/>
 
@@ -173,8 +173,8 @@
 
 | 值                                                           | 说明                                                         |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [time]([WidgetDate - Scriptable Docs](https://docs.scriptable.app/widgetdate/#-applytimestyle)) | 显示日期的时间部分。例如：11:23PM                            |
-| [date]([WidgetDate - Scriptable Docs](https://docs.scriptable.app/widgetdate/#-applydatestyle)) | 显示整个日期。例如：June 3, 2019                             |
+| [time](https://docs.scriptable.app/widgetdate/#-applytimestyle) | 显示日期的时间部分。例如：11:23PM                            |
+| [date](https://docs.scriptable.app/widgetdate/#-applydatestyle) | 显示整个日期。例如：June 3, 2019                             |
 | [relative](https://docs.scriptable.app/widgetdate/#-applyrelativestyle) | 将日期显示为相对于现在的日期。例如：2 hours, 23 minutes 1 year, 1 month |
 | [offset](https://docs.scriptable.app/widgetdate/#-applyoffsetstyle) | 将日期显示为从现在开始的偏移量。例如：+2 hours -3 months     |
 | [timer](https://docs.scriptable.app/widgetdate/#-applytimerstyle) | 从现在开始将日期显示为计时器计数。例如：2:32 36:59:01        |
