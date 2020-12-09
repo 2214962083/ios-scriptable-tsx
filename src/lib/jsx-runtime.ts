@@ -157,7 +157,7 @@ class GenrateView {
         isDefined(imageAlign) && imageAlignMap[imageAlign]()
         // mode
         const modeMap: KeyMap<WimageProps['mode']> = {
-          contain: () => widgetImage.applyFittingContentMode(),
+          fit: () => widgetImage.applyFittingContentMode(),
           fill: () => widgetImage.applyFillingContentMode(),
         }
         isDefined(mode) && modeMap[mode]()
