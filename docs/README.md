@@ -24,17 +24,67 @@
 
 ## 快速开始
 
-1. 克隆本项目
+1. 克隆本项目：
 
-```bash
-git clone https://github.com/2214962083/ios-scriptable-tsx.git
-```
+   ```bash
+   git clone https://github.com/2214962083/ios-scriptable-tsx.git
+   ```
 
-2. 进入 `ios-scriptable-tsx` 目录并安装依赖
+2. 进入 `ios-scriptable-tsx` 目录，执行 `npm install` 安装依赖
 
-```bash
-cd ios-scriptable-tsx && npm install
-```
+3. 在 `./src/scripts` 目录下新创建一个文件叫 `helloWorld.tsx` 
+
+4. 把下面代码粘贴上去：
+
+   ```tsx
+   import {h} from '@app/lib/jsx-runtime'
+   
+   class HelloWorld {
+     async init() {
+       // ListWidget 实例
+       const widget = (await this.render()) as ListWidget
+       // 注册小部件
+       Script.setWidget(widget)
+       // 调试用
+       !config.runsInWidget && (await widget.presentMedium())
+       // 脚本结束
+       Script.complete()
+     }
+     async render(): Promise<unknown> {
+       return (
+         <wbox>
+           <wspacer></wspacer>
+           <wtext font={30} textAlign="center">
+             Hello World
+           </wtext>
+           <wspacer></wspacer>
+         </wbox>
+       )
+     }
+   }
+   
+   new HelloWorld().init()
+   ```
+
+5. 然后，去 `./src/index.ts` 删除已有的东西，引入`helloWorld.tsx`
+
+   ```tsx
+   import './scripts/helloWorld.tsx'
+   ```
+
+6. 执行 `npm run watch`，并用手机扫描命令终端的二维码，打开引导页（手机和pc必须处于同一个局域网下面），我的是这样的：
+
+   **pc端：**
+
+   ![](http://ww1.sinaimg.cn/large/006Pg1gLgy1glhpv0b5gnj30i50d1q2y.jpg)
+
+   <br/>
+
+   **手机端：**
+
+   ![](http://ww1.sinaimg.cn/large/006Pg1gLgy1glhpxwaqo6j30n01dsdpb.jpg)
+
+
 
 <br/>
 
