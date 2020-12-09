@@ -18,12 +18,13 @@
   <!-- package.json 关键词 -->
   <a href="https://github.com/2214962083/ios-scriptable-tsx"><img src="https://img.shields.io/github/package-json/keywords/2214962083/ios-scriptable-tsx" alt="Keywords"></a>
 </p>
+<h2 align="center">ios-scriptable-tsx</h2>
 
-<h2 align="center">ios-scriptable-tsx</h2><br/><br/>
+
 
 ## 介绍
 
-本项目旨在给 `Scriptable` 开发者提供舒适的开发体验,  `Scriptable` 是 ios 上一个用 js 开发桌面小组件的 app ，如果你还没安装，可以[点我下载](https://apps.apple.com/us/app/scriptable/id1405459188)</br></br>
+本项目旨在给 `Scriptable` 开发者提供舒适的开发体验,  `Scriptable` 是 ios 上一个用 js 开发桌面小组件的 app ，如果你还没安装，可以[点我下载](https://apps.apple.com/us/app/scriptable/id1405459188)
 
 `ios-scriptable-tsx` 是一个二次封装 `Scriptable` 官方 api 的开发框架，它具有以下特点：
 
@@ -36,6 +37,8 @@
 4. 支持 console 输出到 pc 的命令窗口
 
 5.  支持环境变量定义、打包时自动替换环境变量为预设值（dotenv）
+
+
 
 ## 使用
 
@@ -52,19 +55,28 @@ git clone https://github.com/2214962083/ios-scriptable-tsx.git
 4. 执行 `npm run build` 打包到 `dist`文件夹
 5. 更多功能[请看详细文档](./docs/README.md) 
 
+
+
 ## 文档
+
 - [本项目详细文档](./docs/README.md)
 - [Scriptable 官方 api 文档](https://docs.scriptable.app/)
+
+
 
 ## 讨论
 
 - [Scriptable 官方论坛](https://talk.automators.fm/c/scriptable/13)
+
+
 
 ## 项目参考
 
 - [「小件件」开发框架](https://github.com/im3x/Scriptables)
 - [Scriptable](https://github.com/dompling/Scriptable)
 - [Transparent-Scriptable-Widget)](https://github.com/mzeryck/Transparent-Scriptable-Widget)
+
+
 
 ## 许可证
 

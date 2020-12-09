@@ -18,10 +18,11 @@
   <!-- package.json 关键词 -->
   <a href="https://github.com/2214962083/ios-scriptable-tsx"><img src="https://img.shields.io/github/package-json/keywords/2214962083/ios-scriptable-tsx" alt="Keywords"></a>
 </p>
+<h2 align="center">ios-scriptable-tsx</h2>
 
-<h2 align="center">ios-scriptable-tsx</h2></br></br>
 
-[toc]
+
+
 
 ## 快速开始
 
@@ -36,6 +37,8 @@ git clone https://github.com/2214962083/ios-scriptable-tsx.git
 ```bash
 cd ios-scriptable-tsx && npm install
 ```
+
+
 
 ## 项目目录说明
 
@@ -70,6 +73,8 @@ ios-scriptable-tsx
 └── tsconfig.json           // TypeScript 编译选项
 ```
 
+
+
 ## scriptable.config.js 打包配置
 
 | 属性             | 类型      | 必填 | 默认                   | 描述                           |
@@ -84,13 +89,23 @@ ios-scriptable-tsx
 | [esbuild](https://esbuild.github.io/api/#simple-options)        | object  | 否  |                      | esbuild 自定义配置                |
 | [encryptOptions](https://github.com/javascript-obfuscator/javascript-obfuscator) | object  | 否  |                      | javascript\-obfuscator 自定义配置（加密代码配置） |
 
+
+
 ## 环境变量配置
 
-`ios-scriptable-tsx` 提供两个环境模式，开发环境 `development` 模式和生产环境 `production`模式 ，你可以用代码 `process.env.NODE_ENV` 获取到这个值。
+`ios-scriptable-tsx` 提供两个环境模式，开发环境 `development` 模式和生产环境 `production`模式 ，你可以用代码 `process.env.NODE_ENV` 获取到这个值。你可以在项目根目录下的 `package.json` 文件里的 `scripts` 看到他们是怎么传进去的。
 
-你可以在项目根目录下的 `package.json` 文件里的 `scripts` 看到他们是怎么传进去的。
+```bash
+npm run watch 		#development开发环境
+npm run dev 		#development开发环境
+npm run dev:all		#development开发环境
+npm run build		#production开发环境
+npm run build:all	#production开发环境
+```
 
-本项目集成了[dotenv](https://github.com/motdotla/dotenv)，你可以替换你的项目根目录中的下列文件来指定环境变量：
+
+
+**本项目集成了[dotenv](https://github.com/motdotla/dotenv)，你可以替换你的项目根目录中的下列文件来指定环境变量（如果你用过 [vue-cli](https://cli.vuejs.org/zh/guide/mode-and-env.html#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E5%92%8C%E6%A8%A1%E5%BC%8F) 你会很熟悉它）：**
 
 ```
 .env                # 在所有的环境中被载入
@@ -99,14 +114,19 @@ ios-scriptable-tsx
 .env.[mode].local   # 只在指定的模式中被载入，但会被 git 忽略
 ```
 
+
+
 一个环境文件只包含环境变量的“键=值”对：
+
 ```
 FOO=bar
 HELLO=你好
 ```
-被载入的变量将会对 src 目录下的所有代码可用。
 
-当为开发环境打包时，下面的文件会被依次载入:
+
+**环境变量将会载入挂载到 `process.env `上。例如在打包时，`process.env.FOO`将会被替换成字符串 `bar` ，`process.env.HELLO`将会被替换成字符串`你好`。被载入的变量将会对./src 目录下的所有代码可用。**
+
+当为`development`开发环境打包时，下面的文件会被依次载入:
 ```
 .env 
 .env.local
@@ -114,21 +134,24 @@ HELLO=你好
 .env.development.local
 ```
 
-当为生产环境打包时，下面的文件会被依次载入:
+
+
+当为`production`生产环境打包时，下面的文件会被依次载入:
+
 ```
 .env 
 .env.local
 .env.production
 .env.production.local
 ```
-如果你用过 [vue-cli](https://cli.vuejs.org/zh/guide/mode-and-env.html#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E5%92%8C%E6%A8%A1%E5%BC%8F) 你会很熟悉它
+
 
 ## 其他配置
 
-| 配置文件名 | 用途 |
-| ---------- | ---- |
-|            |      |
-|            |      |
-|            |      |
-|            |      |
+| 配置文件名                                               | 用途                           |
+| -------------------------------------------------------- | ------------------------------ |
+| [.editorconfig](http://editorconfig.org)                 | 统一各个编辑器编辑风格（可删） |
+| [.eslintrc.js](https://cn.eslint.org/)                   | 定义代码规范（可删）           |
+| [prettier.config.js](https://prettier.io)                | 自动对齐、美化代码用（可删）   |
+| [tsconfig.json](https://www.typescriptlang.org/tsconfig) | typescript配置文件 （不可删）  |
 
