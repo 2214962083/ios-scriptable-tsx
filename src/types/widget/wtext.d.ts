@@ -11,7 +11,7 @@ export interface WtextProps extends HTMLAttributes<Element> {
   /**透明度0到1，0为完全透明*/
   opacity?: number
 
-  /**做多显示多少行，当小于等于0时，禁用，默认禁用*/
+  /**最多显示多少行，当小于等于0时，禁用，默认禁用*/
   maxLine?: number
 
   /**文字缩放倍数，目前只支持缩小，数字为0到1，1是正常大小*/
