@@ -1,3 +1,6 @@
+/**
+ * 基础包源码
+ */
 import {port} from '@app/lib/constants'
 import {useStorage, showActionSheet, showModal, showNotification, sleep, getSciptableTopComment} from '@app/lib/help'
 

@@ -1,11 +1,11 @@
 /**
  * 作者: 小明
  * 版本: 1.0.0
- * 更新时间：2020-12-8
+ * 更新时间：2020-12-10
  * github: https://github.com/2214962083/scriptable.git
  */
 
-// @编译时间 1607394812206
+// @编译时间 1607582679659
 const MODULE = module
 
 // src/lib/constants.ts

@@ -1,4 +1,4 @@
-// @编译时间 1607583737995
+// @编译时间 1607586196551
 const MODULE = module
 
 // src/lib/help.ts
@@ -51,6 +51,20 @@ const removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()
 const setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
 const getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
 const removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
+function useStorage(nameSpace) {
+  const _nameSpace = nameSpace || `${MODULE.filename}`
+  return {
+    setStorage(key, value) {
+      setStorage(`${_nameSpace}${key}`, value)
+    },
+    getStorage(key) {
+      return getStorage(`${_nameSpace}${key}`)
+    },
+    removeStorage(key) {
+      removeStorage(`${_nameSpace}${key}`)
+    },
+  }
+}
 async function request(args2) {
   const {
     url,
@@ -122,6 +136,35 @@ async function showActionSheet(args2) {
   alert.addCancelAction(cancelText)
   const tapIndex = await alert.presentSheet()
   return tapIndex
+}
+async function showModal(args2) {
+  const {title, content, showCancel = true, cancelText = '取消', confirmText = '确定', inputItems = []} = args2
+  const alert = new Alert()
+  title && (alert.title = title)
+  content && (alert.message = content)
+  showCancel && cancelText && alert.addCancelAction(cancelText)
+  alert.addAction(confirmText)
+  for (const input of inputItems) {
+    const {type = 'text', text = '', placeholder = ''} = input
+    if (type === 'password') {
+      alert.addSecureTextField(placeholder, text)
+    } else {
+      alert.addTextField(placeholder, text)
+    }
+  }
+  const tapIndex = await alert.presentAlert()
+  const texts = inputItems.map((item, index) => alert.textFieldValue(index))
+  return tapIndex === -1
+    ? {
+        cancel: true,
+        confirm: false,
+        texts,
+      }
+    : {
+        cancel: false,
+        confirm: true,
+        texts,
+      }
 }
 async function getImage(args2) {
   const {filepath, url, useCache = true} = args2
@@ -488,35 +531,62 @@ function runOnClick(instance, onClick) {
   }
 }
 
-// src/scripts/tsx-yiyan.tsx
-class YiyanWidget {
+// src/scripts/tsx-bili.tsx
+const {setStorage: setStorage2, getStorage: getStorage2} = useStorage('bilibili-fans')
+class MyWidget {
   async init() {
-    console.log('你好 development,这是我 .env 独享的 moment')
-    console.warn('999')
-    this.widget = await this.render()
+    const widget = await this.render()
+    Script.setWidget(widget)
     if (!config.runsInWidget && args.queryParameters.from !== 'widget') {
-      await showPreviewOptions(this.widget)
-      return
+      await this.showMenu(widget)
     }
-    Script.setWidget(this.widget)
     Script.complete()
   }
   async render() {
-    const data = (await this.getRemoteData()).data || {}
-    const {hitokoto = '', from = ''} = data
+    const upId = getStorage2('up-id') || 0
+    let follower = -1
+    try {
+      const getUpDataRes = (await this.getUpData(upId)).data
+      follower = getUpDataRes.data.follower
+    } catch (err) {
+      console.warn('获取粉丝数失败')
+    }
+    const icon = await getImage({url: 'https://www.bilibili.com/favicon.ico'})
+    const FollowerText = () => {
+      if (follower < 0) {
+        return /* @__PURE__ */ h(
+          'wtext',
+          {
+            textAlign: 'center',
+            textColor: '#fb7299',
+            font: 14,
+          },
+          '请填写B站UP主的ID',
+        )
+      } else {
+        return /* @__PURE__ */ h(
+          'wtext',
+          {
+            textAlign: 'center',
+            textColor: '#fb7299',
+            font: Font.boldRoundedSystemFont(this.getFontsize(follower)),
+          },
+          this.toThousands(follower),
+        )
+      }
+    }
     return /* @__PURE__ */ h(
       'wbox',
-      null,
+      {
+        href: 'bilibili://',
+      },
       /* @__PURE__ */ h(
         'wstack',
-        {
-          verticalAlign: 'center',
-        },
+        null,
         /* @__PURE__ */ h('wimage', {
-          src: 'https://txc.gtimg.com/data/285778/2020/1012/f9cf50f08ebb8bd391a7118c8348f5d8.png',
-          width: 14,
-          height: 14,
-          borderRadius: 4,
+          src: icon,
+          width: 15,
+          height: 15,
         }),
         /* @__PURE__ */ h('wspacer', {
           length: 10,
@@ -524,78 +594,78 @@ class YiyanWidget {
         /* @__PURE__ */ h(
           'wtext',
           {
-            opacity: 0.7,
-            font: Font.boldSystemFont(12),
+            opacity: 0.9,
+            font: 14,
           },
-          '一言',
+          '哔哩哔哩粉丝',
         ),
       ),
       /* @__PURE__ */ h('wspacer', null),
-      /* @__PURE__ */ h(
-        'wtext',
-        {
-          font: Font.lightSystemFont(16),
-          onClick: () => this.menu(),
-        },
-        hitokoto,
-      ),
+      /* @__PURE__ */ h(FollowerText, null),
       /* @__PURE__ */ h('wspacer', null),
       /* @__PURE__ */ h(
         'wtext',
         {
-          font: Font.lightSystemFont(12),
+          font: 12,
+          textAlign: 'center',
           opacity: 0.5,
-          textAlign: 'right',
-          maxLine: 1,
         },
-        from,
+        '更新于:',
+        this.nowTime(),
       ),
     )
   }
-  async getRemoteData() {
-    return await request({
-      url: 'https://v1.hitokoto.cn',
-      dataType: 'json',
-    })
-  }
-  async menu() {
-    const optionFunc = [this.selectPreviewSize]
+  async showMenu(widget) {
     const selectIndex = await showActionSheet({
       title: '菜单',
-      itemList: [
-        {
-          text: '预览组件',
-        },
-      ],
-    })
-    optionFunc[selectIndex].apply(this)
-  }
-  async selectPreviewSize() {
-    const selectIndex = await showActionSheet({
-      title: '选择预览尺寸',
-      itemList: [
-        {
-          text: '小组件',
-        },
-        {
-          text: '中组件',
-        },
-        {
-          text: '大组件',
-        },
-      ],
+      itemList: ['设置 up 主 id', '预览尺寸'],
     })
     switch (selectIndex) {
       case 0:
-        await this.widget.presentSmall()
+        const {cancel, texts} = await showModal({
+          title: '请输入 up 主的 id',
+          inputItems: [
+            {
+              text: getStorage2('up-id') || '',
+              placeholder: '去网页版 up 主页，可以看到 id',
+            },
+          ],
+        })
+        if (cancel) return
+        if (texts && texts[0]) setStorage2('up-id', texts[0])
         break
       case 1:
-        await this.widget.presentMedium()
-        break
-      case 2:
-        await this.widget.presentLarge()
+        await showPreviewOptions(widget)
         break
     }
   }
+  async getUpData(id) {
+    return await request({
+      url: `http://api.bilibili.com/x/relation/stat?vmid=${id}`,
+      dataType: 'json',
+    })
+  }
+  toThousands(num) {
+    return (num || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,')
+  }
+  getFontsize(num) {
+    if (num < 99) {
+      return 38
+    } else if (num < 9999 && num > 100) {
+      return 30
+    } else if (num < 99999 && num > 1e4) {
+      return 28
+    } else if (num < 999999 && num > 1e5) {
+      return 24
+    } else if (num < 9999999 && num > 1e6) {
+      return 22
+    } else {
+      return 20
+    }
+  }
+  nowTime() {
+    const date = new Date()
+    return date.toLocaleTimeString('chinese', {hour12: false})
+  }
 }
-new YiyanWidget().init()
+new MyWidget().init()
