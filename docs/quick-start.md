@@ -99,7 +99,7 @@
 
 11. 长按桌面，点击添加 `scriptable` 小部件，然后长按小部件，点击编辑小部件 ：
 
-    <img src="https://p.pstatp.com/origin/138840000ab5a2a77c25e" alt="添加 scriptable 小部件" width="240px"/> <img src="https://p.pstatp.com/origin/fe77000360daabc45cd4" alt="编辑小部件" width="240px"/>
+    <img src="https://p.pstatp.com/origin/138440004844903758daf" alt="添加 scriptable 小部件" width="240px"/> <img src="https://p.pstatp.com/origin/fe77000360daabc45cd4" alt="编辑小部件" width="240px"/>
     
   <br/>
 
