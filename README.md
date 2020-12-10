@@ -85,9 +85,9 @@
   - [wbox 盒子组件](./docs/widget-element.md#wbox)
   - [wstack 容器组件](./docs/widget-element.md#wstack)
   - [wimage 图片组件](./docs/widget-element.md#wimage)
-  - [wspacer 空格占位组件](./docs/widget-element.md#wbox)
-  - [wtext 文字组件](./docs/widget-element.md#wbox)
-  - [wdate 日期组件](./docs/widget-element.md#wbox)
+  - [wspacer 空格占位组件](./docs/widget-element.md#wspacer)
+  - [wtext 文字组件](./docs/widget-element.md#wtext)
+  - [wdate 日期组件](./docs/widget-element.md#wdate)
 - [Scriptable 官方 api 文档](https://docs.scriptable.app/)<br/><br/>
 
 ## 讨论
@@ -98,7 +98,7 @@
 
 - [「小件件」开发框架](https://github.com/im3x/Scriptables)
 - [Scriptable](https://github.com/dompling/Scriptable)
-- [Transparent-Scriptable-Widget)](https://github.com/mzeryck/Transparent-Scriptable-Widget)<br/><br/>
+- [Transparent-Scriptable-Widget](https://github.com/mzeryck/Transparent-Scriptable-Widget)<br/><br/>
 
 ## 许可证
 
