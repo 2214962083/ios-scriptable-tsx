@@ -2,9 +2,9 @@
 
 <br/>
 
-## wbox
+## <span id="wbox">wbox</span>
 
-组件画布，必须处于 jsx 最外层，映射为 [ListWidget](https://docs.scriptable.app/listwidget/) 
+盒子组件，必须处于 jsx 最外层，映射为 [ListWidget](https://docs.scriptable.app/listwidget/) 
 
 | 属性                                                         | 类型             | 默认值                                  | 必填 | 说明                                                         |
 | ------------------------------------------------------------ | ---------------- | --------------------------------------- | ---- | ------------------------------------------------------------ |
@@ -19,7 +19,7 @@
 
 <br/>
 
-## wstack
+## <span id="wstack">wstack</span>
 
 容器组件，类似 `div` ，映射为 [WidgetStack](https://docs.scriptable.app/widgetstack/) 
 
@@ -59,7 +59,7 @@
 
 <br/>
 
-## wimage
+## <span id="wimage">wimage</span>
 
 图片组件 ，映射为 [WidgetImage](https://docs.scriptable.app/widgetimage/) ，组件里面不可包裹其他组件
 
@@ -103,7 +103,7 @@
 
 <br/>
 
-## wspacer
+## <span id="wspacer">wspacer</span>
 
 空格占位组件，映射为 [WidgetSpacer](https://docs.scriptable.app/widgetspacer/) ，组件里面不可包裹其他组件
 
@@ -115,7 +115,7 @@
 
 <br/>
 
-## wtext
+## <span id="wtext">wtext</span>
 
 文字组件，映射为 [WidgetText](https://docs.scriptable.app/widgettext/) ，组件里面不可包裹其他组件，只可以包裹文字
 
@@ -147,7 +147,7 @@
 
 <br/>
 
-## wdate
+## <span id="wdate">wdate</span>
 
 日期组件，映射为 [WidgetDate](https://docs.scriptable.app/widgetdate/) ，组件里面不可包裹其他组件，有点类似 `wtext` 组件，区别在文字改成了日期
 

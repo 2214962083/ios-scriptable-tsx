@@ -47,11 +47,20 @@ git clone https://github.com/2214962083/ios-scriptable-tsx.git
 2. 进入到 `ios-scriptable-tsx` 目录里，执行 `npm install` 安装依赖
 3. 打开 vscode 愉快开发，打包入口文件默认是 `.src/index.ts`
 4. 执行 `npm run build` 打包到 `dist` 文件夹
-5. 更多功能[请看详细文档](./docs/README.md) <br/><br/>
 
 ## 文档
-
-- [本项目详细文档](./docs/README.md)
+- [快速上手](./docs/quick-start.md)
+- [项目目录说明](./docs/config.md#project-dir-introduction)
+- [jsx 组件属性](./docs/widget-element.md)
+  - [wbox 盒子组件](./docs/widget-element.md#wbox)
+  - [wstack 容器组件](./docs/widget-element.md#wstack)
+  - [wimage 图片组件](./docs/widget-element.md#wimage)
+  - [wspacer 空格占位组件](./docs/widget-element.md#wbox)
+  - [wtext 文字组件](./docs/widget-element.md#wbox)
+  - [wdate 日期组件](./docs/widget-element.md#wbox)
+- [打包配置](./docs/config.md#scriptable-config)
+- [其他配置](./docs/config.md#others-config)
+- [环境变量](./docs/config.md#env-config)
 - [Scriptable 官方 api 文档](https://docs.scriptable.app/)<br/><br/>
 
 ## 讨论

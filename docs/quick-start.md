@@ -1,36 +1,6 @@
-<p align="center"><a href="https://github.com/2214962083/ios-scriptable-tsx" target="_blank" rel="noopener noreferrer"><img width="100" src="https://scriptable.app/assets/appicon.png" alt="ios-scriptable-tsx logo" style="border-radius: 30px;"></a></p>
-
-<p align="center">
-  <!-- package.json 版本 -->
-  <a href="https://github.com/2214962083/ios-scriptable-tsx"><img src="https://img.shields.io/github/package-json/v/2214962083/ios-scriptable-tsx" alt="Version"></a>
-  <!-- star数量 -->
-  <a href="https://github.com/2214962083/ios-scriptable-tsx"><img src="https://img.shields.io/github/stars/2214962083/ios-scriptable-tsx" alt="Github stars"></a>
-  <!-- issues -->
-  <a href="https://github.com/2214962083/ios-scriptable-tsx/issues"><img src="https://img.shields.io/github/issues/2214962083/ios-scriptable-tsx" alt="Issues"></a>
-  <!-- 仓库大小 -->
-  <a href="https://github.com/2214962083/ios-scriptable-tsx"><img src="https://img.shields.io/github/repo-size/2214962083/ios-scriptable-tsx" alt="Repo size"></a>
-  <!-- 语言 -->
-  <a href="https://github.com/2214962083/ios-scriptable-tsx"><img src="https://img.shields.io/github/languages/top/2214962083/ios-scriptable-tsx" alt="Language"></a>
-  <!-- 最后一次提交时间 -->
-  <a href="https://github.com/2214962083/ios-scriptable-tsx"><img src="https://img.shields.io/github/last-commit/2214962083/ios-scriptable-tsx" alt="Last commit date"></a>
-  <!-- 证书 -->
-  <a href="https://github.com/2214962083/ios-scriptable-tsx/blob/dev/LICENSE"><img src="https://img.shields.io/github/license/2214962083/ios-scriptable-tsx" alt="License"></a>
-  <!-- package.json 关键词 -->
-  <a href="https://github.com/2214962083/ios-scriptable-tsx"><img src="https://img.shields.io/github/package-json/keywords/2214962083/ios-scriptable-tsx" alt="Keywords"></a>
-</p>
-<h2 align="center">ios-scriptable-tsx</h2>
-
-<br/><br/>
-
-## 目录
-
-- [项目目录说明](./config.md#project-dir-introduction)
-- [打包配置](./config.md#scriptable-config)
-- [其他配置](./config.md#others-config)
-- [环境变量](./config.md#env-config)
-- [jsx 组件属性](./widget-element.md)
-
 ## 快速开始
+
+<br/>
 
 1. 克隆本项目：
 
@@ -38,16 +8,24 @@
    git clone https://github.com/2214962083/ios-scriptable-tsx.git
    ```
 
+<br/>
+
 2. 进入 `ios-scriptable-tsx` 目录，执行 `npm install` 安装依赖
 
-3. 在 `./src/scripts` 目录下新创建一个文件叫 `helloWorld.tsx` 
+<br/>
+
+3. 在 `./src/scripts` 目录下新创建一个文件叫 `helloWorld.tsx`
+
+<br/>
 
 4. 把下面代码粘贴上去：
 
    ```tsx
+   // jsx、tsx 必须引入的解析函数
    import {h} from '@app/lib/jsx-runtime'
    
    class HelloWorld {
+     // 因为 constructor 无法 async await，所以在 init 渲染小部件
      async init() {
        // ListWidget 实例
        const widget = (await this.render()) as ListWidget
@@ -58,6 +36,9 @@
        // 脚本结束
        Script.complete()
      }
+
+     // 手动声明 wbox 返回的是 Promise<unknown>
+     // 记住，这是异步构建
      async render(): Promise<unknown> {
        return (
          <wbox>
@@ -74,11 +55,17 @@
    new HelloWorld().init()
    ```
 
+<br/>
+
 5. 然后，去 `./src/index.ts` 删除已有的东西，引入`helloWorld.tsx`
 
    ```tsx
+   // 打包入口默认是 ./src/index.ts
+   // 这样引入其他位置的脚本，就会打包进来
    import './scripts/helloWorld.tsx'
    ```
+
+<br/>
 
 6. 执行 `npm run watch`，并用手机扫描命令终端的二维码，打开引导页（**手机和 pc 必须处于同一个局域网下面**），我的是这样的：
 
