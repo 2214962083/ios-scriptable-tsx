@@ -26,27 +26,53 @@
 
 本项目旨在给 `Scriptable` 开发者提供舒适的开发体验,  `Scriptable` 是 ios 上一个用 js 开发桌面小组件的 app ，如果你还没安装，可以[点我下载](https://apps.apple.com/us/app/scriptable/id1405459188)
 
+<br/>
+
 `ios-scriptable-tsx` 是一个二次封装 `Scriptable` 官方 api 的开发框架，它具有以下特点：
 
-1. 支持在 pc 开发，支持实时监听修改、编译同步到手机运行
-2. 支持使用 typescript 和 tsx 开发小组件，有 api 类型提示
-3. 对于官方常用 api 也有二次封装，使用更顺手。
-4. 支持 console 输出到 pc 的命令窗口
-5. 支持环境变量定义、打包时自动替换环境变量为预设值（dotenv）<br/><br/>
+<br/>
+
+1. 支持在 pc 开发，支持实时监听修改、编译同步到手机运行。
+
+<br/>
+
+2. 支持使用 typescript 和 tsx 开发小组件，支持 api 类型提示、自动补全。
+   
+<br/>
+
+3. 常用 api 封装，使用更便捷。
+
+<br/>
+
+4. 支持远程输出 console 日志到 pc 的命令窗口。
+
+<br/>
+
+5. 支持环境变量定义，打包时自动替换环境变量为预设值。
+
+<br/>
 
 ## 使用
 
-本项目需要node环境
-
 1. 先克隆本仓库
 
-```bash
-git clone https://github.com/2214962083/ios-scriptable-tsx.git
-```
+    ```bash
+    git clone https://github.com/2214962083/ios-scriptable-tsx.git
+    ```
+
+<br/>
 
 2. 进入到 `ios-scriptable-tsx` 目录里，执行 `npm install` 安装依赖
-3. 打开 vscode 愉快开发，打包入口文件默认是 `.src/index.ts`
-4. 执行 `npm run build` 打包到 `dist` 文件夹
+   
+<br/>
+
+3. 打开 vscode 愉快开发，打包入口文件默认是 `./src/index.ts`
+   
+<br/>
+
+4. 执行 `npm run build` 打包到 `./dist` 文件夹
+
+<br/>
 
 ## 文档
 - [快速上手](./docs/quick-start.md)
