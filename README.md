@@ -50,17 +50,18 @@ git clone https://github.com/2214962083/ios-scriptable-tsx.git
 
 ## 文档
 - [快速上手](./docs/quick-start.md)
-- [项目目录说明](./docs/config.md#project-dir-introduction)
-- [jsx 组件属性](./docs/widget-element.md)
+- [项目目录说明和配置指南](./docs/config.md#config-introduction)
+  - [项目目录说明](./docs/config.md#project-dir-introduction)
+  - [打包配置](./docs/config.md#scriptable-config)
+  - [其他配置](./docs/config.md#others-config)
+  - [环境变量](./docs/config.md#env-config)
+- [JSX 组件](./docs/widget-element.md#jsx-element)
   - [wbox 盒子组件](./docs/widget-element.md#wbox)
   - [wstack 容器组件](./docs/widget-element.md#wstack)
   - [wimage 图片组件](./docs/widget-element.md#wimage)
   - [wspacer 空格占位组件](./docs/widget-element.md#wbox)
   - [wtext 文字组件](./docs/widget-element.md#wbox)
   - [wdate 日期组件](./docs/widget-element.md#wbox)
-- [打包配置](./docs/config.md#scriptable-config)
-- [其他配置](./docs/config.md#others-config)
-- [环境变量](./docs/config.md#env-config)
 - [Scriptable 官方 api 文档](https://docs.scriptable.app/)<br/><br/>
 
 ## 讨论

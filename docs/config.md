@@ -1,4 +1,4 @@
-# 项目目录说明和配置指南
+# <span id="config-introduction">项目目录说明和配置指南</span>
 
 ## <span id="project-dir-introduction">项目目录说明</span>
 
