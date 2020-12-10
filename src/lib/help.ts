@@ -20,6 +20,9 @@ export interface RequestParams {
 
   /**是否使用缓存（永久缓存）*/
   useCache?: boolean
+
+  /**请求失败时返回上次请求结果的缓存（如果存在的话）*/
+  failReturnCache?: boolean
 }
 
 /**网络响应格式*/
@@ -404,7 +407,16 @@ export function useSetting(settingFilename?: string) {
  * @param args 请求参数
  */
 export async function request<RES = unknown>(args: RequestParams): Promise<ResponseType<RES>> {
-  const {url, data, header, dataType = 'json', method = 'GET', timeout = 60 * 1000, useCache = false} = args
+  const {
+    url,
+    data,
+    header,
+    dataType = 'json',
+    method = 'GET',
+    timeout = 60 * 1000,
+    useCache = false,
+    failReturnCache = true,
+  } = args
   const cacheKey = `url:${url}`
   const cache = getStorage(cacheKey) as ResponseType<RES>
   if (useCache && cache !== null) return cache
@@ -436,7 +448,7 @@ export async function request<RES = unknown>(args: RequestParams): Promise<Respo
     setStorage(cacheKey, result)
     return result
   } catch (err) {
-    if (cache !== null) return cache
+    if (cache !== null && failReturnCache) return cache
     return err
   }
 }

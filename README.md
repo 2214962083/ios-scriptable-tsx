@@ -32,23 +32,23 @@
 
 <br/>
 
-1. 支持在 pc 开发，支持实时监听修改、编译同步到手机运行。
+**1. 支持在 pc 开发，支持实时监听修改、编译同步到手机运行。**
 
 <br/>
 
-2. 支持使用 typescript 和 tsx 开发小组件，支持 api 类型提示、自动补全。
+**2. 支持使用 typescript 和 tsx 开发小组件，支持 api 类型提示、自动补全。**
    
 <br/>
 
-3. 常用 api 封装，使用更便捷。
+**3. 常用 api 封装，使用更便捷。**
 
 <br/>
 
-4. 支持远程输出 console 日志到 pc 的命令窗口。
+**4. 支持远程输出 console 日志到 pc 的命令窗口。**
 
 <br/>
 
-5. 支持环境变量定义，打包时自动替换环境变量为预设值。
+**5. 支持环境变量定义，打包时自动替换环境变量为预设值。**
 
 <br/>
 
@@ -88,6 +88,7 @@
   - [wspacer 空格占位组件](./docs/widget-element.md#wspacer)
   - [wtext 文字组件](./docs/widget-element.md#wtext)
   - [wdate 日期组件](./docs/widget-element.md#wdate)
+- [常用 api 封装](https://github.com/2214962083/ios-scriptable-tsx/blob/master/src/lib/help.ts)
 - [Scriptable 官方 api 文档](https://docs.scriptable.app/)<br/><br/>
 
 ## 讨论
