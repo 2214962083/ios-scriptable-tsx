@@ -37,10 +37,10 @@
 <br/>
 
 **2. 支持使用 typescript 和 tsx 开发小组件，支持 api 类型提示、自动补全。**
-   
+
 <br/>
 
-**3. 常用 api 封装，使用更便捷。**
+**3. 支持打包混淆、加密 js。**
 
 <br/>
 
@@ -49,6 +49,10 @@
 <br/>
 
 **5. 支持环境变量定义，打包时自动替换环境变量为预设值。**
+
+<br/>
+
+**6. 常用函数封装，使用更便捷。**
 
 <br/>
 
@@ -64,18 +68,21 @@
 
 2. 进入到 `ios-scriptable-tsx` 目录里，执行 `npm install` 安装依赖
    
+
 <br/>
 
 3. 打开 vscode 愉快开发，打包入口文件默认是 `./src/index.ts`
    
+
 <br/>
 
-4. 执行 `npm run build` 打包到 `./dist` 文件夹
+4. 执行 `npm run build` 打包到 `./dist` 文件夹
 
 <br/>
 
 ## 文档
-- [快速上手](./docs/quick-start.md)
+- [快速上手](./docs/quick-start.md#quick-start)
+- [命令说明](./docs/quick-start#command-introduction.md)
 - [项目目录说明和配置指南](./docs/config.md#config-introduction)
   - [项目目录说明](./docs/config.md#project-dir-introduction)
   - [打包配置](./docs/config.md#scriptable-config)
@@ -88,7 +95,7 @@
   - [wspacer 空格占位组件](./docs/widget-element.md#wspacer)
   - [wtext 文字组件](./docs/widget-element.md#wtext)
   - [wdate 日期组件](./docs/widget-element.md#wdate)
-- [常用 api 封装](https://github.com/2214962083/ios-scriptable-tsx/blob/master/src/lib/help.ts)
+- [常用函数封装](https://github.com/2214962083/ios-scriptable-tsx/blob/master/src/lib/help.ts)
 - [Scriptable 官方 api 文档](https://docs.scriptable.app/)<br/><br/>
 
 ## 讨论

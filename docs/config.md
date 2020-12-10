@@ -1,5 +1,7 @@
 # <span id="config-introduction">项目目录说明和配置指南</span>
 
+<br/>
+
 ## <span id="project-dir-introduction">项目目录说明</span>
 
 ```
@@ -60,6 +62,7 @@ ios-scriptable-tsx
 | [prettier.config.js](https://prettier.io)                | 自动对齐、美化代码用（可删）   |
 | [tsconfig.json](https://www.typescriptlang.org/tsconfig) | typescript配置文件 （不可删）  |
 
+<br/>
 
 ## <span id="env-config">环境变量配置</span>
 
