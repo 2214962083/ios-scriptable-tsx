@@ -82,7 +82,7 @@
 
 ## 文档
 - [快速上手](./docs/quick-start.md#quick-start)
-- [命令说明](./docs/quick-start#command-introduction.md)
+- [命令说明](./docs/quick-start.md#command-introduction.md)
 - [项目目录说明和配置指南](./docs/config.md#config-introduction)
   - [项目目录说明](./docs/config.md#project-dir-introduction)
   - [打包配置](./docs/config.md#scriptable-config)
