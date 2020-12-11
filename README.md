@@ -96,6 +96,7 @@
   - [wtext 文字组件](./docs/widget-element.md#wtext)
   - [wdate 日期组件](./docs/widget-element.md#wdate)
 - [常用函数封装](https://github.com/2214962083/ios-scriptable-tsx/blob/master/src/lib/help.ts)
+- [常见问题](./docs/questions.md)
 - [Scriptable 官方 api 文档](https://docs.scriptable.app/)<br/><br/>
 
 ## 讨论
