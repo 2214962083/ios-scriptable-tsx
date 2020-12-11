@@ -85,6 +85,9 @@
 
       // 打开 scriptable 并创建
       function openScriptable() {
+        if (isWeChat()) {
+          toast('请在 safari 浏览器打开此页')
+        }
         location.href = 'scriptable:///add'
       }
 

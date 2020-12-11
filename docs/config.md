@@ -11,7 +11,8 @@ ios-scriptable-tsx
 ├── docs                    // 文档
 ├── src                     // 代码目录
 │   ├── lib                 // 本项目主要文件存放处，请勿挪动
-│   │   └── static          // 存放开发引导文件
+│   │   └── static          // 存放开发引导文件的文件夹
+│   │   └── basic           // 基础包源码
 │   │   └── compile.ts      // 打包脚本，请勿随意更改
 │   │   └── constants.ts    // 常量
 │   │   └── env.ts          // 加载 dotenv 文件的脚本
