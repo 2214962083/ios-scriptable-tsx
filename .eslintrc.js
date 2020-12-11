@@ -20,7 +20,7 @@ module.exports = /** @type { import('eslint').Linter.Config } */ ({
   rules: {
     'import/no-unresolved': 'off',
     'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['warn', {varsIgnorePattern: '^(h|MODULE){1}$'}],
+    '@typescript-eslint/no-unused-vars': ['warn', {varsIgnorePattern: '^(h|MODULE|Fragment){1}$'}],
     '@typescript-eslint/no-this-alias': 'off',
     '@typescript-eslint/triple-slash-reference': 'off',
     '@typescript-eslint/no-var-requires': 'off',

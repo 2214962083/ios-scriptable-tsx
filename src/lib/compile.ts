@@ -167,9 +167,11 @@ async function compile(options: CompileOptions) {
 const MODULE = module;
     `,
       jsxFactory: 'h',
+      jsxFragment: 'Fragment',
       define,
       minify,
       write: false,
+      inject: [path.resolve(rootPath, './src/lib/jsx-runtime.ts')],
     }
 
     // 最终打包环节
@@ -186,7 +188,7 @@ const MODULE = module;
 
   const writeFile = promisify(fs.writeFile)
   for (const outputFile of outputFilesInfo) {
-    let writeText = ''
+    let writeText = outputFile.text
     if (encrypt) {
       // 加密环节
       try {

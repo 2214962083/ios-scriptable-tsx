@@ -33,7 +33,7 @@ class Basic {
   private requestFailTimes = 0
 
   /**连续请求失败最大次数，单位：毫秒*/
-  private maxRequestFailTimes = 5
+  private maxRequestFailTimes = 10
 
   async init() {
     await this.showMenu()

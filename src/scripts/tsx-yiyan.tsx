@@ -2,8 +2,7 @@
  * 一言
  * 改写于：https://github.com/im3x/Scriptables/blob/main/%E4%B8%80%E8%A8%80/latest.js
  */
-import {request, ResponseType, showActionSheet, showPreviewOptions} from '@app/lib/help'
-import {h} from '@app/lib/jsx-runtime'
+import {isLaunchInsideApp, request, ResponseType, showActionSheet, showPreviewOptions} from '@app/lib/help'
 
 interface RemoteData {
   id: number
@@ -22,15 +21,10 @@ interface RemoteData {
 
 class YiyanWidget {
   private widget!: ListWidget
-  async init(): Promise<void> {
-    // 打印打包环境
-    console.log(process.env.HELLO + ',' + process.env.MOMENT)
-    console.warn('999')
-
+  async init() {
     this.widget = (await this.render()) as ListWidget
-    if (!config.runsInWidget && args.queryParameters.from !== 'widget') {
-      await showPreviewOptions(this.widget)
-      return
+    if (isLaunchInsideApp()) {
+      return await showPreviewOptions(this.widget)
     }
     Script.setWidget(this.widget)
     Script.complete()

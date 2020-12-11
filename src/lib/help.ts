@@ -1,3 +1,5 @@
+import {URLSchemeFrom} from './constants'
+
 /**网络请求参数*/
 export interface RequestParams {
   /**链接*/
@@ -659,6 +661,13 @@ export function hash(string: string): string {
     hash |= 0 // Convert to 32bit integer
   }
   return `hash_${hash}`
+}
+
+/**
+ * 是否在 app 内启动脚本
+ */
+export function isLaunchInsideApp(): boolean {
+  return !config.runsInWidget && args.queryParameters.from !== URLSchemeFrom.WIDGET
 }
 
 /**

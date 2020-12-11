@@ -21,38 +21,31 @@
 4. 把下面代码粘贴上去：
 
    ```tsx
-   // jsx、tsx 必须引入的解析函数
-   import {h} from '@app/lib/jsx-runtime'
-   
-   class HelloWorld {
-     // 因为 constructor 无法 async await，所以在 init 渲染小部件
-     async init() {
-       // ListWidget 实例
-       const widget = (await this.render()) as ListWidget
-       // 注册小部件
-       Script.setWidget(widget)
-       // 调试用
-       !config.runsInWidget && (await widget.presentMedium())
-       // 脚本结束
-       Script.complete()
-     }
-
-     // 手动声明 wbox 返回的是 Promise<unknown>
-     // 记住，这是异步构建
-     async render(): Promise<unknown> {
-       return (
-         <wbox>
-           <wspacer></wspacer>
-           <wtext font={30} textAlign="center">
-             Hello World
-           </wtext>
-           <wspacer></wspacer>
-         </wbox>
-       )
-     }
-   }
-   
-   new HelloWorld().init()
+    class HelloWorld {
+      async init() {
+        // ListWidget 实例
+        const widget = (await this.render()) as ListWidget
+        // 注册小部件
+        Script.setWidget(widget)
+        // 调试用
+        !config.runsInWidget && (await widget.presentMedium())
+        // 脚本结束
+        Script.complete()
+      }
+      async render(): Promise<unknown> {
+        return (
+          <wbox>
+            <wspacer></wspacer>
+            <wtext font={30} textAlign="center">
+              Hello World
+            </wtext>
+            <wspacer></wspacer>
+          </wbox>
+        )
+      }
+    }
+    
+    new HelloWorld().init()
    ```
 
 <br/>

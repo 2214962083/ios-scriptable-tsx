@@ -4,6 +4,7 @@
 /// <reference path="./widget/wspacer.d.ts" />
 /// <reference path="./widget/wstack.d.ts" />
 /// <reference path="./widget/wtext.d.ts" />
+/// <reference path="./JSX.d.ts" />
 
 interface Module {
   filename: string

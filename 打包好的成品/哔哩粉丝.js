@@ -1,5 +1,11 @@
-// @编译时间 1607586196551
+// @编译时间 1607657381586
 const MODULE = module
+
+// src/lib/constants.ts
+var URLSchemeFrom
+;(function (URLSchemeFrom2) {
+  URLSchemeFrom2['WIDGET'] = 'widget'
+})(URLSchemeFrom || (URLSchemeFrom = {}))
 
 // src/lib/help.ts
 function fm() {
@@ -45,12 +51,12 @@ function setStorageDirectory(dirPath) {
     },
   }
 }
-const setStorage = setStorageDirectory(fm().libraryDirectory()).setStorage
-const getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
-const removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
-const setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
-const getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
-const removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
+var setStorage = setStorageDirectory(fm().libraryDirectory()).setStorage
+var getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
+var removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
+var setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
+var getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
+var removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
 function useStorage(nameSpace) {
   const _nameSpace = nameSpace || `${MODULE.filename}`
   return {
@@ -208,6 +214,9 @@ function hash(string) {
   }
   return `hash_${hash2}`
 }
+function isLaunchInsideApp() {
+  return !config.runsInWidget && args.queryParameters.from !== URLSchemeFrom.WIDGET
+}
 async function showPreviewOptions(widget) {
   const selectIndex = await showActionSheet({
     title: '预览组件',
@@ -233,14 +242,8 @@ async function showPreviewOptions(widget) {
   return selectIndex
 }
 
-// src/lib/constants.ts
-var URLSchemeFrom
-;(function (URLSchemeFrom2) {
-  URLSchemeFrom2['WIDGET'] = 'widget'
-})(URLSchemeFrom || (URLSchemeFrom = {}))
-
 // src/lib/jsx-runtime.ts
-class GenrateView {
+var GenrateView = class {
   static setListWidget(listWidget2) {
     this.listWidget = listWidget2
   }
@@ -455,13 +458,14 @@ class GenrateView {
     }
   }
 }
-const listWidget = new ListWidget()
+var listWidget = new ListWidget()
 GenrateView.setListWidget(listWidget)
 function h(type, props, ...children) {
   props = props || {}
+  const _children = [].concat(...children)
   switch (type) {
     case 'wbox':
-      return GenrateView.wbox(props, ...children)
+      return GenrateView.wbox(props, ..._children)
       break
     case 'wdate':
       return GenrateView.wdate(props)
@@ -473,13 +477,13 @@ function h(type, props, ...children) {
       return GenrateView.wspacer(props)
       break
     case 'wstack':
-      return GenrateView.wstack(props, ...children)
+      return GenrateView.wstack(props, ..._children)
       break
     case 'wtext':
-      return GenrateView.wtext(props, ...children)
+      return GenrateView.wtext(props, ..._children)
       break
     default:
-      return type instanceof Function ? type({children, ...props}) : null
+      return type instanceof Function ? type({children: _children, ...props}) : null
       break
   }
 }
@@ -532,14 +536,14 @@ function runOnClick(instance, onClick) {
 }
 
 // src/scripts/tsx-bili.tsx
-const {setStorage: setStorage2, getStorage: getStorage2} = useStorage('bilibili-fans')
-class MyWidget {
+var {setStorage: setStorage2, getStorage: getStorage2} = useStorage('bilibili-fans')
+var BiliFans = class {
   async init() {
     const widget = await this.render()
-    Script.setWidget(widget)
-    if (!config.runsInWidget && args.queryParameters.from !== 'widget') {
-      await this.showMenu(widget)
+    if (isLaunchInsideApp()) {
+      return await this.showMenu(widget)
     }
+    Script.setWidget(widget)
     Script.complete()
   }
   async render() {
@@ -668,4 +672,4 @@ class MyWidget {
     return date.toLocaleTimeString('chinese', {hour12: false})
   }
 }
-new MyWidget().init()
+new BiliFans().init()

@@ -10,8 +10,8 @@ import {
   showPreviewOptions,
   showModal,
   ResponseType,
+  isLaunchInsideApp,
 } from '@app/lib/help'
-import {h} from '@app/lib/jsx-runtime'
 
 export interface BiliUpData {
   code: number
@@ -28,19 +28,18 @@ export interface BiliUpData {
 
 const {setStorage, getStorage} = useStorage('bilibili-fans')
 
-class MyWidget {
+class BiliFans {
   async init() {
-    // if (!config.runsInWidget) return
-    const widget = ((await this.render()) as unknown) as ListWidget
-    Script.setWidget(widget)
-    if (!config.runsInWidget && args.queryParameters.from !== 'widget') {
-      await this.showMenu(widget)
+    const widget = (await this.render()) as ListWidget
+    if (isLaunchInsideApp()) {
+      return await this.showMenu(widget)
     }
+    Script.setWidget(widget)
     Script.complete()
   }
 
   //渲染组件
-  async render() {
+  async render(): Promise<unknown> {
     // up 主 id
     const upId = getStorage<number>('up-id') || 0
 
@@ -160,4 +159,4 @@ class MyWidget {
   }
 }
 
-new MyWidget().init()
+new BiliFans().init()

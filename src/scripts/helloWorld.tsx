@@ -1,5 +1,3 @@
-import {h} from '@app/lib/jsx-runtime'
-
 class HelloWorld {
   async init() {
     // ListWidget 实例
@@ -23,5 +21,9 @@ class HelloWorld {
     )
   }
 }
+
+// 从 process.env 下可以加载 .env 文件的键值对
+// 详见 https://github.com/2214962083/ios-scriptable-tsx/blob/master/docs/config.md#env-config
+console.log(process.env.HELLO + ',' + process.env.MOMENT)
 
 new HelloWorld().init()
