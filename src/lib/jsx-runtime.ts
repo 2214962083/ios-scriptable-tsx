@@ -1,6 +1,6 @@
-import {WboxProps, WimageProps, WdateProps, WspacerProps, WstackProps, WtextProps} from '@app/types/widget'
-import {getImage, hash} from '@app/lib/help'
-import {URLSchemeFrom} from '@app/lib/constants'
+import {WboxProps, WimageProps, WdateProps, WspacerProps, WstackProps, WtextProps} from '../types/widget'
+import {getImage, hash} from './help'
+import {URLSchemeFrom} from './constants'
 
 type WidgetType = 'wbox' | 'wdate' | 'wimage' | 'wspacer' | 'wstack' | 'wtext'
 type WidgetProps = WboxProps | WdateProps | WspacerProps | WstackProps | WtextProps | WimageProps

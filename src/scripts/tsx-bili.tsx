@@ -159,4 +159,5 @@ class MyWidget {
     return date.toLocaleTimeString('chinese', {hour12: false})
   }
 }
+
 new MyWidget().init()

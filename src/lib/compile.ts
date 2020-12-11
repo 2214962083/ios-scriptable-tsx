@@ -220,9 +220,9 @@ const MODULE = module;
     }
   } catch (err) {
     console.error('加密出错', err)
-    process.exit(1)
+  } finally {
+    console.log('加密代码结束')
+    console.log('打包完成')
+    process.exit(0)
   }
-
-  console.log('加密代码结束')
-  console.log('打包完成')
 }
