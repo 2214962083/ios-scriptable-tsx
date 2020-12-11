@@ -15,12 +15,12 @@ const inputDir = path.resolve(rootPath, './src/scripts')
 const outputDir = path.resolve(rootPath, './dist')
 
 /**是否压缩代码*/
-const minify = false //process.env.NODE_ENV === 'production'
+const minify = process.env.NODE_ENV === 'production'
 
 /**是否加密代码*/
 const encrypt = process.env.NODE_ENV === 'production'
 
-/**往编译后的代码插入头部*/
+/**往编译后的代码头部插入的代码*/
 const header = `
 /**
  * 作者: 小明

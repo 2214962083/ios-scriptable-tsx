@@ -13,7 +13,7 @@ export interface WdateProps extends HTMLAttributes<Element> {
    * offset: 将日期显示为从现在开始的偏移量。例如：+2 hours -3 months
    * timer: 从现在开始将日期显示为计时器计数。例如：2:32 36:59:01
    */
-  mode?: 'time' | 'date' | 'relative' | 'offset' | 'timer'
+  mode: 'time' | 'date' | 'relative' | 'offset' | 'timer'
 
   /**文字颜色*/
   textColor?: Color | string

@@ -1,1 +1,1 @@
-import './scripts/tsx-yiyan'
+import './scripts/helloWorld.tsx'

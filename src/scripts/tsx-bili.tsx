@@ -1,5 +1,17 @@
-import {getImage, request, ResponseType} from '@app/lib/help'
-import {h} from '../lib/jsx-runtime'
+/**
+ * 哔哩粉丝
+ * 改写于 https://github.com/im3x/Scriptables/blob/main/bilibili/fans.js
+ */
+import {
+  getImage,
+  request,
+  showActionSheet,
+  useStorage,
+  showPreviewOptions,
+  showModal,
+  ResponseType,
+  isLaunchInsideApp,
+} from '@app/lib/help'
 
 export interface BiliUpData {
   code: number
@@ -10,42 +22,52 @@ export interface BiliUpData {
     following: number
     whisper: number
     black: number
-    follower: 2242
+    follower: number
   }
 }
 
-class MyWidget {
+const {setStorage, getStorage} = useStorage('bilibili-fans')
+
+class BiliFans {
   async init() {
-    // if (!config.runsInWidget) return
-    const widget = ((await this.render()) as unknown) as ListWidget
+    const widget = (await this.render()) as ListWidget
+    if (isLaunchInsideApp()) {
+      return await this.showMenu(widget)
+    }
     Script.setWidget(widget)
-    !config.runsInWidget && (await widget.presentMedium())
     Script.complete()
   }
 
   //渲染组件
-  async render() {
-    // 响应数据
-    const getUpDataRes = (await this.getUpData(83540912)).data as BiliUpData
+  async render(): Promise<unknown> {
+    // up 主 id
+    const upId = getStorage<number>('up-id') || 0
 
     // 粉丝数
-    const followers = getUpDataRes?.data.following as number
+    let follower = -1
+    try {
+      // 响应数据
+      const getUpDataRes = (await this.getUpData(upId)).data as BiliUpData
+      follower = getUpDataRes.data.follower as number
+    } catch (err) {
+      console.warn('获取粉丝数失败')
+    }
 
     // icon
     const icon = await getImage({url: 'https://www.bilibili.com/favicon.ico'})
 
     // 粉丝数文字
     const FollowerText = () => {
-      if (getUpDataRes?.code != 0) {
+      if (follower < 0) {
         return (
           <wtext textAlign="center" textColor="#fb7299" font={14}>
-            请填写B站MID
+            请填写B站UP主的ID
           </wtext>
         )
       } else {
         return (
-          <wtext textAlign="center" textColor="#fb7299" font={Font.boldRoundedSystemFont(this.getFontsize(followers))}>
-            {this.toThousands(followers)}
+          <wtext textAlign="center" textColor="#fb7299" font={Font.boldRoundedSystemFont(this.getFontsize(follower))}>
+            {this.toThousands(follower)}
           </wtext>
         )
       }
@@ -61,14 +83,43 @@ class MyWidget {
             哔哩哔哩粉丝
           </wtext>
         </wstack>
-        <wspacer length={20}></wspacer>
+        <wspacer></wspacer>
         <FollowerText></FollowerText>
-        <wspacer length={20}></wspacer>
+        <wspacer></wspacer>
         <wtext font={12} textAlign="center" opacity={0.5}>
           更新于:{this.nowTime()}
         </wtext>
       </wbox>
     )
+  }
+
+  // 显示菜单
+  async showMenu(widget: ListWidget): Promise<void> {
+    const selectIndex = await showActionSheet({
+      title: '菜单',
+      itemList: ['设置 up 主 id', '预览尺寸'],
+    })
+    switch (selectIndex) {
+      case 0:
+        // 设置 up 主 id
+        const {cancel, texts} = await showModal({
+          title: '请输入 up 主的 id',
+          inputItems: [
+            {
+              text: getStorage('up-id') || '',
+              placeholder: '去网页版 up 主页，可以看到 id',
+            },
+          ],
+        })
+        if (cancel) return
+        // 保存 id
+        if (texts && texts[0]) setStorage('up-id', texts[0])
+        break
+      case 1:
+        // 预览尺寸
+        await showPreviewOptions(widget)
+        break
+    }
   }
 
   // 获取b站up数据
@@ -107,4 +158,5 @@ class MyWidget {
     return date.toLocaleTimeString('chinese', {hour12: false})
   }
 }
-new MyWidget().init()
+
+new BiliFans().init()

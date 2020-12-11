@@ -1,4 +1,4 @@
-import {build, BuildOptions} from 'esbuild'
+import {build, BuildOptions, OutputFile} from 'esbuild'
 import fs from 'fs'
 import path from 'path'
 import {promisify} from 'util'
@@ -7,7 +7,7 @@ import {obfuscate, ObfuscatorOptions} from 'javascript-obfuscator'
 import {createServer} from './server'
 import {loadEnvFiles} from './env'
 import compileOptions from '../../scriptable.config'
-import rimraf from 'rimraf'
+import {ensureFile, remove} from 'fs-extra'
 
 /**打包模式*/
 export enum CompileType {
@@ -148,6 +148,9 @@ async function compile(options: CompileOptions) {
     return files.reduce((a: string[], f: string | string[]) => a.concat(f), [])
   }
 
+  /**所有输出的文件信息集合*/
+  let outputFilesInfo: OutputFile[] = []
+
   try {
     /**计算输入文件路径集合*/
     const inputPaths: string[] = compileType === CompileType.ALL ? await getFilesFromDir(inputDir) : [inputFile]
@@ -164,63 +167,56 @@ async function compile(options: CompileOptions) {
 const MODULE = module;
     `,
       jsxFactory: 'h',
+      jsxFragment: 'Fragment',
       define,
       minify,
+      write: false,
+      inject: [path.resolve(rootPath, './src/lib/jsx-runtime.ts')],
     }
 
     // 最终打包环节
     // 先清空输出文件夹
-    rimraf.sync(outputDir)
+    await remove(outputDir)
 
     // esbuild 打包
-    await build(merge(esbuildOptions, esbuild))
+    outputFilesInfo = (await build(merge(esbuildOptions, esbuild))).outputFiles || []
     console.error('esbuild打包结束')
   } catch (err) {
     console.error('esbuild打包出错', err)
     process.exit(1)
   }
 
-  if (!encrypt) return
-
-  // 加密环节
-  /**输出的文件路径集合*/
-  try {
-    const outputFilePaths: string[] = (await getFilesFromDir(outputDir)) || []
-    const readFile = promisify(fs.readFile)
-    const writeFile = promisify(fs.writeFile)
-
-    /**加密配置*/
-    const _encryptOptions: ObfuscatorOptions = {
-      rotateStringArray: true,
-      selfDefending: true,
-      stringArray: true,
-      splitStringsChunkLength: 100,
-      stringArrayEncoding: ['rc4', 'base64'],
-    }
-
-    for (const outputFilePath of outputFilePaths) {
-      // 读取原代码
-      const code = await readFile(outputFilePath, {encoding: 'utf8'}).catch(err =>
-        console.error('build代码读取失败', err),
-      )
-
-      // 读取失败就跳下一轮
-      if (!code) continue
-
+  const writeFile = promisify(fs.writeFile)
+  for (const outputFile of outputFilesInfo) {
+    let writeText = outputFile.text
+    if (encrypt) {
+      // 加密环节
       try {
+        /**加密配置*/
+        const _encryptOptions: ObfuscatorOptions = {
+          rotateStringArray: true,
+          selfDefending: true,
+          stringArray: true,
+          splitStringsChunkLength: 100,
+          stringArrayEncoding: ['rc4', 'base64'],
+        }
+        // 读取失败就跳下一轮
+        if (!outputFile.text) continue
+
         // 加密代码
-        const transformCode = obfuscate(code, merge(_encryptOptions, encryptOptions)).getObfuscatedCode()
+        const transformCode = obfuscate(outputFile.text, merge(_encryptOptions, encryptOptions)).getObfuscatedCode()
 
         // 写入加入代码、和头部信息
-        const outputText = `${header}\n${transformCode}`
-        await writeFile(outputFilePath, outputText, {encoding: 'utf8'})
+        writeText = `${header}\n${transformCode}`
       } catch (err) {
         console.error('加密代码失败', err)
+        process.exit(1)
       }
     }
-  } catch (err) {
-    console.error('加密出错', err)
-    process.exit(1)
+    // 确保路径存在
+    await ensureFile(outputFile.path)
+    // 写入代码
+    await writeFile(outputFile.path, writeText, {encoding: 'utf8'})
   }
 
   console.log('加密代码结束')

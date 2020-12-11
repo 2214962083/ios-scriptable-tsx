@@ -1,6 +1,6 @@
-import {WboxProps, WimageProps, WdateProps, WspacerProps, WstackProps, WtextProps} from '@app/types/widget'
-import {getImage, hash} from '@app/lib/help'
-import {URLSchemeFrom} from '@app/lib/constants'
+import {WboxProps, WimageProps, WdateProps, WspacerProps, WstackProps, WtextProps} from '../types/widget'
+import {getImage, hash} from './help'
+import {URLSchemeFrom} from './constants'
 
 type WidgetType = 'wbox' | 'wdate' | 'wimage' | 'wspacer' | 'wstack' | 'wtext'
 type WidgetProps = WboxProps | WdateProps | WspacerProps | WstackProps | WtextProps | WimageProps
@@ -157,7 +157,7 @@ class GenrateView {
         isDefined(imageAlign) && imageAlignMap[imageAlign]()
         // mode
         const modeMap: KeyMap<WimageProps['mode']> = {
-          contain: () => widgetImage.applyFittingContentMode(),
+          fit: () => widgetImage.applyFittingContentMode(),
           fill: () => widgetImage.applyFillingContentMode(),
         }
         isDefined(mode) && modeMap[mode]()
@@ -321,9 +321,12 @@ export function h(
   ...children: Children<Scriptable.Widget> | string[]
 ): Promise<unknown> | unknown {
   props = props || {}
+  // 由于 Fragment 的存在，children 可能为一、二维数组混合，先把它展平
+  const _children = [].concat(...(children as never[])) as typeof children
+
   switch (type) {
     case 'wbox':
-      return GenrateView.wbox(props as WboxProps, ...(children as Children<ListWidget>))
+      return GenrateView.wbox(props as WboxProps, ...(_children as Children<Scriptable.Widget>))
       break
     case 'wdate':
       return GenrateView.wdate(props as WdateProps)
@@ -335,18 +338,22 @@ export function h(
       return GenrateView.wspacer(props as WspacerProps)
       break
     case 'wstack':
-      return GenrateView.wstack(props as WstackProps, ...(children as Children<WidgetStack>))
+      return GenrateView.wstack(props as WstackProps, ...(_children as Children<Scriptable.Widget>))
       break
     case 'wtext':
-      return GenrateView.wtext(props as WtextProps, ...(children as string[]))
+      return GenrateView.wtext(props as WtextProps, ...(_children as string[]))
       break
     default:
       // custom component
       return type instanceof Function
-        ? ((type as unknown) as (props: WidgetProps) => Promise<Scriptable.Widget>)({children, ...props})
+        ? ((type as unknown) as (props: WidgetProps) => Promise<Scriptable.Widget>)({children: _children, ...props})
         : null
       break
   }
+}
+
+export function Fragment({children}: {children: typeof h[]}): typeof h[] {
+  return children
 }
 
 /**

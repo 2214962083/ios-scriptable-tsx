@@ -18,7 +18,7 @@ export interface WimageProps extends HTMLAttributes<Element> {
   width?: number
 
   /**高*/
-  height: number
+  height?: number
 
   /**透明度0到1，0为完全透明*/
   opacity?: number
@@ -34,7 +34,7 @@ export interface WimageProps extends HTMLAttributes<Element> {
 
   /**
    * 默认为false
-   * 如果为true，则图像的角将相对于包含的小部件进行四舍五入。
+   * 如果为true，则图片的角将相对于包含的小部件进行四舍五入。
    * 如果为true，则会忽略borderRadius的值
    * */
   containerRelativeShape?: boolean
@@ -46,10 +46,10 @@ export interface WimageProps extends HTMLAttributes<Element> {
   imageAlign?: 'left' | 'center' | 'right'
 
   /**
-   * fill 图像自适应,保持原有尺寸比,内容被缩放，默认。
-   * contain 图像拉伸填充,不保证保持原有的比例，内容拉伸填充整个内容容器
+   * fit 图片将适应可用空间，默认。
+   * fill 图片将填充可用空间。
    */
-  mode?: 'contain' | 'fill'
+  mode?: 'fit' | 'fill'
 
   /**点击事件，不与 href 共存，当 href 存在时，只执行 onClick */
   onClick?: () => unknown

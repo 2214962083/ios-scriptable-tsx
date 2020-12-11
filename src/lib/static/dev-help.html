@@ -8,6 +8,14 @@
     />
     <title>Scriptable开发引导</title>
     <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      html,
+      body {
+        background-color: #eee;
+      }
       #page {
         width: 100vw;
         height: 100%;
@@ -19,13 +27,14 @@
       }
       .button {
         width: 85vw;
+        background-color: #fff;
         box-sizing: border-box;
         overflow: hidden;
         padding: 15px;
         border-radius: 8px;
         font-size: 15px;
         color: #777;
-        border: 1px solid #eee;
+        border: 1px solid #ddd;
         margin-top: 15px;
       }
       .button:active {
@@ -41,10 +50,11 @@
         resize: none;
       }
       .code-output {
+        background-color: #fff;
         width: 85vw;
         margin-top: 15px;
         height: 50vh;
-        border: 1px solid #eee;
+        border: 1px solid #ddd;
         border-radius: 15px;
         box-sizing: border-box;
         padding: 15px;
@@ -60,6 +70,12 @@
     </div>
 
     <script>
+      window.onload = () => {
+        if (isWeChat()) {
+          toast('请在 safari 浏览器打开此页', 5000)
+        }
+      }
+
       // 复制代码
       function copyCode() {
         document.querySelector('.code-output').select()
@@ -69,6 +85,9 @@
 
       // 打开 scriptable 并创建
       function openScriptable() {
+        if (isWeChat()) {
+          toast('请在 safari 浏览器打开此页')
+        }
         location.href = 'scriptable:///add'
       }
 
@@ -85,18 +104,27 @@
         })
         toastElm.innerHTML = `
           <div style="
-          padding: 8px 15px;
-          border-radius: 8px;
+          padding: 15px;
+          border-radius: 15px;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          font-size: 15px;
+          font-size: 16px;
           color: #777;
           text-align: center;
-          background-color: #fff;">${msg}</div>
+          background-color: #fff;
+          font-weight: bold;">${msg}</div>
         `
         document.body.appendChild(toastElm)
         setTimeout(() => {
           document.body.removeChild(toastElm)
         }, timeout)
+      }
+
+      // 检测是否为微信打开
+      function isWeChat() {
+        if (navigator.userAgent.indexOf('MicroMessenger') != -1) {
+          return true // 是微信端
+        }
+        return false
       }
     </script>
   </body>

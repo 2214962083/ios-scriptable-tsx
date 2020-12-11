@@ -1,11 +1,11 @@
 /**
  * 作者: 小明
  * 版本: 1.0.0
- * 更新时间：2020-12-8
+ * 更新时间：2020-12-11
  * github: https://github.com/2214962083/scriptable.git
  */
 
-// @编译时间 1607394812206
+// @编译时间 1607657751861
 const MODULE = module
 
 // src/lib/constants.ts
@@ -13,7 +13,7 @@ var URLSchemeFrom
 ;(function (URLSchemeFrom2) {
   URLSchemeFrom2['WIDGET'] = 'widget'
 })(URLSchemeFrom || (URLSchemeFrom = {}))
-const port = 9090
+var port = 9090
 
 // src/lib/help.ts
 function fm() {
@@ -59,12 +59,12 @@ function setStorageDirectory(dirPath) {
     },
   }
 }
-const setStorage = setStorageDirectory(fm().libraryDirectory()).setStorage
-const getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
-const removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
-const setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
-const getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
-const removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
+var setStorage = setStorageDirectory(fm().libraryDirectory()).setStorage
+var getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
+var removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
+var setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
+var getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
+var removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
 function useStorage(nameSpace) {
   const _nameSpace = nameSpace || `${MODULE.filename}`
   return {
@@ -79,8 +79,54 @@ function useStorage(nameSpace) {
     },
   }
 }
-async function showActionSheet(args) {
-  const {title, desc, cancelText = '取消', itemList} = args
+async function request(args2) {
+  const {
+    url,
+    data,
+    header,
+    dataType = 'json',
+    method = 'GET',
+    timeout = 60 * 1e3,
+    useCache = false,
+    failReturnCache = true,
+  } = args2
+  const cacheKey = `url:${url}`
+  const cache = getStorage(cacheKey)
+  if (useCache && cache !== null) return cache
+  const req = new Request(url)
+  req.method = method
+  header && (req.headers = header)
+  data && (req.body = data)
+  req.timeoutInterval = timeout / 1e3
+  req.allowInsecureRequest = true
+  let res
+  try {
+    switch (dataType) {
+      case 'json':
+        res = await req.loadJSON()
+        break
+      case 'text':
+        res = await req.loadString()
+        break
+      case 'image':
+        res = await req.loadImage()
+        break
+      case 'data':
+        res = await req.load()
+        break
+      default:
+        res = await req.loadJSON()
+    }
+    const result = {...req.response, data: res}
+    setStorage(cacheKey, result)
+    return result
+  } catch (err) {
+    if (cache !== null && failReturnCache) return cache
+    return err
+  }
+}
+async function showActionSheet(args2) {
+  const {title, desc, cancelText = '取消', itemList} = args2
   const alert = new Alert()
   title && (alert.title = title)
   desc && (alert.message = desc)
@@ -105,8 +151,8 @@ async function showActionSheet(args) {
   const tapIndex = await alert.presentSheet()
   return tapIndex
 }
-async function showModal(args) {
-  const {title, content, showCancel = true, cancelText = '取消', confirmText = '确定', inputItems = []} = args
+async function showModal(args2) {
+  const {title, content, showCancel = true, cancelText = '取消', confirmText = '确定', inputItems = []} = args2
   const alert = new Alert()
   title && (alert.title = title)
   content && (alert.message = content)
@@ -134,8 +180,8 @@ async function showModal(args) {
         texts,
       }
 }
-async function showNotification(args) {
-  const {title, subtitle = '', body = '', openURL, sound, ...others} = args
+async function showNotification(args2) {
+  const {title, subtitle = '', body = '', openURL, sound, ...others} = args2
   let notification = new Notification()
   notification.title = title
   notification.subtitle = subtitle
@@ -144,6 +190,37 @@ async function showNotification(args) {
   sound && notification.sound
   notification = Object.assign(notification, others)
   return await notification.schedule()
+}
+async function getImage(args2) {
+  const {filepath, url, useCache = true} = args2
+  const generateDefaultImage = async () => {
+    const ctx = new DrawContext()
+    ctx.size = new Size(100, 100)
+    ctx.setFillColor(Color.red())
+    ctx.fillRect(new Rect(0, 0, 100, 100))
+    return await ctx.getImage()
+  }
+  try {
+    if (filepath) {
+      return Image.fromFile(filepath) || (await generateDefaultImage())
+    }
+    if (!url) return await generateDefaultImage()
+    const cacheKey = `image:${url}`
+    if (useCache) {
+      const cache = getCache(url)
+      if (cache instanceof Image) {
+        return cache
+      } else {
+        removeCache(cacheKey)
+      }
+    }
+    const res = await request({url, dataType: 'image'})
+    const image = res && res.data
+    image && setCache(cacheKey, image)
+    return image || (await generateDefaultImage())
+  } catch (err) {
+    return await generateDefaultImage()
+  }
 }
 function hash(string) {
   let hash2 = 0,
@@ -173,17 +250,283 @@ function sleep(ms) {
   })
 }
 
-// src/scripts/baisc.ts
-const {setStorage: setStorage2, getStorage: getStorage2} = useStorage('basic-storage')
-const runScriptDate = Date.now()
+// src/lib/jsx-runtime.ts
+var GenrateView = class {
+  static setListWidget(listWidget2) {
+    this.listWidget = listWidget2
+  }
+  static async wbox(props, ...children) {
+    const {background, spacing, href, updateDate, padding, onClick} = props
+    try {
+      isDefined(background) && (await setBackground(this.listWidget, background))
+      isDefined(spacing) && (this.listWidget.spacing = spacing)
+      isDefined(href) && (this.listWidget.url = href)
+      isDefined(updateDate) && (this.listWidget.refreshAfterDate = updateDate)
+      isDefined(padding) && this.listWidget.setPadding(...padding)
+      isDefined(onClick) && runOnClick(this.listWidget, onClick)
+      await addChildren(this.listWidget, children)
+    } catch (err) {
+      console.error(err)
+    }
+    return this.listWidget
+  }
+  static wstack(props, ...children) {
+    return async parentInstance => {
+      const widgetStack = parentInstance.addStack()
+      const {
+        background,
+        spacing,
+        padding,
+        width = 0,
+        height = 0,
+        borderRadius,
+        borderWidth,
+        borderColor,
+        href,
+        verticalAlign,
+        flexDirection,
+        onClick,
+      } = props
+      try {
+        isDefined(background) && (await setBackground(widgetStack, background))
+        isDefined(spacing) && (widgetStack.spacing = spacing)
+        isDefined(padding) && widgetStack.setPadding(...padding)
+        isDefined(borderRadius) && (widgetStack.cornerRadius = borderRadius)
+        isDefined(borderWidth) && (widgetStack.borderWidth = borderWidth)
+        isDefined(borderColor) && (widgetStack.borderColor = getColor(borderColor))
+        isDefined(href) && (widgetStack.url = href)
+        widgetStack.size = new Size(width, height)
+        const verticalAlignMap = {
+          bottom: () => widgetStack.bottomAlignContent(),
+          center: () => widgetStack.centerAlignContent(),
+          top: () => widgetStack.topAlignContent(),
+        }
+        isDefined(verticalAlign) && verticalAlignMap[verticalAlign]()
+        const flexDirectionMap = {
+          row: () => widgetStack.layoutHorizontally(),
+          column: () => widgetStack.layoutVertically(),
+        }
+        isDefined(flexDirection) && flexDirectionMap[flexDirection]()
+        isDefined(onClick) && runOnClick(widgetStack, onClick)
+      } catch (err) {
+        console.error(err)
+      }
+      await addChildren(widgetStack, children)
+    }
+  }
+  static wimage(props) {
+    return async parentInstance => {
+      const {
+        src,
+        href,
+        resizable,
+        width = 0,
+        height = 0,
+        opacity,
+        borderRadius,
+        borderWidth,
+        borderColor,
+        containerRelativeShape,
+        filter,
+        imageAlign,
+        mode,
+        onClick,
+      } = props
+      let _image = src
+      typeof src === 'string' && isUrl(src) && (_image = await getImage({url: src}))
+      typeof src === 'string' && !isUrl(src) && (_image = SFSymbol.named(src).image)
+      const widgetImage = parentInstance.addImage(_image)
+      widgetImage.image = _image
+      try {
+        isDefined(href) && (widgetImage.url = href)
+        isDefined(resizable) && (widgetImage.resizable = resizable)
+        widgetImage.imageSize = new Size(width, height)
+        isDefined(opacity) && (widgetImage.imageOpacity = opacity)
+        isDefined(borderRadius) && (widgetImage.cornerRadius = borderRadius)
+        isDefined(borderWidth) && (widgetImage.borderWidth = borderWidth)
+        isDefined(borderColor) && (widgetImage.borderColor = getColor(borderColor))
+        isDefined(containerRelativeShape) && (widgetImage.containerRelativeShape = containerRelativeShape)
+        isDefined(filter) && (widgetImage.tintColor = getColor(filter))
+        const imageAlignMap = {
+          left: () => widgetImage.leftAlignImage(),
+          center: () => widgetImage.centerAlignImage(),
+          right: () => widgetImage.rightAlignImage(),
+        }
+        isDefined(imageAlign) && imageAlignMap[imageAlign]()
+        const modeMap = {
+          fit: () => widgetImage.applyFittingContentMode(),
+          fill: () => widgetImage.applyFillingContentMode(),
+        }
+        isDefined(mode) && modeMap[mode]()
+        isDefined(onClick) && runOnClick(widgetImage, onClick)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+  }
+  static wspacer(props) {
+    return async parentInstance => {
+      const widgetSpacer = parentInstance.addSpacer()
+      const {length} = props
+      try {
+        isDefined(length) && (widgetSpacer.length = length)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+  }
+  static wtext(props, ...children) {
+    return async parentInstance => {
+      const widgetText = parentInstance.addText('')
+      const {
+        textColor,
+        font,
+        opacity,
+        maxLine,
+        scale,
+        shadowColor,
+        shadowRadius,
+        shadowOffset,
+        href,
+        textAlign,
+        onClick,
+      } = props
+      if (children && Array.isArray(children)) {
+        widgetText.text = children.join('')
+      }
+      try {
+        isDefined(textColor) && (widgetText.textColor = getColor(textColor))
+        isDefined(font) && (widgetText.font = typeof font === 'number' ? Font.systemFont(font) : font)
+        isDefined(opacity) && (widgetText.textOpacity = opacity)
+        isDefined(maxLine) && (widgetText.lineLimit = maxLine)
+        isDefined(scale) && (widgetText.minimumScaleFactor = scale)
+        isDefined(shadowColor) && (widgetText.shadowColor = getColor(shadowColor))
+        isDefined(shadowRadius) && (widgetText.shadowRadius = shadowRadius)
+        isDefined(shadowOffset) && (widgetText.shadowOffset = shadowOffset)
+        isDefined(href) && (widgetText.url = href)
+        const textAlignMap = {
+          left: () => widgetText.leftAlignText(),
+          center: () => widgetText.centerAlignText(),
+          right: () => widgetText.rightAlignText(),
+        }
+        isDefined(textAlign) && textAlignMap[textAlign]()
+        isDefined(onClick) && runOnClick(widgetText, onClick)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+  }
+  static wdate(props) {
+    return async parentInstance => {
+      const widgetDate = parentInstance.addDate(new Date())
+      const {
+        date,
+        mode,
+        textColor,
+        font,
+        opacity,
+        maxLine,
+        scale,
+        shadowColor,
+        shadowRadius,
+        shadowOffset,
+        href,
+        textAlign,
+        onClick,
+      } = props
+      try {
+        isDefined(date) && (widgetDate.date = date)
+        isDefined(textColor) && (widgetDate.textColor = getColor(textColor))
+        isDefined(font) && (widgetDate.font = typeof font === 'number' ? Font.systemFont(font) : font)
+        isDefined(opacity) && (widgetDate.textOpacity = opacity)
+        isDefined(maxLine) && (widgetDate.lineLimit = maxLine)
+        isDefined(scale) && (widgetDate.minimumScaleFactor = scale)
+        isDefined(shadowColor) && (widgetDate.shadowColor = getColor(shadowColor))
+        isDefined(shadowRadius) && (widgetDate.shadowRadius = shadowRadius)
+        isDefined(shadowOffset) && (widgetDate.shadowOffset = shadowOffset)
+        isDefined(href) && (widgetDate.url = href)
+        const modeMap = {
+          time: () => widgetDate.applyTimeStyle(),
+          date: () => widgetDate.applyDateStyle(),
+          relative: () => widgetDate.applyRelativeStyle(),
+          offset: () => widgetDate.applyOffsetStyle(),
+          timer: () => widgetDate.applyTimerStyle(),
+        }
+        isDefined(mode) && modeMap[mode]()
+        const textAlignMap = {
+          left: () => widgetDate.leftAlignText(),
+          center: () => widgetDate.centerAlignText(),
+          right: () => widgetDate.rightAlignText(),
+        }
+        isDefined(textAlign) && textAlignMap[textAlign]()
+        isDefined(onClick) && runOnClick(widgetDate, onClick)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+  }
+}
+var listWidget = new ListWidget()
+GenrateView.setListWidget(listWidget)
+function getColor(color) {
+  return typeof color === 'string' ? new Color(color, 1) : color
+}
+async function getBackground(bg) {
+  bg = (typeof bg === 'string' && !isUrl(bg)) || bg instanceof Color ? getColor(bg) : bg
+  if (typeof bg === 'string') {
+    bg = await getImage({url: bg})
+  }
+  return bg
+}
+async function setBackground(widget, bg) {
+  const _bg = await getBackground(bg)
+  if (_bg instanceof Color) {
+    widget.backgroundColor = _bg
+  }
+  if (_bg instanceof Image) {
+    widget.backgroundImage = _bg
+  }
+  if (_bg instanceof LinearGradient) {
+    widget.backgroundGradient = _bg
+  }
+}
+async function addChildren(instance, children) {
+  if (children && Array.isArray(children)) {
+    for (const child of children) {
+      child instanceof Function ? await child(instance) : ''
+    }
+  }
+}
+function isDefined(value) {
+  if (typeof value === 'number' && !isNaN(value)) {
+    return true
+  }
+  return value !== void 0 && value !== null
+}
+function isUrl(value) {
+  const reg = /^(http|https)\:\/\/[\w\W]+/
+  return reg.test(value)
+}
+function runOnClick(instance, onClick) {
+  const _eventId = hash(onClick.toString())
+  instance.url = `${URLScheme.forRunningScript()}?eventId=${encodeURIComponent(_eventId)}&from=${URLSchemeFrom.WIDGET}`
+  const {eventId, from} = args.queryParameters
+  if (eventId && eventId === _eventId && from === URLSchemeFrom.WIDGET) {
+    onClick()
+  }
+}
+
+// src/lib/baisc.ts
+var {setStorage: setStorage2, getStorage: getStorage2} = useStorage('basic-storage')
+var runScriptDate = Date.now()
 setStorage2('runScriptDate', runScriptDate)
-class Basic {
+var Basic = class {
   constructor() {
     this.syncInterval = 1 * 1e3
     this.lastCompileDate = 0
     this.timeout = 5 * 1e3
     this.requestFailTimes = 0
-    this.maxRequestFailTimes = 5
+    this.maxRequestFailTimes = 10
   }
   async init() {
     await this.showMenu()
