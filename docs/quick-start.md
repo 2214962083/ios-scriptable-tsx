@@ -119,3 +119,9 @@
 
 所有打包输出文件夹默认都是 `./dist`，你可以在 [scriptable.config.js](./config.md#scriptable-config) 里配置 `outputDir` 以修改它的打包输出的文件夹
 
+<br/>
+
+## 注意
+
+由于打包器保留字 `module` 和 `Scriptable` 的全局变量 `module` 冲突，所以建议在访问 `Scriptable`  `module` 变量时，改用 `MODULE` 访问。
+
