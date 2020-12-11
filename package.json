@@ -5,11 +5,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "watch": "set watching=true&& nodemon --watch src/ --ext ts,tsx,json,js --ignore 'src/**/*.spec.ts' --exec \"node -e console.clear()&& npm run dev\"",
-    "dev": "set NODE_ENV=development&& set compileType=one&& ts-node ./src/lib/compile.ts",
-    "dev:all": "set NODE_ENV=development&& set compileType=all&& ts-node ./src/lib/compile.ts",
-    "build": "set NODE_ENV=production&& set compileType=one&& ts-node ./src/lib/compile.ts",
-    "build:all": "set NODE_ENV=production&& set compileType=all&& ts-node ./src/lib/compile.ts"
+    "watch": "cross-env watching=true nodemon --config nodemon.json",
+    "dev": "cross-env NODE_ENV=development compileType=one ts-node ./src/lib/compile.ts",
+    "dev:all": "cross-env NODE_ENV=development compileType=all ts-node ./src/lib/compile.ts",
+    "build": "cross-env NODE_ENV=production compileType=one ts-node ./src/lib/compile.ts",
+    "build:all": "cross-env NODE_ENV=production compileType=all ts-node ./src/lib/compile.ts"
   },
   "license": "ISC",
   "devDependencies": {
@@ -26,6 +26,7 @@
     "@types/scriptable-ios": "^1.6.1",
     "@typescript-eslint/eslint-plugin": "^4.1.1",
     "@typescript-eslint/parser": "^4.1.1",
+    "cross-env": "^7.0.3",
     "esbuild": "^0.8.12",
     "eslint": "^7.9.0",
     "eslint-config-prettier": "^6.11.0",

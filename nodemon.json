@@ -1,0 +1,6 @@
+{
+  "ignore": ["src/**/*.spec.ts"],
+  "watch": ["src/"],
+  "ext": "ts,tsx,json,js",
+  "exec": "node -e \"console.clear()\"&& npm run dev"
+}

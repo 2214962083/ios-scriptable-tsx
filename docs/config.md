@@ -29,6 +29,7 @@ ios-scriptable-tsx
 ├── .env.production         // dotenv 文件，生产环境时，加载进环境变量
 ├── .eslintrc.js            // eslint 配置，统一代码风格
 ├── .gitignore              // gitignore 文件
+├── nodemon.json            // nodemon监听配置，在 watch 下生效
 ├── package.json            // 项目信息、依赖声明文件
 ├── prettier.config.js      // prettier 配置，用于美化、对齐代码
 ├── README.md               // 文档
