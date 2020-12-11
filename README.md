@@ -1,4 +1,4 @@
-<p align="center"><a href="https://github.com/2214962083/ios-scriptable-tsx" target="_blank" rel="noopener noreferrer"><img width="100" src="https://scriptable.app/assets/appicon.png" alt="ios-scriptable-tsx logo" style="border-radius: 30px;"></a></p>
+<p align="center"><a href="https://github.com/2214962083/ios-scriptable-tsx" target="_blank" rel="noopener noreferrer"><img width="100" src="https://p.pstatp.com/origin/1383f0000b2ce54d280a2" alt="ios-scriptable-tsx logo" style="border-radius: 30px;"></a></p>
 
 <p align="center">
   <!-- package.json 版本 -->
