@@ -4,7 +4,7 @@
 
 ## <span id="wbox">wbox</span>
 
-盒子组件，必须处于 jsx 最外层，映射为 [ListWidget](https://docs.scriptable.app/listwidget/) 
+盒子组件，必须处于 jsx 最外层，映射为 [ListWidget](https://docs.scriptable.app/listwidget/) 
 
 | 属性                                                         | 类型             | 默认值                                  | 必填 | 说明                                                         |
 | ------------------------------------------------------------ | ---------------- | --------------------------------------- | ---- | ------------------------------------------------------------ |
@@ -12,7 +12,7 @@
 | [spacing](https://docs.scriptable.app/listwidget/#spacing)   | number           | 0                                       | 否   | 间隔距离                                                     |
 | [href](https://docs.scriptable.app/listwidget/#url)          | string           |                                         | 否   | 点击时打开的url <br/>不与 `onClick` 共存，当 `onClick` 存在时，只执行 `onClick` |
 | [updateDate](https://docs.scriptable.app/listwidget/#refreshafterdate) | object           |                                         | 否   | 小组件更新日期<br />只接收 [Date](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Date) 对象<br />该属性指示何时可以再次刷新窗口小部件。在到达日期之前，不会刷新小部件。**不保证小部件将在指定的日期完全刷新。**<br/>小部件的刷新率部分取决于iOS / iPadOS。例如，如果设备电池电量低或用户很少看小部件，则小部件可能不会刷新。 |
-| [padding](https://docs.scriptable.app/listwidget/#-setpadding) | Array<number>    | [0,0,0,0]                               | 否   | 内边距，**依次是上、左、下、右**，四个都要填                 |
+| [padding](https://docs.scriptable.app/listwidget/#-setpadding) | Array\<number\>  | [0,0,0,0]                               | 否   | 内边距，**依次是上、左、下、右**，四个都要填                 |
 | onClick                                                      | function         |                                         | 否   | 用 [URLScheme](https://docs.scriptable.app/urlscheme/) 实现的点击事件<br/>不与 `href` 共存，当 `href` 存在时，只执行 `onClick` |
 
 <br/>
@@ -21,13 +21,13 @@
 
 ## <span id="wstack">wstack</span>
 
-容器组件，类似 `div` ，映射为 [WidgetStack](https://docs.scriptable.app/widgetstack/) 
+容器组件，类似 `div` ，映射为 [WidgetStack](https://docs.scriptable.app/widgetstack/) 
 
 | 属性                                                         | 类型             | 默认值    | 必填 | 说明                                                         |
 | ------------------------------------------------------------ | ---------------- | --------- | ---- | ------------------------------------------------------------ |
 | [background](https://docs.scriptable.app/widgetstack/#backgroundcolor) | string \| object |           | 否   | 背景<br/>可以为hex 字符串，例子：#ffffff<br/>可以为网络图片链接，例子：http://example.com/a.jpg<br/>可以为  [Color](https://docs.scriptable.app/color/)  对象<br/>可以为 [Image](https://docs.scriptable.app/image/) 对象<br/>可以为 [LinearGradient](https://docs.scriptable.app/lineargradient/) 渐变对象 |
 | [spacing](https://docs.scriptable.app/widgetstack/#spacing)  | number           | 0         | 否   | 间隔距离                                                     |
-| [padding](https://docs.scriptable.app/widgetstack/#-setpadding) | Array<number>    | [0,0,0,0] | 否   | 内边距，**依次是上、左、下、右**，四个都要填                 |
+| [padding](https://docs.scriptable.app/widgetstack/#-setpadding) | Array\<number\>  | [0,0,0,0] | 否   | 内边距，**依次是上、左、下、右**，四个都要填                 |
 | [width](https://docs.scriptable.app/widgetstack/#size)       | number           | 0         | 否   | 组件宽，**当宽度设置 <= 0 时，小部件将自动确定该尺寸的长度。** |
 | [height](https://docs.scriptable.app/widgetstack/#size)      | number           | 0         | 否   | 组件高，**当高度设置 <= 0 时，小部件将自动确定该尺寸的长度。** |
 | [borderRadius](https://docs.scriptable.app/widgetstack/#cornerradius) | number           | 0         | 否   | 边框四个角的圆角程度                                         |
@@ -61,7 +61,7 @@
 
 ## <span id="wimage">wimage</span>
 
-图片组件 ，映射为 [WidgetImage](https://docs.scriptable.app/widgetimage/) ，组件里面不可包裹其他组件
+图片组件 ，映射为 [WidgetImage](https://docs.scriptable.app/widgetimage/) ，组件里面不可包裹其他组件
 
 | 属性                                                         | 类型             | 默认值  | 必填 | 说明                                                         |
 | ------------------------------------------------------------ | ---------------- | ------- | ---- | ------------------------------------------------------------ |
@@ -105,7 +105,7 @@
 
 ## <span id="wspacer">wspacer</span>
 
-空格占位组件，映射为 [WidgetSpacer](https://docs.scriptable.app/widgetspacer/) ，组件里面不可包裹其他组件
+空格占位组件，映射为 [WidgetSpacer](https://docs.scriptable.app/widgetspacer/) ，组件里面不可包裹其他组件
 
 | 属性                                                       | 类型   | 默认值 | 必填 | 说明                                    |
 | ---------------------------------------------------------- | ------ | ------ | ---- | --------------------------------------- |
@@ -117,7 +117,7 @@
 
 ## <span id="wtext">wtext</span>
 
-文字组件，映射为 [WidgetText](https://docs.scriptable.app/widgettext/) ，组件里面不可包裹其他组件，只可以包裹文字
+文字组件，映射为 [WidgetText](https://docs.scriptable.app/widgettext/) ，组件里面不可包裹其他组件，只可以包裹文字
 
 | 属性                                                         | 类型             | 默认值                                  | 必填 | 说明                                                         |
 | ------------------------------------------------------------ | ---------------- | --------------------------------------- | ---- | ------------------------------------------------------------ |
@@ -149,7 +149,7 @@
 
 ## <span id="wdate">wdate</span>
 
-日期组件，映射为 [WidgetDate](https://docs.scriptable.app/widgetdate/) ，组件里面不可包裹其他组件，有点类似 `wtext` 组件，区别在文字改成了日期
+日期组件，映射为 [WidgetDate](https://docs.scriptable.app/widgetdate/) ，组件里面不可包裹其他组件，有点类似 `wtext` 组件，区别在文字改成了日期
 
 | 属性                                                         | 类型             | 默认值                                  | 必填 | 说明                                                         |
 | ------------------------------------------------------------ | ---------------- | --------------------------------------- | ---- | ------------------------------------------------------------ |
