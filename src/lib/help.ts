@@ -737,9 +737,12 @@ export function sleep(ms: number): Promise<void> {
 
 /**
  * 显示预览尺寸菜单
- * @param widget 组件实例
+ * @param render render渲染函数，返回 widget 实例
  */
-export async function showPreviewOptions(widget: ListWidget): Promise<number> {
+export async function showPreviewOptions(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  render: (...params: any[]) => ListWidget | Promise<ListWidget | unknown>,
+): Promise<number> {
   const selectIndex = await showActionSheet({
     title: '预览组件',
     desc: '测试桌面组件在各种尺寸下的显示效果',
@@ -747,18 +750,24 @@ export async function showPreviewOptions(widget: ListWidget): Promise<number> {
   })
   switch (selectIndex) {
     case 0:
-      await widget.presentSmall()
+      config.widgetFamily = 'small'
+      await ((await render()) as ListWidget).presentSmall()
       break
     case 1:
-      await widget.presentMedium()
+      config.widgetFamily = 'medium'
+      await ((await render()) as ListWidget).presentMedium()
       break
     case 2:
-      await widget.presentLarge()
+      config.widgetFamily = 'large'
+      await ((await render()) as ListWidget).presentLarge()
       break
     case 3:
-      await widget.presentSmall()
-      await widget.presentMedium()
-      await widget.presentLarge()
+      config.widgetFamily = 'small'
+      await ((await render()) as ListWidget).presentSmall()
+      config.widgetFamily = 'medium'
+      await ((await render()) as ListWidget).presentMedium()
+      config.widgetFamily = 'large'
+      await ((await render()) as ListWidget).presentLarge()
       break
   }
   return selectIndex
@@ -991,7 +1000,7 @@ export async function setTransparentBackground(tips?: string): Promise<Image | u
       crop.h = phone.large
       crop.x = phone.left
       positions = ['顶部', '底部']
-      _positions = ['top', 'bottom']
+      _positions = ['top', 'middle']
       positionIndex = await selectLocation(positions)
       key = _positions[positionIndex] as WidgetSize
       crop.y = phone[key]

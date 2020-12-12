@@ -30,10 +30,10 @@ const {setStorage, getStorage} = useStorage('bilibili-fans')
 
 class BiliFans {
   async init() {
-    const widget = (await this.render()) as ListWidget
     if (isLaunchInsideApp()) {
-      return await this.showMenu(widget)
+      return await this.showMenu()
     }
+    const widget = (await this.render()) as ListWidget
     Script.setWidget(widget)
     Script.complete()
   }
@@ -94,7 +94,7 @@ class BiliFans {
   }
 
   // 显示菜单
-  async showMenu(widget: ListWidget): Promise<void> {
+  async showMenu(): Promise<void> {
     const selectIndex = await showActionSheet({
       title: '菜单',
       itemList: ['设置 up 主 id', '预览尺寸'],
@@ -117,7 +117,7 @@ class BiliFans {
         break
       case 1:
         // 预览尺寸
-        await showPreviewOptions(widget)
+        await showPreviewOptions(this.render.bind(this))
         break
     }
   }

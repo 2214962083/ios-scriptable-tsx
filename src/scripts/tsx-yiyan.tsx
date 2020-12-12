@@ -22,10 +22,10 @@ interface RemoteData {
 class YiyanWidget {
   private widget!: ListWidget
   async init() {
-    this.widget = (await this.render()) as ListWidget
     if (isLaunchInsideApp()) {
-      return await showPreviewOptions(this.widget)
+      return await showPreviewOptions(this.render.bind(this))
     }
+    this.widget = (await this.render()) as ListWidget
     Script.setWidget(this.widget)
     Script.complete()
   }
@@ -64,7 +64,6 @@ class YiyanWidget {
     })
   }
   async menu(): Promise<void> {
-    const optionFunc = [this.selectPreviewSize]
     const selectIndex = await showActionSheet({
       title: '菜单',
       itemList: [
@@ -73,32 +72,9 @@ class YiyanWidget {
         },
       ],
     })
-    optionFunc[selectIndex].apply(this)
-  }
-  async selectPreviewSize(): Promise<void> {
-    const selectIndex = await showActionSheet({
-      title: '选择预览尺寸',
-      itemList: [
-        {
-          text: '小组件',
-        },
-        {
-          text: '中组件',
-        },
-        {
-          text: '大组件',
-        },
-      ],
-    })
     switch (selectIndex) {
       case 0:
-        await this.widget.presentSmall()
-        break
-      case 1:
-        await this.widget.presentMedium()
-        break
-      case 2:
-        await this.widget.presentLarge()
+        await showPreviewOptions(this.render.bind(this))
         break
     }
   }
