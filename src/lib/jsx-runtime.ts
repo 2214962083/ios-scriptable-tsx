@@ -321,8 +321,9 @@ export function h(
   ...children: Children<Scriptable.Widget> | string[]
 ): Promise<unknown> | unknown {
   props = props || {}
-  // 由于 Fragment 的存在，children 可能为一、二维数组混合，先把它展平
-  const _children = [].concat(...(children as never[])) as typeof children
+
+  // 由于 Fragment 的存在，children 可能为多维数组混合，先把它展平
+  const _children = flatteningArr(children as unknown[]) as typeof children
 
   switch (type) {
     case 'wbox':
@@ -354,6 +355,18 @@ export function h(
 
 export function Fragment({children}: {children: typeof h[]}): typeof h[] {
   return children
+}
+
+/**
+ * 展平所有维度数组
+ * @param arr 数组
+ */
+function flatteningArr<T>(arr: T[]): T[] {
+  return [].concat(
+    ...arr.map((item: T | T[]) => {
+      return (Array.isArray(item) ? flatteningArr(item) : item) as never[]
+    }),
+  ) as T[]
 }
 
 /**
