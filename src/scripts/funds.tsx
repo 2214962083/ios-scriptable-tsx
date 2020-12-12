@@ -73,7 +73,7 @@ function getFundColumn(fundsInfo: FundInfo[], title: string, keyName: keyof Fund
     return {
       // 涨跌幅文字特别处理(涨绿，跌红)
       GSZZL: (
-        <wtext font={Font.lightSystemFont(14)} textColor={Number(value) >= 0 ? '#4eff4e' : '#ff4e4e'}>
+        <wtext font={Font.lightSystemFont(14)} textColor={Number(value) < 0 ? '#4eff4e' : '#ff4e4e'}>
           {value + '%'}
         </wtext>
       ),
