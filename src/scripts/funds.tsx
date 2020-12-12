@@ -1,3 +1,7 @@
+/**
+ * 基金小部件
+ */
+
 import {
   isLaunchInsideApp,
   request,

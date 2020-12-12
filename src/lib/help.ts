@@ -589,7 +589,7 @@ export async function showNotification(args: ShowNotificationParams): Promise<vo
   notification.subtitle = subtitle
   notification.body = body
   openURL && (notification.openURL = openURL)
-  sound && notification.sound
+  sound && (notification.sound = sound)
   notification = Object.assign(notification, others)
   return await notification.schedule()
 }
@@ -661,6 +661,17 @@ export function hash(string: string): string {
     hash |= 0 // Convert to 32bit integer
   }
   return `hash_${hash}`
+}
+
+/**
+ * 获取范围内随机整数
+ * @param min 最小值
+ * @param max 最大值
+ */
+export function getRandomInt(min: number, max: number): number {
+  min = Math.ceil(min)
+  max = Math.floor(max)
+  return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
 /**
