@@ -4,6 +4,11 @@
   "author": "xiaomingyang",
   "description": "",
   "main": "index.js",
+  "keywords": [
+    "scriptable",
+    "ios",
+    "widget"
+  ],
   "scripts": {
     "watch": "cross-env watching=true nodemon --config nodemon.json",
     "dev": "cross-env NODE_ENV=development compileType=one ts-node ./src/lib/compile.ts",

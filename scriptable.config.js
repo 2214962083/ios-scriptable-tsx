@@ -26,7 +26,7 @@ const header = `
  * 作者: 小明
  * 版本: 1.0.0
  * 更新时间：${new Date().toLocaleDateString()}
- * github: https://github.com/2214962083/scriptable.git
+ * github: https://github.com/2214962083/ios-scriptable-tsx
  */
 `
 
