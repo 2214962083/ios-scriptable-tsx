@@ -33,10 +33,10 @@
 | [borderRadius](https://docs.scriptable.app/widgetstack/#cornerradius) | number           | 0         | 否   | 边框四个角的圆角程度                                         |
 | [borderWidth](https://docs.scriptable.app/widgetstack/#borderwidth) | number           | 0         | 否   | 边框宽度                                                     |
 | [borderColor](https://docs.scriptable.app/widgetstack/#bordercolor) | string \| object | #000000   | 否   | 边框颜色<br/>可以为hex 字符串，例子：#ffffff<br/>可以为  [Color](https://docs.scriptable.app/color/)  对象 |
-| [href](https://docs.scriptable.app/widgetstack/#url)         | string           |           | 否   | 点击时打开的url <br/>不与 `onClick` 共存，当 `onClick` 存在时，只执行 `onClick` |
+| [href](https://docs.scriptable.app/widgetstack/#url)         | string           |           | 否   | 点击时打开的url <br/>不与 `onClick` 共存，当 `onClick` 存在时，只执行 `onClick`<br/>**当小部件为小尺寸时，此属性不生效** |
 | [verticalAlign](#wstack-verticalAlign)                       | string           | top       | 否   | 内容垂直方向对齐方式                                         |
 | [flexDirection](#wstack-flexDirection)                       | string           | row       | 否   | 排版方向                                                     |
-| onClick                                                      | function         |           | 否   | 用 [URLScheme](https://docs.scriptable.app/urlscheme/) 实现的点击事件<br/>不与 `href` 共存，当 `href` 存在时，只执行 `onClick` |
+| onClick                                                      | function         |           | 否   | 用 [URLScheme](https://docs.scriptable.app/urlscheme/) 实现的点击事件<br/>不与 `href` 共存，当 `href` 存在时，只执行 `onClick`<br/>**当小部件为小尺寸时，此属性不生效** |
 <br/>
 
 ##### <span id="wstack-verticalAlign">verticalAlign 的合法值</span>
@@ -66,7 +66,7 @@
 | 属性                                                         | 类型             | 默认值  | 必填 | 说明                                                         |
 | ------------------------------------------------------------ | ---------------- | ------- | ---- | ------------------------------------------------------------ |
 | [src](https://docs.scriptable.app/widgetimage/#image)        | string \| object |         | 是   | 图片资源地址<br/>可以为网络连接，例子：http://example.com/a.jpg<br/>可以为 [Image](https://docs.scriptable.app/image/) 对象<br/>可以为 [SFSymbol 的 icon名字](https://docs.scriptable.app/sfsymbol/) ，就是  [ios 自带图标库里](https://apps.apple.com/us/app/sf-symbols-browser/id1491161336) 某图标的iconName，例子：tv.circle.fill<br/> |
-| [href](https://docs.scriptable.app/widgetimage/#url)         | string           |         | 否   | 点击时打开的url <br/>不与 `onClick` 共存，当 `onClick` 存在时，只执行 `onClick` |
+| [href](https://docs.scriptable.app/widgetimage/#url)         | string           |         | 否   | 点击时打开的url <br/>不与 `onClick` 共存，当 `onClick` 存在时，只执行 `onClick`<br/>**当小部件为小尺寸时，此属性不生效** |
 | [resizable](https://docs.scriptable.app/widgetimage/#resizable) | boolean          | true    | 否   | 图片是否可以调整大小                                         |
 | [width](https://docs.scriptable.app/widgetimage/#imagesize)  | number           |         | 否   | 图片宽，**当宽高都为空时，图片将显示原尺寸。**               |
 | [height](https://docs.scriptable.app/widgetimage/#imagesize) | number           |         | 否   | 图片高，**当宽高都为空时，图片将显示原尺寸。**               |
@@ -78,7 +78,7 @@
 | [filter](https://docs.scriptable.app/widgetimage/#tintcolor) | string \| object |         | 否   | 加滤镜<br />可以为hex 字符串，例子：#ffffff<br/>可以为  [Color](https://docs.scriptable.app/color/)  对象 |
 | [imageAlign](#wimage-imageAlign)                             | string           | left    |      | 图片横向对齐方式                                             |
 | [mode](#wimage-mode)                                         | string           | fit     | 否   | 图片显示模式                                                 |
-| onClick                                                      | function         |         | 否   | 用 [URLScheme](https://docs.scriptable.app/urlscheme/) 实现的点击事件<br/>不与 `href` 共存，当 `href` 存在时，只执行 `onClick` |
+| onClick                                                      | function         |         | 否   | 用 [URLScheme](https://docs.scriptable.app/urlscheme/) 实现的点击事件<br/>不与 `href` 共存，当 `href` 存在时，只执行 `onClick`<br/>**当小部件为小尺寸时，此属性不生效** |
 
 <br/>
 
@@ -129,9 +129,9 @@
 | [shadowColor](https://docs.scriptable.app/widgettext/#shadowcolor) | string \| object | #000000                                 | 否   | 阴影颜色， `shadowRadius` 属性的值必须大于零，此属性才能生效。<br />可以为hex 字符串，例子：#ffffff<br/>可以为  [Color](https://docs.scriptable.app/color/)  对象 |
 | [shadowRadius](https://docs.scriptable.app/widgettext/#shadowradius) | number           | 0                                       | 否   | 阴影模糊距离                                                 |
 | [shadowOffset](https://docs.scriptable.app/widgettext/#shadowoffset) | object           | new Point(0, 0)                         | 否   | 阴影的偏移位置。 `shadowRadius` 属性的值必须大于零，此属性才能生效。<br />传入 [Point](https://docs.scriptable.app/point/#point) 位置对象 |
-| [href](https://docs.scriptable.app/widgettext/#url)          | string           |                                         | 否   | 点击时打开的url <br/>不与 `onClick` 共存，当 `onClick` 存在时，只执行 `onClick` |
+| [href](https://docs.scriptable.app/widgettext/#url)          | string           |                                         | 否   | 点击时打开的url <br/>不与 `onClick` 共存，当 `onClick` 存在时，只执行 `onClick`<br/>**当小部件为小尺寸时，此属性不生效** |
 | [textAlign](#wtext-textAlign)                                | string           | left                                    | 否   |                                                              |
-| onClick                                                      | function         |                                         | 否   | 用 [URLScheme](https://docs.scriptable.app/urlscheme/) 实现的点击事件<br/>不与 `href` 共存，当 `href` 存在时，只执行 `onClick` |
+| onClick                                                      | function         |                                         | 否   | 用 [URLScheme](https://docs.scriptable.app/urlscheme/) 实现的点击事件<br/>不与 `href` 共存，当 `href` 存在时，只执行 `onClick`<br/>**当小部件为小尺寸时，此属性不生效** |
 
 <br/>
 
@@ -163,9 +163,9 @@
 | [shadowColor](https://docs.scriptable.app/widgetdate/#shadowcolor) | string \| object | #000000                                 | 否   | 阴影颜色， `shadowRadius` 属性的值必须大于零，此属性才能生效。<br />可以为hex 字符串，例子：#ffffff<br/>可以为  [Color](https://docs.scriptable.app/color/)  对象 |
 | [shadowRadius](https://docs.scriptable.app/widgetdate/#shadowradius) | number           | 0                                       | 否   | 阴影模糊距离                                                 |
 | [shadowOffset](https://docs.scriptable.app/widgetdate/#shadowoffset) | object           | new Point(0, 0)                         | 否   | 阴影的偏移位置。 `shadowRadius` 属性的值必须大于零，此属性才能生效。<br />传入 [Point](https://docs.scriptable.app/point/#point) 位置对象 |
-| [href](https://docs.scriptable.app/widgetdate/#url)          | string           |                                         | 否   | 点击时打开的url <br/>不与 `onClick` 共存，当 `onClick` 存在时，只执行 `onClick` |
+| [href](https://docs.scriptable.app/widgetdate/#url)          | string           |                                         | 否   | 点击时打开的url <br/>不与 `onClick` 共存，当 `onClick` 存在时，只执行 `onClick`<br/>**当小部件为小尺寸时，此属性不生效** |
 | [textAlign](#wtext-textAlign)                                | string           | left                                    | 否   |                                                              |
-| onClick                                                      | function         |                                         | 否   | 用 [URLScheme](https://docs.scriptable.app/urlscheme/) 实现的点击事件<br/>不与 `href` 共存，当 `href` 存在时，只执行 `onClick` |
+| onClick                                                      | function         |                                         | 否   | 用 [URLScheme](https://docs.scriptable.app/urlscheme/) 实现的点击事件<br/>不与 `href` 共存，当 `href` 存在时，只执行 `onClick`<br/>**当小部件为小尺寸时，此属性不生效** |
 
 <br/>
 

@@ -74,8 +74,8 @@ ios-scriptable-tsx
 npm run watch 		#development开发环境
 npm run dev 		#development开发环境
 npm run dev:all		#development开发环境
-npm run build		#production开发环境
-npm run build:all	#production开发环境
+npm run build		#production生产环境
+npm run build:all	#production生产环境
 ```
 
 <br/>
