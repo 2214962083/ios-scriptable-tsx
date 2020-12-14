@@ -40,9 +40,7 @@
 
 这种状况是因为 `Scriptable` 内部处理多个小部件异步渲染时没处理好。导致部分小部件渲染为空。([在此可以看到相关讨论](https://talk.automators.fm/t/hellp-call-script-setwidget-to-set-the-content-of-the-widget-run-in-widget/9615/7))
 
-解决方法也很简单，在渲染时最外层加个 await。由于打包器不支持 `top-level-await`，建议在编译好后手动添加上去。
-
-开发时不用加，毕竟是偶尔情况，在生产环境打包发布给别人用时，再手动加。
+解决方法也很简单，在渲染时最外层加个 await。由于打包器不支持 `top-level-await`，所以本框架内置了一个末尾底部等待的函数 `EndAwait` ，使用方法见下
 
 ```tsx
 Class HelloWorld {
@@ -54,11 +52,12 @@ Class HelloWorld {
     }
 }
 
-// 在这加，手动往打包后的文件加，因为打包器不会把 await 打包进去，而且 tsconfig 原因，编辑器也会报错
-await new HelloWorld().init()
-```
+// 使用前
+// new HelloWorld().init()
 
-如果有更好的解决方法可以 `issues` 提案。
+// 使用后，这样就不会出现以上状况了
+EndAwait(() => new HelloWorld().init())
+```
 
 <br/>
 
@@ -66,5 +65,16 @@ await new HelloWorld().init()
 
 **E、为什么 jsx widget 是异步渲染？**
 
-为了方便引入网络资源，比如图片，实现 `wimage` 的 src 填写网络连接就能自动加载图片，是需要异步等待的。所以渲染小部件，返回 ListWidget 实例也是异步。
+为了方便引入网络资源，比如图片，实现 `wimage` 的 src 填写网络连接就能自动加载图片，是需要异步等待的。所以渲染小部件，返回 ListWidget 实例也是异步。
 
+<br/>
+
+<br/>
+
+**F、基础包同步运行时报错，而同步后，直接运行所同步的脚本却没报错？**
+
+可能是基础包版本过旧原因，再扫二维码进引导页重新安装一下基础包即可。
+
+<br/>
+
+<br/>

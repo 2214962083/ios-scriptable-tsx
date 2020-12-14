@@ -246,7 +246,9 @@ class Basic {
    */
   async runCode(syncScriptName: string, scriptText: string) {
     try {
-      const runRemoteCode = new Function(`${scriptText}`)
+      const runRemoteCode = new Function(`(async () => {
+        ${scriptText}
+      })()`)
       // 执行远程代码
       runRemoteCode()
     } catch (err) {

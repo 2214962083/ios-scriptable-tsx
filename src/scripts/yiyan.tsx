@@ -80,4 +80,4 @@ class YiyanWidget {
   }
 }
 
-new YiyanWidget().init()
+EndAwait(() => new YiyanWidget().init())
