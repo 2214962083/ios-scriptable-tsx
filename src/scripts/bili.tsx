@@ -159,4 +159,4 @@ class BiliFans {
   }
 }
 
-new BiliFans().init()
+EndAwait(() => new BiliFans().init())

@@ -1,12 +1,16 @@
 /**
  * 作者: 小明
  * 版本: 1.0.0
- * 更新时间：2020-12-11
- * github: https://github.com/2214962083/scriptable.git
+ * 更新时间：2020-12-14
+ * github: https://github.com/2214962083/ios-scriptable-tsx
  */
 
-// @编译时间 1607657751861
+// @编译时间 1607924203272
 const MODULE = module
+let __topLevelAwait__ = () => Promise.resolve()
+function EndAwait(promiseFunc) {
+  __topLevelAwait__ = promiseFunc
+}
 
 // src/lib/constants.ts
 var URLSchemeFrom
@@ -187,7 +191,7 @@ async function showNotification(args2) {
   notification.subtitle = subtitle
   notification.body = body
   openURL && (notification.openURL = openURL)
-  sound && notification.sound
+  sound && (notification.sound = sound)
   notification = Object.assign(notification, others)
   return await notification.schedule()
 }
@@ -516,7 +520,7 @@ function runOnClick(instance, onClick) {
   }
 }
 
-// src/lib/baisc.ts
+// src/lib/basic.ts
 var {setStorage: setStorage2, getStorage: getStorage2} = useStorage('basic-storage')
 var runScriptDate = Date.now()
 setStorage2('runScriptDate', runScriptDate)
@@ -678,7 +682,9 @@ ${scriptText}`
   }
   async runCode(syncScriptName, scriptText) {
     try {
-      const runRemoteCode = new Function(`${scriptText}`)
+      const runRemoteCode = new Function(`(async () => {
+        ${scriptText}
+      })()`)
       runRemoteCode()
     } catch (err) {
       console.log('同步的代码执行失败')
@@ -736,3 +742,5 @@ console.__rewrite__ = true;
   }
 }
 new Basic().init()
+
+await __topLevelAwait__()

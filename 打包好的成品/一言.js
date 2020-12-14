@@ -1,5 +1,9 @@
-// @编译时间 1607657381586
+// @编译时间 1607924347523
 const MODULE = module
+let __topLevelAwait__ = () => Promise.resolve()
+function EndAwait(promiseFunc) {
+  __topLevelAwait__ = promiseFunc
+}
 
 // src/lib/constants.ts
 var URLSchemeFrom
@@ -174,7 +178,7 @@ function hash(string) {
 function isLaunchInsideApp() {
   return !config.runsInWidget && args.queryParameters.from !== URLSchemeFrom.WIDGET
 }
-async function showPreviewOptions(widget) {
+async function showPreviewOptions(render) {
   const selectIndex = await showActionSheet({
     title: '预览组件',
     desc: '测试桌面组件在各种尺寸下的显示效果',
@@ -182,18 +186,24 @@ async function showPreviewOptions(widget) {
   })
   switch (selectIndex) {
     case 0:
-      await widget.presentSmall()
+      config.widgetFamily = 'small'
+      await (await render()).presentSmall()
       break
     case 1:
-      await widget.presentMedium()
+      config.widgetFamily = 'medium'
+      await (await render()).presentMedium()
       break
     case 2:
-      await widget.presentLarge()
+      config.widgetFamily = 'large'
+      await (await render()).presentLarge()
       break
     case 3:
-      await widget.presentSmall()
-      await widget.presentMedium()
-      await widget.presentLarge()
+      config.widgetFamily = 'small'
+      await (await render()).presentSmall()
+      config.widgetFamily = 'medium'
+      await (await render()).presentMedium()
+      config.widgetFamily = 'large'
+      await (await render()).presentLarge()
       break
   }
   return selectIndex
@@ -419,7 +429,7 @@ var listWidget = new ListWidget()
 GenrateView.setListWidget(listWidget)
 function h(type, props, ...children) {
   props = props || {}
-  const _children = [].concat(...children)
+  const _children = flatteningArr(children)
   switch (type) {
     case 'wbox':
       return GenrateView.wbox(props, ..._children)
@@ -443,6 +453,13 @@ function h(type, props, ...children) {
       return type instanceof Function ? type({children: _children, ...props}) : null
       break
   }
+}
+function flatteningArr(arr) {
+  return [].concat(
+    ...arr.map(item => {
+      return Array.isArray(item) ? flatteningArr(item) : item
+    }),
+  )
 }
 function getColor(color) {
   return typeof color === 'string' ? new Color(color, 1) : color
@@ -495,10 +512,10 @@ function runOnClick(instance, onClick) {
 // src/scripts/tsx-yiyan.tsx
 var YiyanWidget = class {
   async init() {
-    this.widget = await this.render()
     if (isLaunchInsideApp()) {
-      return await showPreviewOptions(this.widget)
+      return await showPreviewOptions(this.render.bind(this))
     }
+    this.widget = await this.render()
     Script.setWidget(this.widget)
     Script.complete()
   }
@@ -560,7 +577,6 @@ var YiyanWidget = class {
     })
   }
   async menu() {
-    const optionFunc = [this.selectPreviewSize]
     const selectIndex = await showActionSheet({
       title: '菜单',
       itemList: [
@@ -569,34 +585,13 @@ var YiyanWidget = class {
         },
       ],
     })
-    optionFunc[selectIndex].apply(this)
-  }
-  async selectPreviewSize() {
-    const selectIndex = await showActionSheet({
-      title: '选择预览尺寸',
-      itemList: [
-        {
-          text: '小组件',
-        },
-        {
-          text: '中组件',
-        },
-        {
-          text: '大组件',
-        },
-      ],
-    })
     switch (selectIndex) {
       case 0:
-        await this.widget.presentSmall()
-        break
-      case 1:
-        await this.widget.presentMedium()
-        break
-      case 2:
-        await this.widget.presentLarge()
+        await showPreviewOptions(this.render.bind(this))
         break
     }
   }
 }
-new YiyanWidget().init()
+EndAwait(() => new YiyanWidget().init())
+
+await __topLevelAwait__()

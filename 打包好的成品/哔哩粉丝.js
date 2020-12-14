@@ -1,5 +1,9 @@
-// @编译时间 1607657381586
+// @编译时间 1607924347523
 const MODULE = module
+let __topLevelAwait__ = () => Promise.resolve()
+function EndAwait(promiseFunc) {
+  __topLevelAwait__ = promiseFunc
+}
 
 // src/lib/constants.ts
 var URLSchemeFrom
@@ -217,7 +221,7 @@ function hash(string) {
 function isLaunchInsideApp() {
   return !config.runsInWidget && args.queryParameters.from !== URLSchemeFrom.WIDGET
 }
-async function showPreviewOptions(widget) {
+async function showPreviewOptions(render) {
   const selectIndex = await showActionSheet({
     title: '预览组件',
     desc: '测试桌面组件在各种尺寸下的显示效果',
@@ -225,18 +229,24 @@ async function showPreviewOptions(widget) {
   })
   switch (selectIndex) {
     case 0:
-      await widget.presentSmall()
+      config.widgetFamily = 'small'
+      await (await render()).presentSmall()
       break
     case 1:
-      await widget.presentMedium()
+      config.widgetFamily = 'medium'
+      await (await render()).presentMedium()
       break
     case 2:
-      await widget.presentLarge()
+      config.widgetFamily = 'large'
+      await (await render()).presentLarge()
       break
     case 3:
-      await widget.presentSmall()
-      await widget.presentMedium()
-      await widget.presentLarge()
+      config.widgetFamily = 'small'
+      await (await render()).presentSmall()
+      config.widgetFamily = 'medium'
+      await (await render()).presentMedium()
+      config.widgetFamily = 'large'
+      await (await render()).presentLarge()
       break
   }
   return selectIndex
@@ -462,7 +472,7 @@ var listWidget = new ListWidget()
 GenrateView.setListWidget(listWidget)
 function h(type, props, ...children) {
   props = props || {}
-  const _children = [].concat(...children)
+  const _children = flatteningArr(children)
   switch (type) {
     case 'wbox':
       return GenrateView.wbox(props, ..._children)
@@ -486,6 +496,13 @@ function h(type, props, ...children) {
       return type instanceof Function ? type({children: _children, ...props}) : null
       break
   }
+}
+function flatteningArr(arr) {
+  return [].concat(
+    ...arr.map(item => {
+      return Array.isArray(item) ? flatteningArr(item) : item
+    }),
+  )
 }
 function getColor(color) {
   return typeof color === 'string' ? new Color(color, 1) : color
@@ -539,10 +556,10 @@ function runOnClick(instance, onClick) {
 var {setStorage: setStorage2, getStorage: getStorage2} = useStorage('bilibili-fans')
 var BiliFans = class {
   async init() {
-    const widget = await this.render()
     if (isLaunchInsideApp()) {
-      return await this.showMenu(widget)
+      return await this.showMenu()
     }
+    const widget = await this.render()
     Script.setWidget(widget)
     Script.complete()
   }
@@ -619,7 +636,7 @@ var BiliFans = class {
       ),
     )
   }
-  async showMenu(widget) {
+  async showMenu() {
     const selectIndex = await showActionSheet({
       title: '菜单',
       itemList: ['设置 up 主 id', '预览尺寸'],
@@ -639,7 +656,7 @@ var BiliFans = class {
         if (texts && texts[0]) setStorage2('up-id', texts[0])
         break
       case 1:
-        await showPreviewOptions(widget)
+        await showPreviewOptions(this.render.bind(this))
         break
     }
   }
@@ -672,4 +689,6 @@ var BiliFans = class {
     return date.toLocaleTimeString('chinese', {hour12: false})
   }
 }
-new BiliFans().init()
+EndAwait(() => new BiliFans().init())
+
+await __topLevelAwait__()

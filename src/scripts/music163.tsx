@@ -314,4 +314,4 @@ class Music163 {
   }
 }
 
-new Music163().init()
+EndAwait(() => new Music163().init())

@@ -165,7 +165,14 @@ async function compile(options: CompileOptions) {
       banner: `${header}
 // @编译时间 ${Date.now()}
 const MODULE = module;
+let __topLevelAwait__ = () => Promise.resolve();
+function EndAwait(promiseFunc) {
+  __topLevelAwait__ = promiseFunc
+};
     `,
+      footer: `
+await __topLevelAwait__();
+`,
       jsxFactory: 'h',
       jsxFragment: 'Fragment',
       define,

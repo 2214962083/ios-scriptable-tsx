@@ -15,3 +15,9 @@ declare const MODULE: Module
 declare namespace Scriptable {
   class Widget {}
 }
+
+/**
+ * 结尾生成顶部等待（top-level-await）渲染
+ * @param promiseFunc 渲染函数，如: () => render()
+ */
+declare const EndAwait: <T>(promiseFunc: () => Promise<T>) => Promise<T>

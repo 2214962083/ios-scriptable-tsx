@@ -18,7 +18,7 @@ const outputDir = path.resolve(rootPath, './dist')
 const minify = process.env.NODE_ENV === 'production'
 
 /**是否加密代码*/
-const encrypt = process.env.NODE_ENV === 'production'
+const encrypt = false //process.env.NODE_ENV === 'production'
 
 /**往编译后的代码头部插入的代码*/
 const header = `

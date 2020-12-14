@@ -1,5 +1,16 @@
-// @编译时间 1607796001681
+/**
+ * 作者: 小明
+ * 版本: 1.0.0
+ * 更新时间：2020-12-14
+ * github: https://github.com/2214962083/ios-scriptable-tsx
+ */
+
+// @编译时间 1607924347523
 const MODULE = module
+let __topLevelAwait__ = () => Promise.resolve()
+function EndAwait(promiseFunc) {
+  __topLevelAwait__ = promiseFunc
+}
 
 // src/lib/constants.ts
 var URLSchemeFrom
@@ -51,12 +62,12 @@ function setStorageDirectory(dirPath) {
     },
   }
 }
-const setStorage = setStorageDirectory(fm().libraryDirectory()).setStorage
-const getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
-const removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
-const setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
-const getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
-const removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
+var setStorage = setStorageDirectory(fm().libraryDirectory()).setStorage
+var getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
+var removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
+var setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
+var getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
+var removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
 function useStorage(nameSpace) {
   const _nameSpace = nameSpace || `${MODULE.filename}`
   return {
@@ -265,7 +276,7 @@ async function showPreviewOptions(render) {
 }
 
 // src/lib/jsx-runtime.ts
-class GenrateView {
+var GenrateView = class {
   static setListWidget(listWidget2) {
     this.listWidget = listWidget2
   }
@@ -480,7 +491,7 @@ class GenrateView {
     }
   }
 }
-const listWidget = new ListWidget()
+var listWidget = new ListWidget()
 GenrateView.setListWidget(listWidget)
 function h(type, props, ...children) {
   props = props || {}
@@ -565,12 +576,12 @@ function runOnClick(instance, onClick) {
 }
 
 // src/scripts/music163.tsx
-const {setStorage: setStorage2, getStorage: getStorage2} = useStorage('music163-grid')
-const favoriteListId = getStorage2('favoriteListId') || 3136952023
-const likeListId = getStorage2('likeListId') || 310970433
-const cloudListId = getStorage2('cloudListId') || 2463071445
-const textColor = '#ffffff'
-const RowCenter = ({children, ...props}) => {
+var {setStorage: setStorage2, getStorage: getStorage2} = useStorage('music163-grid')
+var favoriteListId = getStorage2('favoriteListId') || 3136952023
+var likeListId = getStorage2('likeListId') || 310970433
+var cloudListId = getStorage2('cloudListId') || 2463071445
+var textColor = '#ffffff'
+var RowCenter = ({children, ...props}) => {
   return /* @__PURE__ */ h(
     'wstack',
     {
@@ -581,7 +592,7 @@ const RowCenter = ({children, ...props}) => {
     /* @__PURE__ */ h('wspacer', null),
   )
 }
-const ColCenter = ({children, ...props}) => {
+var ColCenter = ({children, ...props}) => {
   return /* @__PURE__ */ h(
     'wstack',
     {
@@ -593,7 +604,7 @@ const ColCenter = ({children, ...props}) => {
     /* @__PURE__ */ h('wspacer', null),
   )
 }
-const Center = ({children, ...props}) => {
+var Center = ({children, ...props}) => {
   return /* @__PURE__ */ h(
     RowCenter,
     {
@@ -602,7 +613,7 @@ const Center = ({children, ...props}) => {
     /* @__PURE__ */ h(ColCenter, null, children),
   )
 }
-const Grid = ({...props}) => {
+var Grid = ({...props}) => {
   const {iconName, background, text, href} = props
   return /* @__PURE__ */ h(
     'wstack',
@@ -646,7 +657,7 @@ const Grid = ({...props}) => {
     ),
   )
 }
-class Music163 {
+var Music163 = class {
   async init() {
     if (isLaunchInsideApp()) {
       return await this.showMenu()
@@ -802,4 +813,6 @@ class Music163 {
     return tracks[getRandomInt(0, tracks.length - 1)].al
   }
 }
-new Music163().init()
+EndAwait(() => new Music163().init())
+
+await __topLevelAwait__()

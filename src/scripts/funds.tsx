@@ -228,4 +228,4 @@ class Funds {
   }
 }
 
-new Funds().init()
+EndAwait(() => new Funds().init())
