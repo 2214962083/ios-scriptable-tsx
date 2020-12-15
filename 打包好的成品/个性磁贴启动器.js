@@ -68,20 +68,6 @@ var removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).
 var setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
 var getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
 var removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
-function useStorage(nameSpace) {
-  const _nameSpace = nameSpace || `${MODULE.filename}`
-  return {
-    setStorage(key, value) {
-      setStorage(`${_nameSpace}${key}`, value)
-    },
-    getStorage(key) {
-      return getStorage(`${_nameSpace}${key}`)
-    },
-    removeStorage(key) {
-      removeStorage(`${_nameSpace}${key}`)
-    },
-  }
-}
 async function request(args2) {
   const {
     url,
@@ -154,35 +140,6 @@ async function showActionSheet(args2) {
   const tapIndex = await alert.presentSheet()
   return tapIndex
 }
-async function showModal(args2) {
-  const {title, content, showCancel = true, cancelText = '取消', confirmText = '确定', inputItems = []} = args2
-  const alert = new Alert()
-  title && (alert.title = title)
-  content && (alert.message = content)
-  showCancel && cancelText && alert.addCancelAction(cancelText)
-  alert.addAction(confirmText)
-  for (const input of inputItems) {
-    const {type = 'text', text = '', placeholder = ''} = input
-    if (type === 'password') {
-      alert.addSecureTextField(placeholder, text)
-    } else {
-      alert.addTextField(placeholder, text)
-    }
-  }
-  const tapIndex = await alert.presentAlert()
-  const texts = inputItems.map((item, index) => alert.textFieldValue(index))
-  return tapIndex === -1
-    ? {
-        cancel: true,
-        confirm: false,
-        texts,
-      }
-    : {
-        cancel: false,
-        confirm: true,
-        texts,
-      }
-}
 async function showNotification(args2) {
   const {title, subtitle = '', body = '', openURL, sound, ...others} = args2
   let notification = new Notification()
@@ -235,11 +192,6 @@ function hash(string) {
     hash2 |= 0
   }
   return `hash_${hash2}`
-}
-function getRandomInt(min, max) {
-  min = Math.ceil(min)
-  max = Math.floor(max)
-  return Math.floor(Math.random() * (max - min + 1)) + min
 }
 function isLaunchInsideApp() {
   return !config.runsInWidget && args.queryParameters.from !== URLSchemeFrom.WIDGET
@@ -714,45 +666,69 @@ var Col = ({children, ...props}) => {
   )
 }
 
-// src/scripts/music163.tsx
-var {setStorage: setStorage2, getStorage: getStorage2} = useStorage('music163-grid')
-var favoriteListId = getStorage2('favoriteListId') || 3136952023
-var likeListId = getStorage2('likeListId') || 310970433
-var cloudListId = getStorage2('cloudListId') || 2463071445
+// src/scripts/launcher.tsx
 var textColor = '#ffffff'
+var colors = {
+  red: '#e54d42',
+  orange: '#f37b1d',
+  yellow: '#fbbd08',
+  olive: '#8dc63f',
+  green: '#39b54a',
+  cyan: '#1cbbb4',
+  blue: '#0081ff',
+  purple: '#6739b6',
+  mauve: '#9c26b0',
+  pink: '#e03997',
+  brown: '#a5673f',
+  grey: '#8799a3',
+  black: '#000000',
+}
 var Grid = ({...props}) => {
   const {iconName, background, text, href} = props
+  const bgColors = Object.values(colors)
+  const bgRandom = Math.floor(Math.random() * bgColors.length)
+  const bgColor = bgColors[bgRandom]
   return /* @__PURE__ */ h(
     'wstack',
     {
-      background,
+      background: background || bgColor,
       href,
+      borderColor: '#00000088',
+      borderWidth: 1,
     },
     /* @__PURE__ */ h(
       Col,
       {
-        background: '#00000033',
+        background: /^\#[\d]+$/.test(String(background)) ? '#00000000' : '#00000033',
         alignItems: 'center',
         justifyContent: 'center',
       },
-      /* @__PURE__ */ h('wimage', {
-        src: iconName,
-        filter: textColor,
-        width: 20,
-        height: 20,
+      iconName &&
+        /* @__PURE__ */ h('wimage', {
+          src: iconName,
+          filter: textColor,
+          width: 20,
+          height: 20,
+        }),
+      /* @__PURE__ */ h('wspacer', {
+        length: 10,
       }),
-      /* @__PURE__ */ h(
-        'wtext',
-        {
-          font: new Font('heavymenlo', 12.5),
-          textColor,
-        },
-        text,
-      ),
+      (!iconName || text) &&
+        /* @__PURE__ */ h(
+          'wtext',
+          {
+            font: new Font('heavymenlo', 12.5),
+            textColor,
+          },
+          text || '',
+        ),
     ),
   )
 }
-var Music163 = class {
+var Launcher = class {
+  constructor(config2) {
+    this.config = config2
+  }
   async init() {
     if (isLaunchInsideApp()) {
       return await this.showMenu()
@@ -765,24 +741,81 @@ var Music163 = class {
     if (isLaunchInsideApp()) {
       await showNotification({title: '稍等片刻', body: '小部件渲染中...', sound: 'alert'})
     }
-    const favoriteImageUrl = ((await this.getRandomMusic(favoriteListId)) || {}).picUrl
-    const likeImageUrl = ((await this.getRandomMusic(likeListId)) || {}).picUrl
-    const cloudImageUrl = ((await this.getRandomMusic(cloudListId)) || {}).picUrl
-    const updateInterval = 3 * 60 * 60 * 1e3
+    const updateInterval = 24 * 60 * 60 * 1e3
+    const size = config.widgetFamily
     return /* @__PURE__ */ h(
       'wbox',
       {
         padding: [0, 0, 0, 0],
         updateDate: new Date(Date.now() + updateInterval),
+        href: size === 'small' ? this.config[0].href : '',
+      },
+      size === 'small' && this.renderSmall(),
+      size === 'medium' && this.renderMedium(),
+      size === 'large' && this.renderLarge(),
+    )
+  }
+  renderSmall() {
+    return /* @__PURE__ */ h(
+      'wstack',
+      {
+        flexDirection: 'column',
       },
       /* @__PURE__ */ h(
         'wstack',
         null,
         /* @__PURE__ */ h(Grid, {
-          iconName: 'heart.fill',
-          text: 'Favorite',
-          background: favoriteImageUrl || '#d65151',
-          href: 'orpheus://playlist/' + favoriteListId + '?autoplay=1',
+          ...this.config[0],
+        }),
+      ),
+    )
+  }
+  renderMedium() {
+    return /* @__PURE__ */ h(
+      'wstack',
+      null,
+      /* @__PURE__ */ h(Grid, {
+        ...this.config[0],
+      }),
+      /* @__PURE__ */ h(
+        'wstack',
+        {
+          flexDirection: 'column',
+        },
+        /* @__PURE__ */ h(
+          'wstack',
+          null,
+          /* @__PURE__ */ h(Grid, {
+            ...this.config[1],
+          }),
+          /* @__PURE__ */ h(Grid, {
+            ...this.config[2],
+          }),
+        ),
+        /* @__PURE__ */ h(
+          'wstack',
+          null,
+          /* @__PURE__ */ h(Grid, {
+            ...this.config[3],
+          }),
+          /* @__PURE__ */ h(Grid, {
+            ...this.config[4],
+          }),
+        ),
+      ),
+    )
+  }
+  renderLarge() {
+    return /* @__PURE__ */ h(
+      'wstack',
+      {
+        flexDirection: 'column',
+      },
+      /* @__PURE__ */ h(
+        'wstack',
+        null,
+        /* @__PURE__ */ h(Grid, {
+          ...this.config[0],
         }),
         /* @__PURE__ */ h(
           'wstack',
@@ -793,32 +826,62 @@ var Music163 = class {
             'wstack',
             null,
             /* @__PURE__ */ h(Grid, {
-              iconName: 'star.fill',
-              text: 'Like',
-              background: likeImageUrl || '#5ebb07',
-              href: 'orpheus://playlist/' + likeListId + '?autoplay=1',
+              ...this.config[1],
             }),
             /* @__PURE__ */ h(Grid, {
-              iconName: 'person.icloud.fill',
-              text: 'Cloud',
-              background: cloudImageUrl || '#0fb196',
-              href: 'orpheus://playlist/' + cloudListId + '?autoplay=1',
+              ...this.config[2],
             }),
           ),
           /* @__PURE__ */ h(
             'wstack',
             null,
             /* @__PURE__ */ h(Grid, {
-              iconName: 'calendar',
-              text: 'Daily',
-              background: '#fe9500',
-              href: 'orpheus://songrcmd?autoplay=1',
+              ...this.config[3],
             }),
             /* @__PURE__ */ h(Grid, {
-              iconName: 'radio.fill',
-              text: 'FM',
-              background: '#000000',
-              href: 'orpheuswidget://radio',
+              ...this.config[4],
+            }),
+          ),
+        ),
+      ),
+      /* @__PURE__ */ h(
+        'wstack',
+        null,
+        /* @__PURE__ */ h(
+          'wstack',
+          {
+            flexDirection: 'column',
+          },
+          /* @__PURE__ */ h(
+            'wstack',
+            null,
+            /* @__PURE__ */ h(Grid, {
+              ...this.config[5],
+            }),
+            /* @__PURE__ */ h(Grid, {
+              ...this.config[6],
+            }),
+          ),
+          /* @__PURE__ */ h(Grid, {
+            ...this.config[7],
+          }),
+        ),
+        /* @__PURE__ */ h(
+          'wstack',
+          {
+            flexDirection: 'column',
+          },
+          /* @__PURE__ */ h(Grid, {
+            ...this.config[8],
+          }),
+          /* @__PURE__ */ h(
+            'wstack',
+            null,
+            /* @__PURE__ */ h(Grid, {
+              ...this.config[9],
+            }),
+            /* @__PURE__ */ h(Grid, {
+              ...this.config[10],
             }),
           ),
         ),
@@ -828,86 +891,83 @@ var Music163 = class {
   async showMenu() {
     const selectIndex = await showActionSheet({
       title: '菜单',
-      itemList: ['自定义歌单', '预览组件'],
+      itemList: ['预览组件'],
     })
-    let musicListId
     switch (selectIndex) {
       case 0:
-        const {texts} = await showModal({
-          title: '设置歌单',
-          content: '去网易云歌单 -> 分享 -> 复制链接， 然后粘贴到此',
-          inputItems: [
-            {
-              placeholder: '这里填 Favorite 的歌单链接',
-            },
-            {
-              placeholder: '这里填 Like 的歌单链接',
-            },
-            {
-              placeholder: '这里填 Cloud 的歌单链接',
-            },
-          ],
-        })
-        if (texts[0]) {
-          musicListId = this.getListIdFromLink(texts[0])
-          musicListId && setStorage2('favoriteListId', musicListId)
-          !musicListId &&
-            (await showNotification({
-              title: '歌单链接错误',
-              body: 'Favorite 的歌单链接检测不到歌单 id ',
-              sound: 'failure',
-            }))
-        }
-        if (texts[1]) {
-          musicListId = this.getListIdFromLink(texts[1])
-          musicListId && setStorage2('likeListId', musicListId)
-          !musicListId &&
-            (await showNotification({title: '歌单链接错误', body: 'Like 的歌单链接检测不到歌单 id ', sound: 'failure'}))
-        }
-        if (texts[2]) {
-          musicListId = this.getListIdFromLink(texts[2])
-          musicListId && setStorage2('cloudListId', musicListId)
-          !musicListId &&
-            (await showNotification({
-              title: '歌单链接错误',
-              body: 'cloud 的歌单链接检测不到歌单 id ',
-              sound: 'failure',
-            }))
-        }
-        await showNotification({title: '设置完成', sound: 'default'})
-        break
-      case 1:
         await showPreviewOptions(this.render.bind(this))
         break
     }
   }
-  getListIdFromLink(musicListLink) {
-    return Number((musicListLink.match(/\&id\=([\d]+)/) || [])[1]) || null
-  }
-  async getMusicListData(musicListId) {
-    let tracks = []
-    try {
-      tracks =
-        (
-          await request({
-            url: `https://api.imjad.cn/cloudmusic/?type=playlist&id=${musicListId}`,
-            dataType: 'json',
-          })
-        ).data?.playlist.tracks || []
-    } catch (err) {
-      console.warn(`获取歌单数据失败：${err}`)
-    }
-    return tracks
-  }
-  async getRandomMusic(musicListId) {
-    const tracks = await this.getMusicListData(musicListId)
-    if (tracks.length <= 0) {
-      await showNotification({title: `歌单ID${musicListId}获取出错`, body: '该歌单没有歌曲或获取歌曲失败'})
-      return null
-    }
-    return tracks[getRandomInt(0, tracks.length - 1)].al
-  }
 }
-EndAwait(() => new Music163().init())
+var luancherConfig = [
+  {
+    href: 'weixin://scanqrcode',
+    background: colors.green,
+    iconName: 'barcode.viewfinder',
+    text: '扫一扫',
+  },
+  {
+    href: 'alipayqr://platformapi/startapp?saId=10000007',
+    background: colors.blue,
+    iconName: 'barcode.viewfinder',
+    text: '扫一扫',
+  },
+  {
+    href: 'weixin://',
+    background: colors.green,
+    iconName: 'message.fill',
+    text: '微信',
+  },
+  {
+    href: 'orpheuswidget://',
+    background: colors.red,
+    iconName: 'music.note',
+    text: '网易云',
+  },
+  {
+    href: 'alipay://platformapi/startapp?appId=20000056',
+    background: colors.blue,
+    iconName: 'qrcode',
+    text: '付款码',
+  },
+  {
+    href: 'mqq://',
+    background: colors.blue,
+    iconName: 'paperplane.fill',
+    text: 'QQ',
+  },
+  {
+    href: 'weibo://',
+    background: colors.red,
+    iconName: 'eye',
+    text: '微博',
+  },
+  {
+    href: 'bilibili://',
+    background: colors.pink,
+    iconName: 'tv',
+    text: '哔哩哔哩',
+  },
+  {
+    href: 'zhihu://',
+    background: colors.blue,
+    iconName: 'questionmark',
+    text: '知乎',
+  },
+  {
+    href: 'iqiyi://',
+    background: colors.green,
+    iconName: 'film',
+    text: '爱奇艺',
+  },
+  {
+    href: 'tencentlaunch1104466820://',
+    background: colors.orange,
+    iconName: 'gamecontroller',
+    text: '王者',
+  },
+]
+EndAwait(() => new Launcher(luancherConfig).init())
 
 await __topLevelAwait__()

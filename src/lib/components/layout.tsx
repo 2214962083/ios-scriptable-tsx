@@ -2,8 +2,8 @@ import {WstackProps} from '@app/types/widget'
 import {FC} from 'react'
 
 interface StackProps extends WstackProps {
-  justifyContent: 'flex-start' | 'center' | 'flex-end'
-  alignItems: 'flex-start' | 'center' | 'flex-end'
+  justifyContent?: 'flex-start' | 'center' | 'flex-end'
+  alignItems?: 'flex-start' | 'center' | 'flex-end'
 }
 export const Stack: FC<StackProps> = ({children, ...props}) => {
   const {justifyContent = 'flex-start', alignItems = 'flex-start', ...wstackProps} = props
@@ -65,17 +65,24 @@ export const Stack: FC<StackProps> = ({children, ...props}) => {
       </wstack>
     )
   }
-  const JustifyContentMap: Record<StackProps['justifyContent'], FC<WstackProps>> = {
+  const JustifyContentMap: Record<NonNullable<StackProps['justifyContent']>, FC<WstackProps>> = {
     'flex-start': JustifyContentFlexStart,
     center: JustifyContentCenter,
     'flex-end': JustifyContentFlexEnd,
   }
-  const AlignItemsMap: Record<StackProps['alignItems'], FC<WstackProps>> = {
+  const AlignItemsMap: Record<NonNullable<StackProps['alignItems']>, FC<WstackProps>> = {
     'flex-start': AlignItemsFlexStart,
     center: AlignItemsCenter,
     'flex-end': AlignItemsFlexEnd,
   }
-  return h(JustifyContentMap[justifyContent], {...wstackProps}, h(AlignItemsMap[alignItems], {flexDirection}, children))
+
+  const _children = Array.isArray(children)
+    ? children.map(child => {
+        return h(AlignItemsMap[alignItems], {flexDirection}, child)
+      })
+    : h(AlignItemsMap[alignItems], {flexDirection}, children)
+
+  return h(JustifyContentMap[justifyContent], {...wstackProps}, _children)
 }
 
 export const Row: FC<StackProps> = ({children, ...props}) => {
