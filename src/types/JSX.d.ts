@@ -1,6 +1,5 @@
-import * as JSX from '../lib/jsx-runtime'
-
+import React from 'react'
 declare global {
-  const h: typeof JSX.h
-  const Fragment: typeof JSX.Fragment
+  const h: typeof React.createElement
+  const Fragment: typeof React.Fragment
 }

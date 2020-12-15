@@ -12,6 +12,7 @@ import {
   showPreviewOptions,
   useStorage,
 } from '@app/lib/help'
+import {Col} from '@app/lib/components'
 import {WstackProps} from '@app/types/widget'
 import {FC} from 'react'
 
@@ -94,37 +95,6 @@ const cloudListId = getStorage<number>('cloudListId') || 2463071445
 // 文字颜色
 const textColor = '#ffffff'
 
-/**横向居中组件*/
-const RowCenter: FC<WstackProps> = ({children, ...props}) => {
-  return (
-    <wstack {...props}>
-      <wspacer></wspacer>
-      {children}
-      <wspacer></wspacer>
-    </wstack>
-  )
-}
-
-/**纵向居中组件*/
-const ColCenter: FC<WstackProps> = ({children, ...props}) => {
-  return (
-    <wstack {...props} flexDirection="column">
-      <wspacer></wspacer>
-      {children}
-      <wspacer></wspacer>
-    </wstack>
-  )
-}
-
-/**纵横都居中的组件*/
-const Center: FC<WstackProps> = ({children, ...props}) => {
-  return (
-    <RowCenter {...props}>
-      <ColCenter>{children}</ColCenter>
-    </RowCenter>
-  )
-}
-
 /**格子组件参数*/
 interface GridProps {
   /** icon 名字*/
@@ -145,18 +115,12 @@ const Grid: FC<GridProps> = ({...props}) => {
   const {iconName, background, text, href} = props
   return (
     <wstack background={background} href={href}>
-      <Center background="#00000033">
-        <wstack flexDirection="column">
-          <RowCenter>
-            <wimage src={iconName} filter={textColor} width={20} height={20}></wimage>
-          </RowCenter>
-          <RowCenter>
-            <wtext font={new Font('heavymenlo', 12.5)} textColor={textColor}>
-              {text}
-            </wtext>
-          </RowCenter>
-        </wstack>
-      </Center>
+      <Col background="#00000033" alignItems="center" justifyContent="center">
+        <wimage src={iconName} filter={textColor} width={20} height={20}></wimage>
+        <wtext font={new Font('heavymenlo', 12.5)} textColor={textColor}>
+          {text}
+        </wtext>
+      </Col>
     </wstack>
   )
 }
