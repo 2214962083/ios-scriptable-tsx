@@ -1,11 +1,11 @@
 /**
  * 作者: 小明
  * 版本: 1.0.0
- * 更新时间：2020-12-15
+ * 更新时间：2020-12-16
  * github: https://github.com/2214962083/ios-scriptable-tsx
  */
 
-// @编译时间 1608026117114
+// @编译时间 1608088591895
 const MODULE = module
 let __topLevelAwait__ = () => Promise.resolve()
 function EndAwait(promiseFunc) {
@@ -68,6 +68,20 @@ var removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).
 var setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
 var getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
 var removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
+function useStorage(nameSpace) {
+  const _nameSpace = nameSpace || `${MODULE.filename}`
+  return {
+    setStorage(key, value) {
+      setStorage(`${_nameSpace}${key}`, value)
+    },
+    getStorage(key) {
+      return getStorage(`${_nameSpace}${key}`)
+    },
+    removeStorage(key) {
+      removeStorage(`${_nameSpace}${key}`)
+    },
+  }
+}
 async function request(args2) {
   const {
     url,
@@ -139,6 +153,35 @@ async function showActionSheet(args2) {
   alert.addCancelAction(cancelText)
   const tapIndex = await alert.presentSheet()
   return tapIndex
+}
+async function showModal(args2) {
+  const {title, content, showCancel = true, cancelText = '取消', confirmText = '确定', inputItems = []} = args2
+  const alert = new Alert()
+  title && (alert.title = title)
+  content && (alert.message = content)
+  showCancel && cancelText && alert.addCancelAction(cancelText)
+  alert.addAction(confirmText)
+  for (const input of inputItems) {
+    const {type = 'text', text = '', placeholder = ''} = input
+    if (type === 'password') {
+      alert.addSecureTextField(placeholder, text)
+    } else {
+      alert.addTextField(placeholder, text)
+    }
+  }
+  const tapIndex = await alert.presentAlert()
+  const texts = inputItems.map((item, index) => alert.textFieldValue(index))
+  return tapIndex === -1
+    ? {
+        cancel: true,
+        confirm: false,
+        texts,
+      }
+    : {
+        cancel: false,
+        confirm: true,
+        texts,
+      }
 }
 async function showNotification(args2) {
   const {title, subtitle = '', body = '', openURL, sound, ...others} = args2
@@ -225,6 +268,189 @@ async function showPreviewOptions(render) {
       break
   }
   return selectIndex
+}
+async function setTransparentBackground(tips) {
+  const phoneSizea = {
+    2778: {
+      small: 510,
+      medium: 1092,
+      large: 1146,
+      left: 96,
+      right: 678,
+      top: 246,
+      middle: 882,
+      bottom: 1518,
+    },
+    2532: {
+      small: 474,
+      medium: 1014,
+      large: 1062,
+      left: 78,
+      right: 618,
+      top: 231,
+      middle: 819,
+      bottom: 1407,
+    },
+    2688: {
+      small: 507,
+      medium: 1080,
+      large: 1137,
+      left: 81,
+      right: 654,
+      top: 228,
+      middle: 858,
+      bottom: 1488,
+    },
+    1792: {
+      small: 338,
+      medium: 720,
+      large: 758,
+      left: 54,
+      right: 436,
+      top: 160,
+      middle: 580,
+      bottom: 1e3,
+    },
+    2436: {
+      small: 465,
+      medium: 987,
+      large: 1035,
+      left: 69,
+      right: 591,
+      top: 213,
+      middle: 783,
+      bottom: 1353,
+    },
+    2208: {
+      small: 471,
+      medium: 1044,
+      large: 1071,
+      left: 99,
+      right: 672,
+      top: 114,
+      middle: 696,
+      bottom: 1278,
+    },
+    1334: {
+      small: 296,
+      medium: 642,
+      large: 648,
+      left: 54,
+      right: 400,
+      top: 60,
+      middle: 412,
+      bottom: 764,
+    },
+    1136: {
+      small: 282,
+      medium: 584,
+      large: 622,
+      left: 30,
+      right: 332,
+      top: 59,
+      middle: 399,
+      bottom: 399,
+    },
+    1624: {
+      small: 310,
+      medium: 658,
+      large: 690,
+      left: 46,
+      right: 394,
+      top: 142,
+      middle: 522,
+      bottom: 902,
+    },
+    2001: {
+      small: 444,
+      medium: 963,
+      large: 972,
+      left: 81,
+      right: 600,
+      top: 90,
+      middle: 618,
+      bottom: 1146,
+    },
+  }
+  const cropImage = (img2, rect) => {
+    const draw = new DrawContext()
+    draw.size = new Size(rect.width, rect.height)
+    draw.drawImageAtPoint(img2, new Point(-rect.x, -rect.y))
+    return draw.getImage()
+  }
+  const shouldExit = await showModal({
+    content: tips || '开始之前，请先前往桌面,截取空白界面的截图。然后回来继续',
+    cancelText: '我已截图',
+    confirmText: '前去截图 >',
+  })
+  if (!shouldExit.cancel) return
+  const img = await Photos.fromLibrary()
+  const imgHeight = img.size.height
+  const phone = phoneSizea[imgHeight]
+  if (!phone) {
+    const help3 = await showModal({
+      content: '好像您选择的照片不是正确的截图，或者您的机型我们暂时不支持。点击确定前往社区讨论',
+      confirmText: '帮助',
+      cancelText: '取消',
+    })
+    if (help3.confirm) Safari.openInApp('https://support.qq.com/products/287371', false)
+    return
+  }
+  const sizes = ['小尺寸', '中尺寸', '大尺寸']
+  const sizeIndex = await showActionSheet({
+    title: '你准备用哪个尺寸',
+    itemList: sizes,
+  })
+  const widgetSize = sizes[sizeIndex]
+  const selectLocation = positions2 =>
+    showActionSheet({
+      title: '你准备把组件放桌面哪里？',
+      desc:
+        imgHeight == 1136
+          ? ' （备注：当前设备只支持两行小组件，所以下边选项中的「中间」和「底部」的选项是一致的）'
+          : '',
+      itemList: positions2,
+    })
+  const crop = {w: 0, h: 0, x: 0, y: 0}
+  let positions
+  let _positions
+  let positionIndex
+  let keys
+  let key
+  switch (widgetSize) {
+    case '小尺寸':
+      crop.w = phone.small
+      crop.h = phone.small
+      positions = ['左上角', '右上角', '中间左', '中间右', '左下角', '右下角']
+      _positions = ['top left', 'top right', 'middle left', 'middle right', 'bottom left', 'bottom right']
+      positionIndex = await selectLocation(positions)
+      keys = _positions[positionIndex].split(' ')
+      crop.y = phone[keys[0]]
+      crop.x = phone[keys[1]]
+      break
+    case '中尺寸':
+      crop.w = phone.medium
+      crop.h = phone.small
+      crop.x = phone.left
+      positions = ['顶部', '中间', '底部']
+      _positions = ['top', 'middle', 'bottom']
+      positionIndex = await selectLocation(positions)
+      key = _positions[positionIndex]
+      crop.y = phone[key]
+      break
+    case '大尺寸':
+      crop.w = phone.medium
+      crop.h = phone.large
+      crop.x = phone.left
+      positions = ['顶部', '底部']
+      _positions = ['top', 'middle']
+      positionIndex = await selectLocation(positions)
+      key = _positions[positionIndex]
+      crop.y = phone[key]
+      break
+  }
+  const imgCrop = cropImage(img, new Rect(crop.x, crop.y, crop.w, crop.h))
+  return imgCrop
 }
 
 // src/lib/jsx-runtime.ts
@@ -667,7 +893,11 @@ var Col = ({children, ...props}) => {
 }
 
 // src/scripts/launcher.tsx
-var textColor = '#ffffff'
+var {setStorage: setStorage2, getStorage: getStorage2} = useStorage('luancher-xiaoming')
+var textColor = getStorage2('textColor') || '#ffffff'
+var gridColor = getStorage2('gridColor')
+var boxBg = getStorage2('boxBg') || '#ffffff'
+var transparentBg = getStorage2('transparentBg') || '#ffffff'
 var colors = {
   red: '#e54d42',
   orange: '#f37b1d',
@@ -691,7 +921,7 @@ var Grid = ({...props}) => {
   return /* @__PURE__ */ h(
     'wstack',
     {
-      background: background || bgColor,
+      background: gridColor || background || bgColor,
       href,
       borderColor: '#00000088',
       borderWidth: 1,
@@ -699,7 +929,7 @@ var Grid = ({...props}) => {
     /* @__PURE__ */ h(
       Col,
       {
-        background: /^\#[\d]+$/.test(String(background)) ? '#00000000' : '#00000033',
+        background: /^\#[\d\w]+$/.test(String(background)) || gridColor ? '#00000000' : '#00000055',
         alignItems: 'center',
         justifyContent: 'center',
       },
@@ -749,6 +979,7 @@ var Launcher = class {
         padding: [0, 0, 0, 0],
         updateDate: new Date(Date.now() + updateInterval),
         href: size === 'small' ? this.config[0].href : '',
+        background: boxBg.match('透明背景') ? transparentBg : boxBg,
       },
       size === 'small' && this.renderSmall(),
       size === 'medium' && this.renderMedium(),
@@ -891,10 +1122,44 @@ var Launcher = class {
   async showMenu() {
     const selectIndex = await showActionSheet({
       title: '菜单',
-      itemList: ['预览组件'],
+      itemList: ['设置全局背景和颜色', '设置透明背景', '预览组件'],
     })
     switch (selectIndex) {
       case 0:
+        const {texts, cancel} = await showModal({
+          title: '设置全局背景和颜色',
+          content:
+            '此处不能修改单个格子的风格，只能统一覆盖，如果为空，则还原默认，只有在设置格子半透明下（如#00000055）才能看到背景',
+          inputItems: [
+            {
+              text: getStorage2('boxBg') || '',
+              placeholder: '这里填全局背景，可以是颜色、图片链接',
+            },
+            {
+              text: getStorage2('gridColor') || '',
+              placeholder: '这里填所有格子颜色',
+            },
+            {
+              text: getStorage2('textColor') || '',
+              placeholder: '这里填文字颜色',
+            },
+          ],
+        })
+        if (cancel) return
+        setStorage2('boxBg', texts[0])
+        setStorage2('gridColor', texts[1])
+        setStorage2('textColor', texts[2])
+        await showNotification({title: '设置完成', sound: 'default'})
+        break
+      case 1:
+        const img = (await setTransparentBackground()) || null
+        if (img) {
+          setStorage2('transparentBg', img)
+          setStorage2('boxBg', '透明背景')
+          await showNotification({title: '设置透明背景成功', sound: 'default'})
+        }
+        break
+      case 2:
         await showPreviewOptions(this.render.bind(this))
         break
     }
@@ -905,13 +1170,13 @@ var luancherConfig = [
     href: 'weixin://scanqrcode',
     background: colors.green,
     iconName: 'barcode.viewfinder',
-    text: '扫一扫',
+    text: '微信扫一扫',
   },
   {
     href: 'alipayqr://platformapi/startapp?saId=10000007',
     background: colors.blue,
     iconName: 'barcode.viewfinder',
-    text: '扫一扫',
+    text: '支付宝',
   },
   {
     href: 'weixin://',
@@ -938,7 +1203,7 @@ var luancherConfig = [
     text: 'QQ',
   },
   {
-    href: 'weibo://',
+    href: 'sinaweibo://',
     background: colors.red,
     iconName: 'eye',
     text: '微博',
@@ -951,7 +1216,7 @@ var luancherConfig = [
   },
   {
     href: 'zhihu://',
-    background: colors.blue,
+    background: `https://bing.ioliu.cn/v1/rand?w=600&h=200&timestamp=${Date.now()}`,
     iconName: 'questionmark',
     text: '知乎',
   },

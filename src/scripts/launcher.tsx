@@ -2,13 +2,32 @@
  * 个性磁铁小部件
  */
 
-import {isLaunchInsideApp, showActionSheet, showNotification, showPreviewOptions} from '@app/lib/help'
+import {
+  isLaunchInsideApp,
+  setTransparentBackground,
+  showActionSheet,
+  showModal,
+  showNotification,
+  showPreviewOptions,
+  useStorage,
+} from '@app/lib/help'
 import {Col} from '@app/lib/components'
 import {WstackProps} from '@app/types/widget'
 import {FC} from 'react'
 
-// 文字颜色
-const textColor = '#ffffff'
+const {setStorage, getStorage} = useStorage('luancher-xiaoming')
+
+/**文字颜色*/
+const textColor = getStorage<string>('textColor') || '#ffffff'
+
+/**所有格子统一颜色*/
+const gridColor: string | null = getStorage<string>('gridColor')
+
+/**背景颜色或背景图链接*/
+const boxBg = getStorage<string>('boxBg') || '#ffffff'
+
+/**透明背景*/
+const transparentBg: Image | string = getStorage<Image>('transparentBg') || '#ffffff'
 
 // 好看的颜色
 const colors = {
@@ -49,9 +68,9 @@ const Grid: FC<GridProps> = ({...props}) => {
   const bgRandom = Math.floor(Math.random() * bgColors.length)
   const bgColor = bgColors[bgRandom]
   return (
-    <wstack background={background || bgColor} href={href} borderColor="#00000088" borderWidth={1}>
+    <wstack background={gridColor || background || bgColor} href={href} borderColor="#00000088" borderWidth={1}>
       <Col
-        background={/^\#[\d]+$/.test(String(background)) ? '#00000000' : '#00000033'}
+        background={/^\#[\d\w]+$/.test(String(background)) || gridColor ? '#00000000' : '#00000055'}
         alignItems="center"
         justifyContent="center"
       >
@@ -95,6 +114,7 @@ class Launcher {
         padding={[0, 0, 0, 0]}
         updateDate={new Date(Date.now() + updateInterval)}
         href={size === 'small' ? this.config[0].href : ''}
+        background={boxBg.match('透明背景') ? transparentBg : boxBg}
       >
         {size === 'small' && this.renderSmall()}
         {size === 'medium' && this.renderMedium()}
@@ -176,10 +196,44 @@ class Launcher {
   async showMenu() {
     const selectIndex = await showActionSheet({
       title: '菜单',
-      itemList: ['预览组件'],
+      itemList: ['设置全局背景和颜色', '设置透明背景', '预览组件'],
     })
     switch (selectIndex) {
       case 0:
+        const {texts, cancel} = await showModal({
+          title: '设置全局背景和颜色',
+          content:
+            '此处不能修改单个格子的风格，只能统一覆盖，如果为空，则还原默认，只有在设置格子半透明下（如#00000055）才能看到背景',
+          inputItems: [
+            {
+              text: getStorage<string>('boxBg') || '',
+              placeholder: '这里填全局背景，可以是颜色、图片链接',
+            },
+            {
+              text: getStorage<string>('gridColor') || '',
+              placeholder: '这里填所有格子颜色',
+            },
+            {
+              text: getStorage<string>('textColor') || '',
+              placeholder: '这里填文字颜色',
+            },
+          ],
+        })
+        if (cancel) return
+        setStorage('boxBg', texts[0])
+        setStorage('gridColor', texts[1])
+        setStorage('textColor', texts[2])
+        await showNotification({title: '设置完成', sound: 'default'})
+        break
+      case 1:
+        const img: Image | null = (await setTransparentBackground()) || null
+        if (img) {
+          setStorage('transparentBg', img)
+          setStorage('boxBg', '透明背景')
+          await showNotification({title: '设置透明背景成功', sound: 'default'})
+        }
+        break
+      case 2:
         await showPreviewOptions(this.render.bind(this))
         break
     }
@@ -191,13 +245,13 @@ const luancherConfig: GridProps[] = [
     href: 'weixin://scanqrcode',
     background: colors.green,
     iconName: 'barcode.viewfinder',
-    text: '扫一扫',
+    text: '微信扫一扫',
   },
   {
     href: 'alipayqr://platformapi/startapp?saId=10000007',
     background: colors.blue,
     iconName: 'barcode.viewfinder',
-    text: '扫一扫',
+    text: '支付宝',
   },
   {
     href: 'weixin://',
@@ -224,7 +278,7 @@ const luancherConfig: GridProps[] = [
     text: 'QQ',
   },
   {
-    href: 'weibo://',
+    href: 'sinaweibo://',
     background: colors.red,
     iconName: 'eye',
     text: '微博',
@@ -237,7 +291,8 @@ const luancherConfig: GridProps[] = [
   },
   {
     href: 'zhihu://',
-    background: colors.blue,
+    //background: colors.blue,
+    background: `https://bing.ioliu.cn/v1/rand?w=600&h=200&timestamp=${Date.now()}`,
     iconName: 'questionmark',
     text: '知乎',
   },
