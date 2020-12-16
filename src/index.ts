@@ -1,1 +1,1 @@
-import './scripts/newsTop.tsx'
+import './scripts/helloWorld.tsx'
