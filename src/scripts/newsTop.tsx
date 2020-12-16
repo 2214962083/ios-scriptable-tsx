@@ -11,8 +11,6 @@ import {
   showPreviewOptions,
   useStorage,
 } from '@app/lib/help'
-import {Col} from '@app/lib/components'
-import {WstackProps} from '@app/types/widget'
 import {FC} from 'react'
 
 /**榜单信息*/
@@ -178,7 +176,7 @@ const topList: TopInfo[] = [
 const {setStorage, getStorage} = useStorage('newsTop-xiaoming')
 
 /**文字颜色*/
-const textColor = getStorage<string>('textColor') || '#222222'
+const textColor = getStorage<string>('textColor') || '#000000'
 
 /**透明背景*/
 const transparentBg: Image | string = getStorage<Image>('transparentBg') || '#ffffff'
@@ -211,13 +209,17 @@ const colors = {
 const Article: FC<{article: ArticleInfo; sort: number}> = ({article, sort}) => {
   return (
     <>
-      <wspacer length={5}></wspacer>
+      {sort > 1 && <wspacer length={8}></wspacer>}
       <wstack verticalAlign="center" href={article.href}>
-        <wtext maxLine={1} font={Font.lightSystemFont(14)}>
-          {sort}、{article.title}
+        <wtext font={Font.heavySystemFont(14)} textColor={textColor}>
+          {sort}
+        </wtext>
+        <wspacer length={8}></wspacer>
+        <wtext maxLine={1} font={Font.lightSystemFont(14)} textColor={textColor}>
+          {article.title}
         </wtext>
         <wspacer></wspacer>
-        <wtext maxLine={1} font={Font.lightSystemFont(12)} opacity={0.6}>
+        <wtext maxLine={1} font={Font.lightSystemFont(12)} opacity={0.6} textColor={textColor}>
           {article.hot}
         </wtext>
       </wstack>
@@ -249,21 +251,25 @@ class NewsTop {
     const updateInterval = 1 * 60 * 60 * 1000
     // 渲染尺寸
     const size = config.widgetFamily
+
     return (
       <wbox
         padding={[0, 0, 0, 0]}
         updateDate={new Date(Date.now() + updateInterval)}
         background={boxBg.match('透明背景') ? transparentBg : boxBg}
+        href={size === 'small' ? articleList[0] && articleList[0].href : ''}
       >
-        <wstack flexDirection="column" padding={[16, 16, 16, 16]}>
+        <wstack flexDirection="column" padding={[0, 16, 0, 16]}>
+          <wspacer length={16}></wspacer>
           {/* 标题和logo */}
           <wstack verticalAlign="center">
-            <wimage src={logo} width={14} height={14} borderRadius={4}></wimage>
-            <wspacer length={10}></wspacer>
-            <wtext opacity={0.7} font={Font.boldSystemFont(12)}>
-              {title}
+            <wimage src={logo} width={20} height={20} borderRadius={4}></wimage>
+            <wspacer length={8}></wspacer>
+            <wtext opacity={0.7} font={Font.boldSystemFont(16)} textColor={textColor}>
+              {title}排行榜
             </wtext>
           </wstack>
+          <wspacer length={16}></wspacer>
           {/* 内容 */}
           {size === 'small' && this.renderSmall(articleList)}
           {size === 'medium' && this.renderMedium(articleList)}
@@ -275,12 +281,27 @@ class NewsTop {
 
   // 渲染小尺寸
   renderSmall(articleList: ArticleInfo[]) {
-    return <wstack flexDirection="column"></wstack>
+    const article = articleList[0]
+    return (
+      <wstack flexDirection="column">
+        <wtext font={Font.lightSystemFont(14)} textColor={textColor}>
+          {article.title}
+        </wtext>
+        <wspacer></wspacer>
+        <wstack>
+          <wspacer></wspacer>
+          <wtext maxLine={1} font={Font.lightSystemFont(12)} opacity={0.6} textColor={textColor}>
+            {article.hot}
+          </wtext>
+        </wstack>
+        <wspacer length={16}></wspacer>
+      </wstack>
+    )
   }
 
   // 渲染中尺寸
   renderMedium(articleList: ArticleInfo[]) {
-    const _articleList = articleList.slice(0, 5)
+    const _articleList = articleList.slice(0, 4)
     return (
       <wstack flexDirection="column">
         {_articleList.map((article, index) => (
@@ -293,7 +314,7 @@ class NewsTop {
 
   // 渲染大尺寸
   renderLarge(articleList: ArticleInfo[]) {
-    const _articleList = articleList.slice(0, 10)
+    const _articleList = articleList.slice(0, 12)
     return (
       <wstack flexDirection="column">
         {_articleList.map((article, index) => (
@@ -308,17 +329,25 @@ class NewsTop {
   async showMenu() {
     const selectIndex = await showActionSheet({
       title: '菜单',
-      itemList: ['设置颜色', '设置透明背景', '预览组件'],
+      itemList: ['使用其他排行榜', '设置颜色', '设置透明背景', '预览组件'],
     })
     switch (selectIndex) {
       case 0:
+        showModal({
+          title: '使用其他排行榜方法',
+          content: `把小部件添加到桌面后，长按编辑小部件，在 Parameter 栏输入以下任一关键词即可：\n\n${topList
+            .map(top => top.title)
+            .join('、')}`,
+        })
+        break
+      case 1:
         const {texts, cancel} = await showModal({
           title: '设置全局背景和颜色',
           content: '如果为空，则还原默认',
           inputItems: [
             {
               text: getStorage<string>('boxBg') || '',
-              placeholder: '这里填全局背景，可以是颜色、图片链接',
+              placeholder: '全局背景：可以是颜色、图链接',
             },
             {
               text: getStorage<string>('textColor') || '',
@@ -331,7 +360,7 @@ class NewsTop {
         setStorage('textColor', texts[1])
         await showNotification({title: '设置完成', sound: 'default'})
         break
-      case 1:
+      case 2:
         const img: Image | null = (await setTransparentBackground()) || null
         if (img) {
           setStorage('transparentBg', img)
@@ -339,7 +368,7 @@ class NewsTop {
           await showNotification({title: '设置透明背景成功', sound: 'default'})
         }
         break
-      case 2:
+      case 3:
         await showPreviewOptions(this.render.bind(this))
         break
     }
