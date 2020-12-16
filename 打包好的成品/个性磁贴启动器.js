@@ -5,7 +5,7 @@
  * github: https://github.com/2214962083/ios-scriptable-tsx
  */
 
-// @编译时间 1608088591895
+// @编译时间 1608093928194
 const MODULE = module
 let __topLevelAwait__ = () => Promise.resolve()
 function EndAwait(promiseFunc) {
@@ -896,8 +896,9 @@ var Col = ({children, ...props}) => {
 var {setStorage: setStorage2, getStorage: getStorage2} = useStorage('luancher-xiaoming')
 var textColor = getStorage2('textColor') || '#ffffff'
 var gridColor = getStorage2('gridColor')
-var boxBg = getStorage2('boxBg') || '#ffffff'
-var transparentBg = getStorage2('transparentBg') || '#ffffff'
+var boxBg = getStorage2('boxBg') || '#222222'
+var transparentBg = getStorage2('transparentBg') || '#222222'
+var space = getStorage2('space') || 1
 var colors = {
   red: '#e54d42',
   orange: '#f37b1d',
@@ -923,8 +924,6 @@ var Grid = ({...props}) => {
     {
       background: gridColor || background || bgColor,
       href,
-      borderColor: '#00000088',
-      borderWidth: 1,
     },
     /* @__PURE__ */ h(
       Col,
@@ -955,6 +954,10 @@ var Grid = ({...props}) => {
     ),
   )
 }
+var Space = () =>
+  /* @__PURE__ */ h('wspacer', {
+    length: Number(space),
+  })
 var Launcher = class {
   constructor(config2) {
     this.config = config2
@@ -1008,6 +1011,7 @@ var Launcher = class {
       /* @__PURE__ */ h(Grid, {
         ...this.config[0],
       }),
+      /* @__PURE__ */ h(Space, null),
       /* @__PURE__ */ h(
         'wstack',
         {
@@ -1019,16 +1023,19 @@ var Launcher = class {
           /* @__PURE__ */ h(Grid, {
             ...this.config[1],
           }),
+          /* @__PURE__ */ h(Space, null),
           /* @__PURE__ */ h(Grid, {
             ...this.config[2],
           }),
         ),
+        /* @__PURE__ */ h(Space, null),
         /* @__PURE__ */ h(
           'wstack',
           null,
           /* @__PURE__ */ h(Grid, {
             ...this.config[3],
           }),
+          /* @__PURE__ */ h(Space, null),
           /* @__PURE__ */ h(Grid, {
             ...this.config[4],
           }),
@@ -1048,6 +1055,7 @@ var Launcher = class {
         /* @__PURE__ */ h(Grid, {
           ...this.config[0],
         }),
+        /* @__PURE__ */ h(Space, null),
         /* @__PURE__ */ h(
           'wstack',
           {
@@ -1059,22 +1067,26 @@ var Launcher = class {
             /* @__PURE__ */ h(Grid, {
               ...this.config[1],
             }),
+            /* @__PURE__ */ h(Space, null),
             /* @__PURE__ */ h(Grid, {
               ...this.config[2],
             }),
           ),
+          /* @__PURE__ */ h(Space, null),
           /* @__PURE__ */ h(
             'wstack',
             null,
             /* @__PURE__ */ h(Grid, {
               ...this.config[3],
             }),
+            /* @__PURE__ */ h(Space, null),
             /* @__PURE__ */ h(Grid, {
               ...this.config[4],
             }),
           ),
         ),
       ),
+      /* @__PURE__ */ h(Space, null),
       /* @__PURE__ */ h(
         'wstack',
         null,
@@ -1089,14 +1101,17 @@ var Launcher = class {
             /* @__PURE__ */ h(Grid, {
               ...this.config[5],
             }),
+            /* @__PURE__ */ h(Space, null),
             /* @__PURE__ */ h(Grid, {
               ...this.config[6],
             }),
           ),
+          /* @__PURE__ */ h(Space, null),
           /* @__PURE__ */ h(Grid, {
             ...this.config[7],
           }),
         ),
+        /* @__PURE__ */ h(Space, null),
         /* @__PURE__ */ h(
           'wstack',
           {
@@ -1105,12 +1120,14 @@ var Launcher = class {
           /* @__PURE__ */ h(Grid, {
             ...this.config[8],
           }),
+          /* @__PURE__ */ h(Space, null),
           /* @__PURE__ */ h(
             'wstack',
             null,
             /* @__PURE__ */ h(Grid, {
               ...this.config[9],
             }),
+            /* @__PURE__ */ h(Space, null),
             /* @__PURE__ */ h(Grid, {
               ...this.config[10],
             }),
@@ -1143,12 +1160,17 @@ var Launcher = class {
               text: getStorage2('textColor') || '',
               placeholder: '这里填文字颜色',
             },
+            {
+              text: String(getStorage2('space')) || '',
+              placeholder: '格子间间隔，默认是1',
+            },
           ],
         })
         if (cancel) return
         setStorage2('boxBg', texts[0])
         setStorage2('gridColor', texts[1])
         setStorage2('textColor', texts[2])
+        setStorage2('space', texts[3])
         await showNotification({title: '设置完成', sound: 'default'})
         break
       case 1:

@@ -24,10 +24,13 @@ const textColor = getStorage<string>('textColor') || '#ffffff'
 const gridColor: string | null = getStorage<string>('gridColor')
 
 /**背景颜色或背景图链接*/
-const boxBg = getStorage<string>('boxBg') || '#ffffff'
+const boxBg = getStorage<string>('boxBg') || '#222222'
 
 /**透明背景*/
-const transparentBg: Image | string = getStorage<Image>('transparentBg') || '#ffffff'
+const transparentBg: Image | string = getStorage<Image>('transparentBg') || '#222222'
+
+/**格子间隔*/
+const space = getStorage<number>('space') || 1
 
 // 好看的颜色
 const colors = {
@@ -68,7 +71,7 @@ const Grid: FC<GridProps> = ({...props}) => {
   const bgRandom = Math.floor(Math.random() * bgColors.length)
   const bgColor = bgColors[bgRandom]
   return (
-    <wstack background={gridColor || background || bgColor} href={href} borderColor="#00000088" borderWidth={1}>
+    <wstack background={gridColor || background || bgColor} href={href}>
       <Col
         background={/^\#[\d\w]+$/.test(String(background)) || gridColor ? '#00000000' : '#00000055'}
         alignItems="center"
@@ -85,6 +88,9 @@ const Grid: FC<GridProps> = ({...props}) => {
     </wstack>
   )
 }
+
+/**间隔组件*/
+const Space: FC = () => <wspacer length={Number(space)}></wspacer>
 
 class Launcher {
   private config: GridProps[]
@@ -139,13 +145,17 @@ class Launcher {
     return (
       <wstack>
         <Grid {...this.config[0]}></Grid>
+        <Space></Space>
         <wstack flexDirection="column">
           <wstack>
             <Grid {...this.config[1]}></Grid>
+            <Space></Space>
             <Grid {...this.config[2]}></Grid>
           </wstack>
+          <Space></Space>
           <wstack>
             <Grid {...this.config[3]}></Grid>
+            <Space></Space>
             <Grid {...this.config[4]}></Grid>
           </wstack>
         </wstack>
@@ -160,30 +170,40 @@ class Launcher {
         {/* 上半部分 */}
         <wstack>
           <Grid {...this.config[0]}></Grid>
+          <Space></Space>
           <wstack flexDirection="column">
             <wstack>
               <Grid {...this.config[1]}></Grid>
+              <Space></Space>
               <Grid {...this.config[2]}></Grid>
             </wstack>
+            <Space></Space>
             <wstack>
               <Grid {...this.config[3]}></Grid>
+              <Space></Space>
               <Grid {...this.config[4]}></Grid>
             </wstack>
           </wstack>
         </wstack>
         {/* 下半部分 */}
+        <Space></Space>
         <wstack>
           <wstack flexDirection="column">
             <wstack>
               <Grid {...this.config[5]}></Grid>
+              <Space></Space>
               <Grid {...this.config[6]}></Grid>
             </wstack>
+            <Space></Space>
             <Grid {...this.config[7]}></Grid>
           </wstack>
+          <Space></Space>
           <wstack flexDirection="column">
             <Grid {...this.config[8]}></Grid>
+            <Space></Space>
             <wstack>
               <Grid {...this.config[9]}></Grid>
+              <Space></Space>
               <Grid {...this.config[10]}></Grid>
             </wstack>
           </wstack>
@@ -217,12 +237,17 @@ class Launcher {
               text: getStorage<string>('textColor') || '',
               placeholder: '这里填文字颜色',
             },
+            {
+              text: String(getStorage<number>('space')) || '',
+              placeholder: '格子间间隔，默认是1',
+            },
           ],
         })
         if (cancel) return
         setStorage('boxBg', texts[0])
         setStorage('gridColor', texts[1])
         setStorage('textColor', texts[2])
+        setStorage('space', texts[3])
         await showNotification({title: '设置完成', sound: 'default'})
         break
       case 1:
