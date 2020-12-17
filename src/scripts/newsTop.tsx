@@ -10,6 +10,7 @@ import {
   showNotification,
   showPreviewOptions,
   useStorage,
+  request,
 } from '@app/lib/help'
 import {FC} from 'react'
 
@@ -44,6 +45,9 @@ interface PageInfo {
 
   /**文章列表*/
   articleList: ArticleInfo[]
+
+  /**cookie*/
+  cookie: string | null
 
   /**js执行的错误信息*/
   err: Error
@@ -325,7 +329,7 @@ class NewsTop {
   async showMenu() {
     const selectIndex = await showActionSheet({
       title: '菜单',
-      itemList: ['使用其他排行榜', '设置颜色', '设置透明背景', '预览组件'],
+      itemList: ['使用其他排行榜', '设置颜色', '设置透明背景', '预览组件', '优化体验'],
     })
     switch (selectIndex) {
       case 0:
@@ -367,19 +371,45 @@ class NewsTop {
       case 3:
         await showPreviewOptions(this.render.bind(this))
         break
+      case 4:
+        const {cancel: cancelLogin} = await showModal({
+          title: '优化体验建议',
+          content:
+            '本组件数据来源于 tophub.today 这个网站，未登录状态获取的文章链接不是最终链接，有二次跳转，如果想获取真实链接，建议在此登录该网站。\n\n登录完成后，自行关闭网页',
+          confirmText: '去登录',
+        })
+        if (cancelLogin) return
+        const loginUrl = 'https://tophub.today/login'
+        const html = await new Request(loginUrl).loadString()
+        await WebView.loadHTML(html, loginUrl, undefined, true)
+        break
     }
   }
 
   // 获取热榜数据
   async getNewsTop(url: string): Promise<PageInfo> {
+    const cookieHeader: Record<string, string> = isLaunchInsideApp() ? {} : {cookie: getStorage<string>('cookie') || ''}
+    const html =
+      (
+        await request<string>({
+          url,
+          dataType: 'text',
+          header: {
+            'user-agent':
+              'Mozilla/5.0 (iPhone; CPU iPhone OS 14_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
+            ...cookieHeader,
+          },
+        })
+      ).data || ''
     const webview = new WebView()
-    await webview.loadURL(url)
+    await webview.loadHTML(html, url)
     await webview.waitForLoad()
-    const {title = '今日热榜', logo = 'flame.fill', articleList = [], err} = (await webview.evaluateJavaScript(
+    const {title = '今日热榜', logo = 'flame.fill', articleList = [], cookie, err} = (await webview.evaluateJavaScript(
       `
         let title = ''
         let logo = ''
         let articleList = []
+        let cookie = document.cookie
         let err = ''
         try {
             title = document.title.split(' ')[0]
@@ -394,11 +424,12 @@ class NewsTop {
         } catch(err) {
             err = err
         }
-        Object.assign({}, {title, logo, articleList, err})
+        Object.assign({}, {title, logo, articleList, cookie, err})
     `,
     )) as PageInfo
     err && console.warn(`热榜获取出错: ${err}`)
-    return {title, logo, articleList, err}
+    if (isLaunchInsideApp() && cookie) setStorage('cookie', cookie)
+    return {title, logo, articleList, cookie, err}
   }
 
   // 获取要显示的榜单 url
