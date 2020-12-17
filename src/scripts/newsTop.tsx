@@ -10,6 +10,7 @@ import {
   showNotification,
   showPreviewOptions,
   useStorage,
+  request,
 } from '@app/lib/help'
 import {FC} from 'react'
 
@@ -44,6 +45,9 @@ interface PageInfo {
 
   /**文章列表*/
   articleList: ArticleInfo[]
+
+  /**cookie*/
+  cookie: string | null
 
   /**js执行的错误信息*/
   err: Error
@@ -384,14 +388,28 @@ class NewsTop {
 
   // 获取热榜数据
   async getNewsTop(url: string): Promise<PageInfo> {
+    const cookieHeader: Record<string, string> = isLaunchInsideApp() ? {} : {cookie: getStorage<string>('cookie') || ''}
+    const html =
+      (
+        await request<string>({
+          url,
+          dataType: 'text',
+          header: {
+            'user-agent':
+              'Mozilla/5.0 (iPhone; CPU iPhone OS 14_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
+            ...cookieHeader,
+          },
+        })
+      ).data || ''
     const webview = new WebView()
-    await webview.loadURL(url)
+    await webview.loadHTML(html, url)
     await webview.waitForLoad()
-    const {title = '今日热榜', logo = 'flame.fill', articleList = [], err} = (await webview.evaluateJavaScript(
+    const {title = '今日热榜', logo = 'flame.fill', articleList = [], cookie, err} = (await webview.evaluateJavaScript(
       `
         let title = ''
         let logo = ''
         let articleList = []
+        let cookie = document.cookie
         let err = ''
         try {
             title = document.title.split(' ')[0]
@@ -406,11 +424,12 @@ class NewsTop {
         } catch(err) {
             err = err
         }
-        Object.assign({}, {title, logo, articleList, err})
+        Object.assign({}, {title, logo, articleList, cookie, err})
     `,
     )) as PageInfo
     err && console.warn(`热榜获取出错: ${err}`)
-    return {title, logo, articleList, err}
+    if (isLaunchInsideApp() && cookie) setStorage('cookie', cookie)
+    return {title, logo, articleList, cookie, err}
   }
 
   // 获取要显示的榜单 url

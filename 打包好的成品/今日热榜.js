@@ -5,7 +5,7 @@
  * github: https://github.com/2214962083/ios-scriptable-tsx
  */
 
-// @编译时间 1608170866803
+// @编译时间 1608188212533
 const MODULE = module
 let __topLevelAwait__ = () => Promise.resolve()
 function EndAwait(promiseFunc) {
@@ -1135,13 +1135,27 @@ ${topList.map(top => top.title).join('、')}`,
     }
   }
   async getNewsTop(url) {
+    const cookieHeader = isLaunchInsideApp() ? {} : {cookie: getStorage2('cookie') || ''}
+    const html =
+      (
+        await request({
+          url,
+          dataType: 'text',
+          header: {
+            'user-agent':
+              'Mozilla/5.0 (iPhone; CPU iPhone OS 14_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
+            ...cookieHeader,
+          },
+        })
+      ).data || ''
     const webview = new WebView()
-    await webview.loadURL(url)
+    await webview.loadHTML(html, url)
     await webview.waitForLoad()
-    const {title = '今日热榜', logo = 'flame.fill', articleList = [], err} = await webview.evaluateJavaScript(`
+    const {title = '今日热榜', logo = 'flame.fill', articleList = [], cookie, err} = await webview.evaluateJavaScript(`
         let title = ''
         let logo = ''
         let articleList = []
+        let cookie = document.cookie
         let err = ''
         try {
             title = document.title.split(' ')[0]
@@ -1156,10 +1170,11 @@ ${topList.map(top => top.title).join('、')}`,
         } catch(err) {
             err = err
         }
-        Object.assign({}, {title, logo, articleList, err})
+        Object.assign({}, {title, logo, articleList, cookie, err})
     `)
     err && console.warn(`热榜获取出错: ${err}`)
-    return {title, logo, articleList, err}
+    if (isLaunchInsideApp() && cookie) setStorage2('cookie', cookie)
+    return {title, logo, articleList, cookie, err}
   }
   getTopUrl() {
     const defaultUrl = 'https://tophub.today/n/mproPpoq6O'
