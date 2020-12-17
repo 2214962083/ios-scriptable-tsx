@@ -1,11 +1,11 @@
 /**
  * 作者: 小明
  * 版本: 1.0.0
- * 更新时间：2020/12/16
+ * 更新时间：2020-12-17
  * github: https://github.com/2214962083/ios-scriptable-tsx
  */
 
-// @编译时间 1608131541637
+// @编译时间 1608170866803
 const MODULE = module
 let __topLevelAwait__ = () => Promise.resolve()
 function EndAwait(promiseFunc) {
@@ -62,12 +62,12 @@ function setStorageDirectory(dirPath) {
     },
   }
 }
-const setStorage = setStorageDirectory(fm().libraryDirectory()).setStorage
-const getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
-const removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
-const setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
-const getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
-const removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
+var setStorage = setStorageDirectory(fm().libraryDirectory()).setStorage
+var getStorage = setStorageDirectory(FileManager.local().libraryDirectory()).getStorage
+var removeStorage = setStorageDirectory(FileManager.local().libraryDirectory()).removeStorage
+var setCache = setStorageDirectory(FileManager.local().temporaryDirectory()).setStorage
+var getCache = setStorageDirectory(FileManager.local().temporaryDirectory()).getStorage
+var removeCache = setStorageDirectory(FileManager.local().temporaryDirectory()).removeStorage
 function useStorage(nameSpace) {
   const _nameSpace = nameSpace || `${MODULE.filename}`
   return {
@@ -454,7 +454,7 @@ async function setTransparentBackground(tips) {
 }
 
 // src/lib/jsx-runtime.ts
-class GenrateView {
+var GenrateView = class {
   static setListWidget(listWidget2) {
     this.listWidget = listWidget2
   }
@@ -669,7 +669,7 @@ class GenrateView {
     }
   }
 }
-const listWidget = new ListWidget()
+var listWidget = new ListWidget()
 GenrateView.setListWidget(listWidget)
 function h(type, props, ...children) {
   props = props || {}
@@ -757,7 +757,7 @@ function runOnClick(instance, onClick) {
 }
 
 // src/scripts/newsTop.tsx
-const topList = [
+var topList = [
   {
     title: '知乎',
     href: 'https://tophub.today/n/mproPpoq6O',
@@ -879,29 +879,30 @@ const topList = [
     href: 'https://tophub.today/n/YqoXQGXvOD',
   },
 ]
-const {setStorage: setStorage2, getStorage: getStorage2} = useStorage('newsTop-xiaoming')
-const textColor = getStorage2('textColor') || '#000000'
-const transparentBg = getStorage2('transparentBg') || '#ffffff'
-const boxBg = getStorage2('boxBg') || '#ffffff'
-const Article = ({article, sort}) => {
+var {setStorage: setStorage2, getStorage: getStorage2} = useStorage('newsTop-xiaoming')
+var defaultBgColor = Color.dynamic(new Color('#ffffff', 1), new Color('#000000', 1))
+var textColor = getStorage2('textColor') || Color.dynamic(new Color('#000000', 1), new Color('#dddddd', 1))
+var transparentBg = getStorage2('transparentBg') || defaultBgColor
+var boxBg = getStorage2('boxBg') || defaultBgColor
+var Article = ({article, sort}) => {
   return /* @__PURE__ */ h(
-    Fragment,
-    null,
-    sort > 1 &&
-      /* @__PURE__ */ h('wspacer', {
-        length: 8,
-      }),
+    'wstack',
+    {
+      flexDirection: 'column',
+      href: article.href,
+    },
+    sort > 1 && /* @__PURE__ */ h('wspacer', null),
     /* @__PURE__ */ h(
       'wstack',
       {
         verticalAlign: 'center',
-        href: article.href,
       },
       /* @__PURE__ */ h(
         'wtext',
         {
           font: Font.heavySystemFont(14),
           textColor,
+          opacity: 0.7,
         },
         sort,
       ),
@@ -931,7 +932,7 @@ const Article = ({article, sort}) => {
     ),
   )
 }
-class NewsTop {
+var NewsTop = class {
   async init() {
     if (isLaunchInsideApp()) {
       return await this.showMenu()
@@ -948,13 +949,14 @@ class NewsTop {
     const {title, logo, articleList} = await this.getNewsTop(topUrl)
     const updateInterval = 1 * 60 * 60 * 1e3
     const size = config.widgetFamily
+    const widgetBoxProps = size === 'small' ? {href: articleList[0] && articleList[0].href} : {}
     return /* @__PURE__ */ h(
       'wbox',
       {
         padding: [0, 0, 0, 0],
         updateDate: new Date(Date.now() + updateInterval),
-        background: boxBg.match('透明背景') ? transparentBg : boxBg,
-        href: size === 'small' ? articleList[0] && articleList[0].href : '',
+        background: typeof boxBg === 'string' && boxBg.match('透明背景') ? transparentBg : boxBg,
+        ...widgetBoxProps,
       },
       /* @__PURE__ */ h(
         'wstack',
@@ -962,9 +964,8 @@ class NewsTop {
           flexDirection: 'column',
           padding: [0, 16, 0, 16],
         },
-        /* @__PURE__ */ h('wspacer', {
-          length: 16,
-        }),
+        /* @__PURE__ */ h('wspacer', null),
+        /* @__PURE__ */ h('wspacer', null),
         /* @__PURE__ */ h(
           'wstack',
           {
@@ -990,9 +991,8 @@ class NewsTop {
             '排行榜',
           ),
         ),
-        /* @__PURE__ */ h('wspacer', {
-          length: 16,
-        }),
+        /* @__PURE__ */ h('wspacer', null),
+        /* @__PURE__ */ h('wspacer', null),
         size === 'small' && this.renderSmall(articleList),
         size === 'medium' && this.renderMedium(articleList),
         size === 'large' && this.renderLarge(articleList),
@@ -1030,51 +1030,59 @@ class NewsTop {
           article.hot,
         ),
       ),
-      /* @__PURE__ */ h('wspacer', {
-        length: 16,
-      }),
+      /* @__PURE__ */ h('wspacer', null),
     )
   }
   renderMedium(articleList) {
     const _articleList = articleList.slice(0, 4)
     return /* @__PURE__ */ h(
-      'wstack',
-      {
-        flexDirection: 'column',
-      },
-      _articleList.map((article, index) =>
-        /* @__PURE__ */ h(Article, {
-          article,
-          sort: index + 1,
-        }),
+      Fragment,
+      null,
+      /* @__PURE__ */ h(
+        'wstack',
+        {
+          flexDirection: 'column',
+        },
+        _articleList.map((article, index) =>
+          /* @__PURE__ */ h(Article, {
+            article,
+            sort: index + 1,
+          }),
+        ),
       ),
+      /* @__PURE__ */ h('wspacer', null),
       /* @__PURE__ */ h('wspacer', null),
     )
   }
   renderLarge(articleList) {
-    const _articleList = articleList.slice(0, 12)
+    const _articleList = articleList.slice(0, 10)
     return /* @__PURE__ */ h(
-      'wstack',
-      {
-        flexDirection: 'column',
-      },
-      _articleList.map((article, index) =>
-        /* @__PURE__ */ h(Article, {
-          article,
-          sort: index + 1,
-        }),
+      Fragment,
+      null,
+      /* @__PURE__ */ h(
+        'wstack',
+        {
+          flexDirection: 'column',
+        },
+        _articleList.map((article, index) =>
+          /* @__PURE__ */ h(Article, {
+            article,
+            sort: index + 1,
+          }),
+        ),
       ),
+      /* @__PURE__ */ h('wspacer', null),
       /* @__PURE__ */ h('wspacer', null),
     )
   }
   async showMenu() {
     const selectIndex = await showActionSheet({
       title: '菜单',
-      itemList: ['使用其他排行榜', '设置颜色', '设置透明背景', '预览组件'],
+      itemList: ['使用其他排行榜', '设置颜色', '设置透明背景', '预览组件', '优化体验'],
     })
     switch (selectIndex) {
       case 0:
-        showModal({
+        await showModal({
           title: '使用其他排行榜方法',
           content: `把小部件添加到桌面后，长按编辑小部件，在 Parameter 栏输入以下任一关键词即可：
 
@@ -1111,6 +1119,18 @@ ${topList.map(top => top.title).join('、')}`,
         break
       case 3:
         await showPreviewOptions(this.render.bind(this))
+        break
+      case 4:
+        const {cancel: cancelLogin} = await showModal({
+          title: '优化体验建议',
+          content:
+            '本组件数据来源于 tophub.today 这个网站，未登录状态获取的文章链接不是最终链接，有二次跳转，如果想获取真实链接，建议在此登录该网站。\n\n登录完成后，自行关闭网页',
+          confirmText: '去登录',
+        })
+        if (cancelLogin) return
+        const loginUrl = 'https://tophub.today/login'
+        const html = await new Request(loginUrl).loadString()
+        await WebView.loadHTML(html, loginUrl, void 0, true)
         break
     }
   }
