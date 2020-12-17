@@ -1,0 +1,54 @@
+{
+  "author": "葬爱非主流小明",
+  "icon": "https://p.pstatp.com/origin/fe4400034e131f9e4e45",
+  "apps": [
+    {
+      "version": "1.0.0",
+      "description": "小明出品，必属精品",
+      "scriptURL": "https://raw.githubusercontent.com/2214962083/ios-scriptable-tsx/master/打包好的成品/一言.js",
+      "thumb": "https://p.pstatp.com/origin/fe4400034e131f9e4e45",
+      "name": "一言",
+      "title": "一言"
+    },
+    {
+      "version": "1.0.0",
+      "description": "小明出品，必属精品",
+      "scriptURL": "https://raw.githubusercontent.com/2214962083/ios-scriptable-tsx/master/打包好的成品/个性磁贴启动器.js",
+      "thumb": "https://p.pstatp.com/origin/fe4400034e131f9e4e45",
+      "name": "个性磁贴启动器",
+      "title": "个性磁贴启动器"
+    },
+    {
+      "version": "1.0.0",
+      "description": "小明出品，必属精品",
+      "scriptURL": "https://raw.githubusercontent.com/2214962083/ios-scriptable-tsx/master/打包好的成品/今日热榜.js",
+      "thumb": "https://p.pstatp.com/origin/fe4400034e131f9e4e45",
+      "name": "今日热榜",
+      "title": "今日热榜"
+    },
+    {
+      "version": "1.0.0",
+      "description": "小明出品，必属精品",
+      "scriptURL": "https://raw.githubusercontent.com/2214962083/ios-scriptable-tsx/master/打包好的成品/哔哩粉丝.js",
+      "thumb": "https://p.pstatp.com/origin/fe4400034e131f9e4e45",
+      "name": "哔哩粉丝",
+      "title": "哔哩粉丝"
+    },
+    {
+      "version": "1.0.0",
+      "description": "小明出品，必属精品",
+      "scriptURL": "https://raw.githubusercontent.com/2214962083/ios-scriptable-tsx/master/打包好的成品/基金小部件.js",
+      "thumb": "https://p.pstatp.com/origin/fe4400034e131f9e4e45",
+      "name": "基金小部件",
+      "title": "基金小部件"
+    },
+    {
+      "version": "1.0.0",
+      "description": "小明出品，必属精品",
+      "scriptURL": "https://raw.githubusercontent.com/2214962083/ios-scriptable-tsx/master/打包好的成品/网易云歌单.js",
+      "thumb": "https://p.pstatp.com/origin/fe4400034e131f9e4e45",
+      "name": "网易云歌单",
+      "title": "网易云歌单"
+    }
+  ]
+}
