@@ -325,7 +325,7 @@ class NewsTop {
   async showMenu() {
     const selectIndex = await showActionSheet({
       title: '菜单',
-      itemList: ['使用其他排行榜', '设置颜色', '设置透明背景', '预览组件', '优化体验'],
+      itemList: ['使用其他排行榜', '设置颜色', '设置透明背景', '预览组件'],
     })
     switch (selectIndex) {
       case 0:
@@ -366,18 +366,6 @@ class NewsTop {
         break
       case 3:
         await showPreviewOptions(this.render.bind(this))
-        break
-      case 4:
-        const {cancel: cancelLogin} = await showModal({
-          title: '优化体验建议',
-          content:
-            '本组件数据来源于 tophub.today 这个网站，未登录状态获取的文章链接不是最终链接，有二次跳转，如果想获取真实链接，建议在此登录该网站。\n\n登录完成后，自行关闭网页',
-          confirmText: '去登录',
-        })
-        if (cancelLogin) return
-        const loginUrl = 'https://tophub.today/login'
-        const html = await new Request(loginUrl).loadString()
-        await WebView.loadHTML(html, loginUrl, undefined, true)
         break
     }
   }
