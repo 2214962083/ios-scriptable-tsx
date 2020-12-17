@@ -175,31 +175,17 @@ const topList: TopInfo[] = [
 
 const {setStorage, getStorage} = useStorage('newsTop-xiaoming')
 
+/**默认背景颜色*/
+const defaultBgColor = Color.dynamic(new Color('#ffffff', 1), new Color('#000000', 1))
+
 /**文字颜色*/
-const textColor = getStorage<string>('textColor') || '#000000'
+const textColor = getStorage<string>('textColor') || Color.dynamic(new Color('#000000', 1), new Color('#dddddd', 1))
 
 /**透明背景*/
-const transparentBg: Image | string = getStorage<Image>('transparentBg') || '#ffffff'
+const transparentBg: Image | Color = getStorage<Image>('transparentBg') || defaultBgColor
 
 /**背景颜色或背景图链接*/
-const boxBg = getStorage<string>('boxBg') || '#ffffff'
-
-// 好看的颜色
-const colors = {
-  red: '#e54d42',
-  orange: '#f37b1d',
-  yellow: '#fbbd08',
-  olive: '#8dc63f',
-  green: '#39b54a',
-  cyan: '#1cbbb4',
-  blue: '#0081ff',
-  purple: '#6739b6',
-  mauve: '#9c26b0',
-  pink: '#e03997',
-  brown: '#a5673f',
-  grey: '#8799a3',
-  black: '#000000',
-}
+const boxBg = getStorage<string>('boxBg') || defaultBgColor
 
 /**
  * 文章组件
@@ -208,10 +194,10 @@ const colors = {
  */
 const Article: FC<{article: ArticleInfo; sort: number}> = ({article, sort}) => {
   return (
-    <>
-      {sort > 1 && <wspacer length={8}></wspacer>}
-      <wstack verticalAlign="center" href={article.href}>
-        <wtext font={Font.heavySystemFont(14)} textColor={textColor}>
+    <wstack flexDirection="column" href={article.href}>
+      {sort > 1 && <wspacer></wspacer>}
+      <wstack verticalAlign="center">
+        <wtext font={Font.heavySystemFont(14)} textColor={textColor} opacity={0.7}>
           {sort}
         </wtext>
         <wspacer length={8}></wspacer>
@@ -223,7 +209,7 @@ const Article: FC<{article: ArticleInfo; sort: number}> = ({article, sort}) => {
           {article.hot}
         </wtext>
       </wstack>
-    </>
+    </wstack>
   )
 }
 
@@ -252,15 +238,18 @@ class NewsTop {
     // 渲染尺寸
     const size = config.widgetFamily
 
+    const widgetBoxProps = size === 'small' ? {href: articleList[0] && articleList[0].href} : {}
+
     return (
       <wbox
         padding={[0, 0, 0, 0]}
         updateDate={new Date(Date.now() + updateInterval)}
-        background={boxBg.match('透明背景') ? transparentBg : boxBg}
-        href={size === 'small' ? articleList[0] && articleList[0].href : ''}
+        background={typeof boxBg === 'string' && boxBg.match('透明背景') ? transparentBg : boxBg}
+        {...widgetBoxProps}
       >
         <wstack flexDirection="column" padding={[0, 16, 0, 16]}>
-          <wspacer length={16}></wspacer>
+          <wspacer></wspacer>
+          <wspacer></wspacer>
           {/* 标题和logo */}
           <wstack verticalAlign="center">
             <wimage src={logo} width={20} height={20} borderRadius={4}></wimage>
@@ -269,7 +258,8 @@ class NewsTop {
               {title}排行榜
             </wtext>
           </wstack>
-          <wspacer length={16}></wspacer>
+          <wspacer></wspacer>
+          <wspacer></wspacer>
           {/* 内容 */}
           {size === 'small' && this.renderSmall(articleList)}
           {size === 'medium' && this.renderMedium(articleList)}
@@ -294,7 +284,7 @@ class NewsTop {
             {article.hot}
           </wtext>
         </wstack>
-        <wspacer length={16}></wspacer>
+        <wspacer></wspacer>
       </wstack>
     )
   }
@@ -303,25 +293,31 @@ class NewsTop {
   renderMedium(articleList: ArticleInfo[]) {
     const _articleList = articleList.slice(0, 4)
     return (
-      <wstack flexDirection="column">
-        {_articleList.map((article, index) => (
-          <Article article={article} sort={index + 1}></Article>
-        ))}
+      <>
+        <wstack flexDirection="column">
+          {_articleList.map((article, index) => (
+            <Article article={article} sort={index + 1}></Article>
+          ))}
+        </wstack>
         <wspacer></wspacer>
-      </wstack>
+        <wspacer></wspacer>
+      </>
     )
   }
 
   // 渲染大尺寸
   renderLarge(articleList: ArticleInfo[]) {
-    const _articleList = articleList.slice(0, 12)
+    const _articleList = articleList.slice(0, 10)
     return (
-      <wstack flexDirection="column">
-        {_articleList.map((article, index) => (
-          <Article article={article} sort={index + 1}></Article>
-        ))}
+      <>
+        <wstack flexDirection="column">
+          {_articleList.map((article, index) => (
+            <Article article={article} sort={index + 1}></Article>
+          ))}
+        </wstack>
         <wspacer></wspacer>
-      </wstack>
+        <wspacer></wspacer>
+      </>
     )
   }
 
@@ -329,11 +325,11 @@ class NewsTop {
   async showMenu() {
     const selectIndex = await showActionSheet({
       title: '菜单',
-      itemList: ['使用其他排行榜', '设置颜色', '设置透明背景', '预览组件'],
+      itemList: ['使用其他排行榜', '设置颜色', '设置透明背景', '预览组件', '优化体验'],
     })
     switch (selectIndex) {
       case 0:
-        showModal({
+        await showModal({
           title: '使用其他排行榜方法',
           content: `把小部件添加到桌面后，长按编辑小部件，在 Parameter 栏输入以下任一关键词即可：\n\n${topList
             .map(top => top.title)
@@ -370,6 +366,18 @@ class NewsTop {
         break
       case 3:
         await showPreviewOptions(this.render.bind(this))
+        break
+      case 4:
+        const {cancel: cancelLogin} = await showModal({
+          title: '优化体验建议',
+          content:
+            '本组件数据来源于 tophub.today 这个网站，未登录状态获取的文章链接不是最终链接，有二次跳转，如果想获取真实链接，建议在此登录该网站。\n\n登录完成后，自行关闭网页',
+          confirmText: '去登录',
+        })
+        if (cancelLogin) return
+        const loginUrl = 'https://tophub.today/login'
+        const html = await new Request(loginUrl).loadString()
+        await WebView.loadHTML(html, loginUrl, undefined, true)
         break
     }
   }
