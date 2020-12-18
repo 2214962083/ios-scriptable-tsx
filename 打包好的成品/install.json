@@ -49,6 +49,14 @@
       "thumb": "https://p.pstatp.com/origin/fe4400034e131f9e4e45",
       "name": "网易云歌单",
       "title": "网易云歌单"
+    },
+    {
+      "version": "1.0.0",
+      "description": "小明出品，必属精品",
+      "scriptURL": "https://raw.githubusercontent.com/2214962083/ios-scriptable-tsx/master/打包好的成品/联通流量话费小部件.js",
+      "thumb": "https://p.pstatp.com/origin/fe4400034e131f9e4e45",
+      "name": "联通流量话费小部件",
+      "title": "联通流量话费小部件"
     }
   ]
 }
