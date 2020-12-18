@@ -1,5 +1,5 @@
 /**
- * 今日热榜小部件
+ * 联通话费流量查询小部件
  */
 
 import {
@@ -14,6 +14,7 @@ import {
   sleep,
 } from '@app/lib/help'
 import {FC} from 'react'
+import {WtextProps, WstackProps} from '@app/types/widget'
 
 /**手机卡数据列表*/
 interface PhoneDatas {
@@ -27,7 +28,7 @@ interface PhoneData {
   pointUpdateTimeStamp: string
   paperwork4: string
   buttonBacImageUrlBig: string
-  type: string
+  type: PhoneDataType
   remainTitle: string
   buttonText7: string
   buttonLinkMode: string
@@ -57,25 +58,13 @@ interface PhoneData {
   warningPointColor?: string
 }
 
-/**页面信息*/
-interface PageInfo {
-  /**页面数据*/
-  phoneDatas: PhoneDatas
-
-  /**cookie*/
-  cookie: string | null
-
-  /**js执行的错误信息*/
-  err: string
-}
-
 /**有用的手机卡数据*/
 interface UsefulPhoneData {
   /**类型*/
-  type: string
+  type: PhoneDataType
 
   /**剩余百分比数字*/
-  present: number
+  percent: number
 
   /**单位*/
   unit: string
@@ -86,6 +75,39 @@ interface UsefulPhoneData {
   /**描述*/
   label: string
 }
+
+/**手机卡数据类型*/
+enum PhoneDataType {
+  /**流量*/
+  FLOW = 'flow',
+
+  /**话费*/
+  FEE = 'fee',
+
+  /**语音*/
+  VOICE = 'voice',
+
+  /**积分*/
+  POINT = 'point',
+
+  /**信用分*/
+  CREDIT = 'credit',
+
+  /**电子券*/
+  WOPAY = 'woPay',
+}
+
+const typeDesc: Record<PhoneDataType, string> = {
+  [PhoneDataType.FLOW]: '流量',
+  [PhoneDataType.FEE]: '话费',
+  [PhoneDataType.VOICE]: '语音',
+  [PhoneDataType.POINT]: '积分',
+  [PhoneDataType.CREDIT]: '信用分',
+  [PhoneDataType.WOPAY]: '电子券',
+}
+
+// 格式化数字
+const formatNum = (num: number) => parseFloat(Number(num).toFixed(1))
 
 const {setStorage, getStorage} = useStorage('china10010-xiaoming')
 
@@ -117,7 +139,7 @@ class China10010 {
       await showNotification({title: '稍等片刻', body: '小部件渲染中...', sound: 'alert'})
     }
     // 多久（毫秒）更新一次小部件（默认3分钟）
-    const updateInterval = 3 * 60 * 1000
+    const updateInterval = 1 * 60 * 1000
 
     // 渲染尺寸
     const size = config.widgetFamily
@@ -143,7 +165,6 @@ class China10010 {
       >
         <wstack flexDirection="column" padding={[0, 16, 0, 16]}>
           <wspacer></wspacer>
-          <wspacer></wspacer>
           {/* 标题和logo */}
           <wstack verticalAlign="center">
             <wimage
@@ -153,11 +174,10 @@ class China10010 {
               borderRadius={4}
             ></wimage>
             <wspacer length={8}></wspacer>
-            <wtext opacity={0.7} font={Font.boldSystemFont(16)} textColor={textColor}>
+            <wtext opacity={0.7} font={Font.boldSystemFont(14)} textColor={textColor}>
               中国联通
             </wtext>
           </wstack>
-          <wspacer></wspacer>
           <wspacer></wspacer>
           {/* 内容 */}
           {size === 'small' && this.renderSmall(usefulPhoneDatas)}
@@ -170,27 +190,103 @@ class China10010 {
 
   // 渲染小尺寸
   renderSmall(usefulPhoneDatas: UsefulPhoneData[]) {
+    // 流量
+    const flow = usefulPhoneDatas.find(item => item.type === PhoneDataType.FLOW) as UsefulPhoneData
+    // 话费
+    const fee = usefulPhoneDatas.find(item => item.type === PhoneDataType.FEE) as UsefulPhoneData
     return (
       <>
-        <wtext>hello</wtext>
+        <wtext textColor={textColor} font={Font.lightSystemFont(14)}>
+          剩余流量{formatNum(flow.count || 0) + flow.unit}
+        </wtext>
+        <wspacer></wspacer>
+        <wtext textColor={textColor} font={Font.lightSystemFont(14)}>
+          剩余话费{formatNum(fee.count || 0) + fee.unit}
+        </wtext>
+        <wspacer></wspacer>
       </>
     )
   }
 
   // 渲染中尺寸
   renderMedium(usefulPhoneDatas: UsefulPhoneData[]) {
-    return (
-      <>
-        <wtext>hello</wtext>
-      </>
-    )
+    const showDataType: PhoneDataType[] = [PhoneDataType.FLOW, PhoneDataType.FEE, PhoneDataType.VOICE]
+    return this.renderLarge(usefulPhoneDatas.filter(data => showDataType.indexOf(data.type) >= 0))
   }
 
   // 渲染大尺寸
   renderLarge(usefulPhoneDatas: UsefulPhoneData[]) {
+    /**进度条*/
+    const Progress: FC<{
+      color: WstackProps['background']
+      bgcolor: WstackProps['background']
+      progress: number
+      width: number
+      height: number
+      borderRadius?: number
+    }> = ({...props}) => {
+      const {color, bgcolor, progress, width, height, borderRadius = 0} = props
+      return (
+        <wstack background={bgcolor} width={width} height={height} borderRadius={borderRadius}>
+          <wstack background={color} height={height} width={width * progress}>
+            <wtext></wtext>
+          </wstack>
+          {progress < 1 && <wspacer></wspacer>}
+        </wstack>
+      )
+    }
+
+    /**表格格子*/
+    const TableGrid: FC<
+      WtextProps & {text: string | React.ReactNode; width: number; align: 'left' | 'center' | 'right'}
+    > = ({text, width, align, ...props}) => (
+      <wstack width={width}>
+        {(align === 'center' || align === 'right') && <wspacer></wspacer>}
+        {typeof text === 'string' ? (
+          <wtext font={14} textColor={textColor} {...props}>
+            {text}
+          </wtext>
+        ) : (
+          text
+        )}
+        {(align === 'center' || align === 'left') && <wspacer></wspacer>}
+      </wstack>
+    )
+
+    /**表格行*/
+    const TableRow: FC<WtextProps & {texts: (string | React.ReactNode)[]}> = ({texts, ...props}) => (
+      <wstack verticalAlign="center">
+        <TableGrid text={texts[0]} {...props} width={60} align="left"></TableGrid>
+        <wspacer></wspacer>
+        <TableGrid text={texts[1]} {...props} width={90} align="center"></TableGrid>
+        <wspacer></wspacer>
+        <TableGrid text={texts[2]} {...props} width={70} align="right"></TableGrid>
+      </wstack>
+    )
     return (
       <>
-        <wtext>hello</wtext>
+        <TableRow texts={['类型', '剩余百分比', '剩余量']}></TableRow>
+        {usefulPhoneDatas.map(item => (
+          <>
+            <wspacer></wspacer>
+            <TableRow
+              font={Font.lightSystemFont(14)}
+              texts={[
+                typeDesc[item.type],
+                Progress({
+                  color: '#39b54a',
+                  bgcolor: '#dddddd',
+                  width: 80,
+                  height: 10,
+                  borderRadius: 5,
+                  progress: formatNum(item.percent) / 100,
+                }),
+                formatNum(item.count) + item.unit,
+              ]}
+            ></TableRow>
+          </>
+        ))}
+        <wspacer></wspacer>
       </>
     )
   }
@@ -199,14 +295,14 @@ class China10010 {
   async showMenu() {
     const selectIndex = await showActionSheet({
       title: '菜单',
-      itemList: ['登录', '设置手机号和cookie', '设置颜色', '设置透明背景', '预览组件'],
+      itemList: ['登录获取cookie', '设置手机号和cookie', '设置颜色', '设置透明背景', '预览组件'],
     })
     switch (selectIndex) {
       case 0:
         const {cancel: cancelLogin} = await showModal({
           title: '为什么要登录',
           content:
-            '获取手机号码信息需要 cookie，而 cookie 不登录获取不到\n\n若 cookie 失效，再次登录即可\n\n登录完成后，关闭网页，网页会再自动打开\n\n此时点击底部按钮复制 cookie ，然后关网页去设置cookie',
+            '获取手机号码信息需要 cookie，而 cookie 不登录获取不到\n\n登录完成后，关闭网页，网页会再自动打开\n\n此时点击底部按钮复制 cookie ，然后关网页去设置cookie\n\n若 cookie 失效，再次登录复制即可',
           confirmText: '去登录',
         })
         if (cancelLogin) return
@@ -319,9 +415,9 @@ class China10010 {
     if (!isLaunchInsideApp() && !getStorage('cookie')) return 'cookie 不存在，请先登录'
     const api = `https://wap.10010.com/mobileService/home/queryUserInfoSeven.htm?version=iphone_c@7.0403&desmobiel=${phoneNumber}&showType=3`
     // 获取手机卡信息列表
-    const res = await request<PhoneDatas>({
+    const res = await request<string>({
       url: api,
-      dataType: 'json',
+      dataType: 'text',
       header: {
         'user-agent':
           'Mozilla/5.0 (iPhone; CPU iPhone OS 14_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
@@ -331,15 +427,15 @@ class China10010 {
     // isLaunchInsideApp() && cookie && setStorage('cookie', cookie)
     let usefulPhoneDatas: UsefulPhoneData[] = []
     try {
-      const phoneDatas: PhoneData[] = res.data?.data.dataList || []
+      const phoneDatas: PhoneData[] = (JSON.parse(res.data || '') as PhoneDatas).data.dataList || []
       // 提取有用的信息
       usefulPhoneDatas = phoneDatas.map(info => {
-        const present = info.usedTitle.replace(/(已用|剩余)([\d\.]+)?\%/, (...args) => {
+        const percent = info.usedTitle.replace(/(已用|剩余)([\d\.]+)?\%/, (...args) => {
           return args[1] === '剩余' ? args[2] : 100 - args[2]
         })
         return {
           type: info.type,
-          present: Number(present) > 100 ? 100 : Number(present),
+          percent: Number(percent) > 100 ? 100 : Number(percent),
           unit: info.unit,
           count: Number(info.number),
           label: info.remainTitle,
@@ -352,58 +448,6 @@ class China10010 {
     }
     return usefulPhoneDatas
   }
-  // // 获取手机卡数据
-  // async getPhoneData(phoneNumber: number): Promise<UsefulPhoneData[] | string> {
-  //   const api = `https://wap.10010.com/mobileService/home/queryUserInfoSeven.htm?version=iphone_c@7.0403&desmobiel=${phoneNumber}&showType=3`
-  //   if (isLaunchInsideApp()) {
-  //     const webview = new WebView()
-  //     await webview.loadURL(api)
-  //     await webview.waitForLoad()
-  //     const {cookie} = (await webview.evaluateJavaScript(`
-  //       let cookie = document.cookie
-  //       Object.assign({}, {cookie})
-  //     `)) as PageInfo
-  //     cookie && setStorage('cookie', cookie)
-  //   }
-  //   let usefulPhoneData: UsefulPhoneData[] = []
-  //   try {
-  //     const cookie = getStorage<string>('cookie')
-  //     if (!cookie) {
-  //       await showNotification({title: 'cookie 不存在，请先登录', sound: 'failure'})
-  //       return 'cookie 不存在，请先登录'
-  //     }
-  //     // 获取手机卡信息列表
-  //     const dataList: PhoneData[] =
-  //       (
-  //         await request<PhoneDatas>({
-  //           url: api,
-  //           dataType: 'text',
-  //           header: {
-  //             'user-agent':
-  //               'Mozilla/5.0 (iPhone; CPU iPhone OS 14_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
-  //             cookie,
-  //           },
-  //         })
-  //       ).data?.data.dataList || []
-  //     // 提取有用的信息
-  //     usefulPhoneData = dataList.map(info => {
-  //       const present = info.usedTitle.replace(/(已用|剩余)([\d\.]+)?\%/, (...args) => {
-  //         return args[1] === '剩余' ? args[2] : 100 - args[2]
-  //       })
-  //       return {
-  //         type: info.type,
-  //         present: Number(present) > 100 ? 100 : Number(present),
-  //         unit: info.unit,
-  //         count: Number(info.number),
-  //         label: info.remainTitle,
-  //       }
-  //     })
-  //   } catch (err) {
-  //     await showNotification({title: '获取联通卡信息失败', body: '检查一下网络，或重新登录', sound: 'failure'})
-  //     return '获取联通卡信息失败\n检查一下网络，或重新登录'
-  //   }
-  //   return usefulPhoneData
-  // }
 }
 
 EndAwait(() => new China10010().init())
